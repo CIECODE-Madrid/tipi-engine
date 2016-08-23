@@ -1,5 +1,5 @@
 import luigi
-from scraper import ScrapTask
+from scraper.scraper import ScrapTask
 from targets import *
 from utils import FILES
 

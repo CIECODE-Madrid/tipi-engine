@@ -1,5 +1,5 @@
 import luigi
-from labeling import LabelingTask
+from labeling.labeling import LabelingTask
 from targets import *
 from utils import FILES
 
