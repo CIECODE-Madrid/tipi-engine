@@ -63,3 +63,12 @@ target/
 
 #temp files
 *.tmp
+#scrapy
+.idea/
+*.pyc
+.scrapy/
+blacklist
+.git/
+*.db
+*.db*
+*.log
