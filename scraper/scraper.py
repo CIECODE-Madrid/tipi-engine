@@ -23,6 +23,6 @@ class ScrapTask(luigi.Task):
         #execfile("scraper/scrap/scrap/start.py")
 
         import os
-        os.chdir("scraper/scrapy/scrap")
+        os.chdir("scraper/scrap/scrap")
         os.system("python start.py")
         self.output().open('w').close()
