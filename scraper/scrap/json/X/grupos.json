@@ -1,0 +1,7 @@
+{ "_id" : { "$oid" : "0775642f41545b99053db5a1" }, "nombre" : "Grupo Popular", "acronimo" : "GP", "activo" : true }
+{ "_id" : { "$oid" : "17e8ea7aa34254b69b7e3008" }, "nombre" : "Grupo Vasco - EAJ PNV", "acronimo" : "GV (EAJ-PNV)", "activo" : true }
+{ "_id" : { "$oid" : "6c7e9e11dccc4e6e66f80f1b" }, "nombre" : "Grupo Socialista", "acronimo" : "GS", "activo" : true }
+{ "_id" : { "$oid" : "80b0b8846f82cfab90ad85e9" }, "nombre" : "Grupo Mixto", "acronimo" : "GMx", "activo" : true }
+{ "_id" : { "$oid" : "97fc3ac77a0f126dce861c93" }, "nombre" : "Grupo Catal�n - Convergencia y Uni�", "acronimo" : "GC-CiU", "activo" : true }
+{ "_id" : { "$oid" : "be270f3b39554fbc6a174078" }, "nombre" : "Grupo Uni�n Progreso y Democracia", "acronimo" : "GUPyD", "activo" : true }
+{ "_id" : { "$oid" : "c34616ab973dd7dbd0d83d56" }, "nombre" : "Grupo La Izquierda Plural", "acronimo" : "GIP", "activo" : true }
