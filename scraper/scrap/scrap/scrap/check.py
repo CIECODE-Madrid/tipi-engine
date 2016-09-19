@@ -1,6 +1,6 @@
 import datetime
 import sys,os
-from unqlite import UnQLite
+import redis
 import pdb
 from pathlib import Path
 
@@ -39,14 +39,13 @@ import re
 
 class UrlsScraped(object):
     __instance = None
-    _file= []
-    _name = "urls"
-    _db= None
-    _collection = None
+    _conn=None
 
     def __init__(self):
-        self._readFile()
-
+        self._conn = redis.Redis(
+                        host='localhost',
+                        port=6379,
+                        db=1)
 
     def __new__(cls):
         if cls.__instance == None:
@@ -54,40 +53,30 @@ class UrlsScraped(object):
             cls.__instance.name = "Reading..."
         return cls.__instance
 
-    def _readFile(self):
-        db = UnQLite('allUrls.db')
-        self._db = db
-        urls = db.collection('urls')
-        if not urls.exists():
-            urls.create()
-        self._collection = urls
-        self._file = urls.all()
+    def getElement(self,key):
+        return self._conn.get(key)
 
-
-    def getFile(self):
-        #para obtener la db
-        return self._db.collection('urls').all()
-
-
-    def addUrl(self,url):
-        self._collection.store(url)
-        self._db.commit()
+    def addElement(self,key):
+        return self._conn.set(key,key)
 
     def deleteAll(self):
-        os.remove("allUrls.db")
-        self._file = []
+        return self._conn.flushdb()
+
+
+
 
 class CheckItems():
+    @staticmethod
+    def getElement(key):
+        file = UrlsScraped()
+
+        return file.getElement(key)
 
     @staticmethod
-    def getarrayFile():
-        ob = UrlsScraped()
-        return ob.getFile()
+    def addElement(key):
+        file = UrlsScraped()
 
-    @staticmethod
-    def addUrl(url):
-        ob = UrlsScraped()
-        ob.addUrl(url)
+        return file.addElement(key)
 
     @staticmethod
     def checkUrls():
@@ -97,7 +86,7 @@ class CheckItems():
 
         time.sleep(5)
         ob = UrlsScraped()
-        should = ob.getFile()
+
         con = mongoItems()
         itemsscraps = con.searchAll()
         control = False
@@ -108,13 +97,10 @@ class CheckItems():
         sys.stdout.write("\b" * (toolbar_width+1))
 
         for item in itemsscraps:
-            for url in should:
-                if url == item['url']:
-                    control =  True
-                    break
-                else:
-                    control= False
-            if not control:
+
+            if ob.getElement(item['url']):
+                break
+            else:
                 res.append(item['url'])
             sys.stdout.write("-")
             sys.stdout.flush()

@@ -30,9 +30,7 @@ EXTENSIONS = {
 #USER_AGENT = 'stack1 (+http://www.yourdomain.com)'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS=10
-SCHEDULER_DISK_QUEUE = 'scrapy.squeue.PickleFifoDiskQueue'
-SCHEDULER_MEMORY_QUEUE = 'scrapy.squeue.FifoMemoryQueue'
+CONCURRENT_REQUESTS=16
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs

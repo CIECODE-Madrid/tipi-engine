@@ -19,7 +19,7 @@ from scrap.items import InitiativeItem,AmendmentItem, FinishTextItem, ResponseIt
 
 from twisted.internet.error import DNSLookupError, TimeoutError
 
-from scrap.blacklist import Blacklist, ManageFile
+from scrap.blacklist import Blacklist
 from scrapy.contrib.spiders import CrawlSpider, Rule
 
 
@@ -48,8 +48,6 @@ class StackSpider(Spider):
     groups = None
     def __init__(self,*a, **kw):
         super(StackSpider,self).__init__(*a, **kw)
-        ManageFile()
-
         self.time = datetime.datetime.now()
         self.congress = Congress()
         self.members = self.congress.searchAll("diputados")
@@ -58,7 +56,6 @@ class StackSpider(Spider):
         dispatcher.connect(self.writeblacklist, signals.spider_closed)
 
     def writeblacklist(self):
-        Blacklist.writeFile()
         self.time = datetime.datetime.now() - self.time
         print("********  %s " % self.time)
         email = emailScrap()
@@ -74,7 +71,7 @@ class StackSpider(Spider):
                                    formdata = {'idLegislatura':'12'} , callback = self.parse)]
 
     def parse(self, response):
-        """
+
         list_types = Selector(response).xpath('//div[@class="listado_1"]//ul/li/a')
         for types in list_types:
             href=  types.xpath("./@href").extract()
@@ -86,9 +83,12 @@ class StackSpider(Spider):
         """
         urlsa = ""
         urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW10&PIECE=IWC0&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=34-34&QUERY=%28I%29.ACIN1.+%26+%28213%29.SINI."
-        yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
-                             meta={'type': u"Proyecto de ley"})
+        CheckItems.addElement(urlsa)
 
+        if  not Blacklist.getElement(urlsa):
+            yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
+                             meta={'type': u"Proyecto de ley"})
+        """
 
 
     def initiatives(self, response):
@@ -103,10 +103,10 @@ class StackSpider(Spider):
         for i in range(1,int(num_inis[0])+1):
             new_url = split[0]+"&DOCS="+str(i)+"-"+str(i)+split[2]
             initiative_url = Utils.createUrl(response.url,new_url)
-            CheckItems.addUrl(initiative_url)
+            CheckItems.addElement(initiative_url)
 
-            if Blacklist.getarrayFile():
-                if initiative_url not in Blacklist.getarrayFile():
+            if Blacklist.getElement(initiative_url):
+                if not Blacklist.getElement(initiative_url):
                     yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
                                          callback=self.oneinitiative, meta = {'type':type})
             else:

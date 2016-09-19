@@ -1,25 +1,17 @@
 import pdb
 
-import io
-from unqlite import UnQLite
-
-
-
-
 #singleton implemented
 import re
-
-
-class ManageFile(object):
+import redis
+class ManageRedisBlackList(object):
     __instance = None
-    _file= []
-    _name = "blacklist"
-    _db= None
-    _collection = None
-    _news = []
+    _conn = None
 
     def __init__(self):
-        self._readFile()
+        self._conn = redis.Redis(
+                        host='localhost',
+                        port=6379,
+                        db=0)
 
     def __new__(cls):
         if cls.__instance == None:
@@ -27,37 +19,15 @@ class ManageFile(object):
             cls.__instance.name = "Reading..."
         return cls.__instance
 
-    def _readFile(self):
-        db = UnQLite('blacklist.db')
-        self._db = db
-        urls = db.collection('urls')
-        if not urls.exists():
-            urls.create()
-        self._collection = urls
-        self._file = urls.all()
 
+    def getElement(self,key):
+        return self._conn.get(key)
 
-    def getFile(self):
-        return self._file
-
-    def getNewsurls(self):
-
-        return self._news
+    def addElement(self,key):
+        return self._conn.set(key,key)
 
 
 
-
-    def addUrl(self,url):
-        self._news.append(url)
-
-    def writeinDB(self):
-        self._collection.store(self._news)
-        self._db.commit()
-
-    def deleteAll(self):
-        self._db.flush()
-        pdb.set_trace()
-        self._db.commit()
 
 
 
@@ -67,32 +37,18 @@ class ManageFile(object):
 
 class Blacklist():
 
+    @staticmethod
+    def getElement(key):
+        file = ManageRedisBlackList()
+
+        return file.getElement(key)
 
     @staticmethod
-    def getarrayFile():
-        file = ManageFile()
+    def addElement(key):
+        file = ManageRedisBlackList()
 
-        return file.getFile()
+        return file.addElement(key)
 
-    @staticmethod
-    def getNewsurls():
-        file = ManageFile()
-
-        return file.getNewsurls()
-
-
-
-
-    @staticmethod
-    def writeFile():
-        file = ManageFile()
-        file.writeinDB()
-        del file
-
-    @staticmethod
-    def addUrl(url):
-        file = ManageFile()
-        file.addUrl(url)
 
     @staticmethod
     def isAddedtolist(line):

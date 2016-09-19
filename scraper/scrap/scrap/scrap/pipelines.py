@@ -31,7 +31,7 @@ class MongoDBPipeline(object):
 
             try:
                 if Blacklist.isAddedtolist(item['tramitacion']):
-                        Blacklist.addUrl(item['url'])
+                        Blacklist.addElement(item['url'])
 
             except:
                 print ("**** FAILURE *****")
