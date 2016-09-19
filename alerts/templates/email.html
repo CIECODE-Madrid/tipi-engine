@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+      <ul>
+        {% for n in items %}
+            {% for key, value in n.iteritems()%}
+                <li>Dictionary {{key}}
+                    Initiatives update:
+                    {% for val in value %}
+                        Titulo: {{val.titulo}}
+                        Url: {{val.url}}<br>
+                        fecha: {{val.fecha}}
+
+                    {% endfor %}
+                </li>
+            {% endfor %}
+        {% endfor %}
+</body>
+</html>

@@ -329,6 +329,16 @@ class Congress(object):
                 }
             }, upsert=True)
 
+    def getTipisAllAlerts(self):
+        #return cursor
+        return self._getCollection('tipialerts').find({'items':{'$exists':True,'$not':{'$size':0}}}) #Contain alert
+
+    def getUserswithAlert(self):
+        #return cursor
+        return self._getCollection('users').find({"profile.dicts":{'$exists': True}})
+
+
+
         
 
 
