@@ -5,11 +5,49 @@ import pymongo
 from time import time
 import itertools
 
+from database.congreso import Congress
+
 
 reload(sys)    # to re-enable sys.setdefaultencoding()
 sys.setdefaultencoding('utf-8')
 
-class MotorRegex:
+
+
+class LabelingEngine:
+
+    def run(self):
+        congress = Congress()
+        iniciativas = congress.getNotAnnotatedInitiatives('tipi')
+        # Meter el bucle que trabaje por grupos de diccionarios
+        dicts = list(congress.getDictsByGroup('tipi'))
+        tiempo_inicial = time()
+        regex_engine = RegexEngine()
+        i = 0
+        for iniciativa in iniciativas:
+            i += 1
+            print "%s [%d]:" % (str(iniciativa['_id']), i)
+            try:
+                if iniciativa.has_key('titulo') or iniciativa.has_key('contenido'):
+                    # print 'Cargando la iniciativa'
+                    regex_engine.loadIniciativa(iniciativa)
+                    for dict in dicts:
+                        regex_engine.loadTerms(dict)
+                        regex_engine.matchTerms(i)
+                        print "[%d en %s]: " % (len(regex_engine.getTermsFound()),dict['name'])
+                        # if len(regex_engine.getTermsFound()) > 0:
+                        #     raw_input("Press any key to continue...")
+            except Exception, e:
+                print str(iniciativa['_id']) + ": " + str(e)
+                break
+            print '============================'
+        tiempo_final = time()  
+        tiempo_ejecucion = tiempo_final - tiempo_inicial
+        print "El tiempo de ejecucion ha sido ", tiempo_ejecucion
+
+
+
+
+class RegexEngine:
     
     def __init__(self):
         self.__terms = []
@@ -37,15 +75,13 @@ class MotorRegex:
 
     def loadTerms(self, dict):
         self.cleanTerms()
-        print 'Cargando terminos de %s' % dict['name']
         for term in self.__shuffleTerms(dict['terms']):
-            print term['term']
             self.__terms.append({
                 'dict': dict['name'],
                 'group': dict['group'],
                 'compileterm': pcre.compile(term['term']),
                 'term': term['original'],
-                'struct': {'term': term['original'], 'humanterm': term['humanterm']}
+                'struct': {'term': term['original'], 'humanterm': term['humanterm'], 'dict': dict['name']}
                 });
 
     def loadIniciativa(self, iniciativa):
@@ -95,29 +131,5 @@ class MotorRegex:
 
 
 if __name__ == '__main__':
-    client = pymongo.MongoClient('mongodb://127.0.0.1:3001/')
-    db = client['meteor']
-    iniciativas = db.iniciativas.find(no_cursor_timeout=True).limit(1)
-    # Meter el bucle que trabaje por grupos de diccionarios
-    dicts = list(db.dicts.find({'group': 'tipi'}))
-    tiempo_inicial = time() 
-    m = MotorRegex()
-    i = 0
-    for iniciativa in iniciativas:
-        i += 1
-        print "%s [%d]:" % (str(iniciativa['_id']), i)
-        try:
-            if iniciativa.has_key('titulo') or iniciativa.has_key('contenido'):
-                # print 'Cargando la iniciativa'
-                m.loadIniciativa(iniciativa)
-                for dict in dicts:
-                    m.loadTerms(dict)
-                    # m.matchTerms(i)
-                    # print "[%d en %s]: " % (len(m.getTermsFound()),dict['name'])
-        except Exception, e:
-            print str(iniciativa['_id']) + ": " + str(e)
-            break
-        print '============================'
-    tiempo_final = time()  
-    tiempo_ejecucion = tiempo_final - tiempo_inicial
-    # print "El tiempo de ejecucion ha sido ", tiempo_ejecucion
+    labeling_engine = LabelingEngine()
+    labeling_engine.run()

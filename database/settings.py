@@ -1,17 +1,5 @@
 import pymongo
-
-
-
-
-config = {
-    # MONGO CONFIG
-    "MONGO_USERNAME": None,
-    "MONGO_PASSWORD": None,
-    "MONGO_HOST": "localhost",
-    "MONGO_PORT": 27017,
-    "MONGO_DB_NAME": "test",
-    # Other config follows
-}
+from variables import config
 
 
 class Config(object):

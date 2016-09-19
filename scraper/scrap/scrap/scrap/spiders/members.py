@@ -9,7 +9,7 @@ import pdb
 import re
 from dateutil.parser import parse
 
-from scrap.congreso.congreso import Congress
+from database.congreso import Congress
 
 from scrap.items import MemberItem
 

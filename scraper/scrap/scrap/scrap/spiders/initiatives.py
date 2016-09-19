@@ -22,7 +22,7 @@ from twisted.internet.error import DNSLookupError, TimeoutError
 from scrap.blacklist import Blacklist, ManageFile
 from scrapy.contrib.spiders import CrawlSpider, Rule
 
-from scrap.congreso.congreso import Congress
+from database.congreso import Congress
 
 from scrap.utils import Utils
 

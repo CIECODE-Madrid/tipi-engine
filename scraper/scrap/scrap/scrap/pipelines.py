@@ -18,7 +18,7 @@ from scrap.blacklist import Blacklist
 
 from scrap.items import InitiativeItem, FinishTextItem, AmendmentItem,ResponseItem
 
-from scrap.congreso.congreso import Congress
+from database.congreso import Congress
 
 from scrap.utils import Utils
 

@@ -15,6 +15,11 @@ class Congress(object):
     def searchAll(self,collection=None):
         return [ element for element in self._getCollection(collection).find()]
 
+    def getNotAnnotatedInitiatives(self, dictname):
+        return self._getCollection('iniciativas').find({'$or': [{'annotate.%s'%dictname : {'$exists': False}}, {'annotate.%s'%dictname : False}]}, no_cursor_timeout=True)
+
+    def getDictsByGroup(self, group):
+        return self._getCollection('dicts').find({'group': group})
 
 
     def getInitiative(self, collection="iniciativas", ref = None, tipotexto= None, titulo = None):
