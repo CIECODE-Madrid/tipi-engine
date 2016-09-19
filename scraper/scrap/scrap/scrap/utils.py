@@ -147,7 +147,9 @@ class Utils(object):
 
     @staticmethod
     def clearTitle(string):
-        return re.sub('(\.?) ([\(|\{].*?.$)|(.$)', '' , string.strip()).strip()
+        res = re.sub('(\.?) ([\(|\{].*?.$)|(.$)', '' , string.strip()).strip()
+        BLANK = re.compile(r'\n')
+        return BLANK.sub(' ', res)
 
     @staticmethod
     def hasSearchEnd(string):

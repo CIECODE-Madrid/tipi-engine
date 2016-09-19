@@ -285,7 +285,6 @@ class Congress(object):
                 'grupo': item['grupo'],
                 'correo': item['correo'],
                 'web': item['web'],
-                'url': item['url'],
                 'twitter': item['twitter'],
                 'fecha_alta': item['fecha_alta'],
                 'fecha_baja': item['fecha_baja'],
