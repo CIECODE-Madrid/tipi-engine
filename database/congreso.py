@@ -22,6 +22,26 @@ class Congress(object):
         return self._getCollection('dicts').find({'group': group})
 
 
+    def addDictToInitiative(self, initiative_id, dictgroup, dicts, terms):
+        coll = self._getCollection(collection='iniciativas')
+        coll.update_one({
+            '_id': initiative_id,
+        },{
+            '$set': {
+            'annotate.%s'%dictgroup: True,
+            'is.%s'%dictgroup: True if len(dicts) > 0 else False,
+            'dicts.%s'%dictgroup: dicts,
+            'terms.%s'%dictgroup: terms,
+            }
+        ,}
+        )
+
+
+    def getDictGroups(self):
+        coll = self._getCollection(collection='dicts')
+        return coll.find({}, {'group': 1}).distinct('group')
+    
+
     def getInitiative(self, collection="iniciativas", ref = None, tipotexto= None, titulo = None):
         search = self._getCollection(collection).find_one(
             {
@@ -293,6 +313,23 @@ class Congress(object):
             }
         })
 
+
+
+    def addAlert(self, dictname, init_id, init_title, init_date):
+        coll = self._getCollection(collection='tipialerts')
+        coll.update_one({
+            'dict': dictname,
+            }, {
+                '$addToSet': {
+                    'items': {
+                        'id': str(init_id),
+                        'titulo': init_title,
+                        'fecha': init_date,
+                        }
+                }
+            }, upsert=True)
+
+        
 
 
 

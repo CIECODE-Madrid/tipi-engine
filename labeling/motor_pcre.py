@@ -16,11 +16,8 @@ sys.setdefaultencoding('utf-8')
 class LabelingEngine:
 
     def run(self):
-        congress = Congress()
-        iniciativas = congress.getNotAnnotatedInitiatives('tipi')
-        # Meter el bucle que trabaje por grupos de diccionarios
-        dicts = list(congress.getDictsByGroup('tipi'))
-        tiempo_inicial = time()
+        dbmanager = Congress()
+        iniciativas = dbmanager.getNotAnnotatedInitiatives('tipi')
         regex_engine = RegexEngine()
         i = 0
         for iniciativa in iniciativas:
@@ -28,21 +25,25 @@ class LabelingEngine:
             print "%s [%d]:" % (str(iniciativa['_id']), i)
             try:
                 if iniciativa.has_key('titulo') or iniciativa.has_key('contenido'):
-                    # print 'Cargando la iniciativa'
                     regex_engine.loadIniciativa(iniciativa)
-                    for dict in dicts:
-                        regex_engine.loadTerms(dict)
-                        regex_engine.matchTerms(i)
-                        print "[%d en %s]: " % (len(regex_engine.getTermsFound()),dict['name'])
-                        # if len(regex_engine.getTermsFound()) > 0:
-                        #     raw_input("Press any key to continue...")
+                    for groupname in dbmanager.getDictGroups():
+                        dicts = list(dbmanager.getDictsByGroup(groupname))
+                        for dict in dicts:
+                            regex_engine.loadTerms(dict)
+                            regex_engine.matchTerms(i)
+                            print "[%d en %s]: " % (len(regex_engine.getTermsFound()),dict['name'])
+                        dbmanager.addDictToInitiative(iniciativa['_id'], groupname, regex_engine.getDictsFound(), regex_engine.getTermsFound())
+                        if groupname == 'tipi':
+                            for df in regex_engine.getDictsFound():
+                                dbmanager.addAlert(df, iniciativa['_id'], iniciativa['titulo'], iniciativa['fecha'])
+                                # raw_input("Press any key to continue...")
+
+                        regex_engine.cleanDictsAndTermsFound()
             except Exception, e:
+                regex_engine.cleanDictsAndTermsFound()
                 print str(iniciativa['_id']) + ": " + str(e)
                 break
             print '============================'
-        tiempo_final = time()  
-        tiempo_ejecucion = tiempo_final - tiempo_inicial
-        print "El tiempo de ejecucion ha sido ", tiempo_ejecucion
 
 
 
@@ -74,7 +75,7 @@ class RegexEngine:
         return new_terms
 
     def loadTerms(self, dict):
-        self.cleanTerms()
+        self.__terms = []
         for term in self.__shuffleTerms(dict['terms']):
             self.__terms.append({
                 'dict': dict['name'],
@@ -90,9 +91,12 @@ class RegexEngine:
     def getTerms(self):
         return self.__terms
 
-    def cleanTerms(self):
-        self.__terms = []
+    def cleanDictsAndTermsFound(self):
+        self.__dicts_found = []
         self.cleanTermsFound()
+
+    def getDictsFound(self):
+        return self.__dicts_found
 
     def getTermsFound(self):
         return self.__terms_struct_found
@@ -108,10 +112,11 @@ class RegexEngine:
         if term['term'] not in self.__terms_found:
             self.__terms_found.append(term['term'])
             self.__terms_struct_found.append(term['struct'])
+            if term['dict'] not in self.__dicts_found:
+                self.__dicts_found.append(term['dict'])
 
     def matchTerms(self, i):
         print 'Comprobando terminos...'
-        self.cleanTermsFound()
         terms = self.getTerms()
         iniciativa = self.getIniciativa()
         if iniciativa.has_key('titulo'):
@@ -130,6 +135,6 @@ class RegexEngine:
                     break
 
 
-if __name__ == '__main__':
-    labeling_engine = LabelingEngine()
-    labeling_engine.run()
+# if __name__ == '__main__':
+#     labeling_engine = LabelingEngine()
+#     labeling_engine.run()
