@@ -79,7 +79,7 @@ class RegexEngine:
             self.__terms.append({
                 'dict': dict['name'],
                 'group': dict['group'],
-                'compileterm': pcre.compile(term['term']),
+                'compileterm': pcre.compile('(?i)'+term['term']),
                 'term': term['original'],
                 'struct': {'term': term['original'], 'humanterm': term['humanterm'], 'dict': dict['name']}
                 });
@@ -117,8 +117,8 @@ class RegexEngine:
         if iniciativa.has_key('titulo'):
             if not iniciativa.has_key('contenido'):
                 iniciativa['contenido'] = []
-            else:
-                iniciativa['contenido'] = list(iniciativa['contenido'])
+            # else:
+            #     iniciativa['contenido'] = list(iniciativa['contenido'])
             iniciativa['contenido'].append(iniciativa['titulo'])
         for line in iniciativa['contenido']:
             for term in terms:
