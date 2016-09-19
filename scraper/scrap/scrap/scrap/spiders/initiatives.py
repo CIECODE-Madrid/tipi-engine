@@ -22,7 +22,7 @@ from twisted.internet.error import DNSLookupError, TimeoutError
 from scrap.blacklist import Blacklist, ManageFile
 from scrapy.contrib.spiders import CrawlSpider, Rule
 
-from database.congreso import Congress
+
 
 from scrap.utils import Utils
 
@@ -31,6 +31,8 @@ from scrap.mail import emailScrap
 from scrap.check import CheckItems, CheckSystem
 
 from scrap.typeamendment import AmendmentFlow
+
+from database.congreso import Congress
 
 
 class StackSpider(Spider):
@@ -83,7 +85,7 @@ class StackSpider(Spider):
                 yield scrapy.Request(initiative_url,errback=self.errback_httpbin,callback=self.initiatives, meta={'type': type})
         """
         urlsa = ""
-        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Busqueda%20Avanzada?_piref73_1335465_73_1335464_1335464.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW10&PIECE=IWA0&FMT=INITXD1S.fmt&FORM1=INITXLTS.fmt&DOCS=4-4&QUERY=%28I%29.ACIN1.+%26+%28%22APROBADO+CON+MODIFICACIONES%22%29.CIER."
+        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW10&PIECE=IWC0&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=34-34&QUERY=%28I%29.ACIN1.+%26+%28213%29.SINI."
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
                              meta={'type': u"Proyecto de ley"})
 
@@ -775,16 +777,17 @@ class StackSpider(Spider):
 
     def finishtext(self,response):
         finishitem = response.meta['fisnishitem']
+        finishitem['contenido'] = []
+
         text = Selector(response).xpath('//div[@class="texto_completo"]').extract()[0]
         text= self.extractbyref(text=text,ref=finishitem['ref'])
         if text=="":
-
             try:
                 text += Selector(response).xpath('//div[@class="texto_completo"]').extract()[0]
             except:
                 CheckSystem.systemlog("No tiene texto para 'TEXTOFINAL' " + response.url + "ITEM URL "+finishitem['url'])
 
-        finishitem['contenido'] = Utils.removeHTMLtags(text)
+        finishitem['contenido'].append(Utils.removeHTMLtags(text))
         yield finishitem
 
     def enmiendas(self,response):

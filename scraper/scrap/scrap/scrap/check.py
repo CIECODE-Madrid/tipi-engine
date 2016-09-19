@@ -1,10 +1,12 @@
 import datetime
+import sys,os
 from unqlite import UnQLite
 import pdb
+from pathlib import Path
 
-import sys,os
-from scrap.congreso.conn import MongoDBconn
-
+p = Path(__file__).parents[4]
+sys.path.insert(0,str(p))
+from database.conn import MongoDBconn
 
 class mongoItems(object):
     _conn = None
