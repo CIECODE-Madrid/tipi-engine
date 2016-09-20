@@ -24,4 +24,4 @@ pymongo
 fuzzywuzzy
 email
 progressbar
-
+luigi
