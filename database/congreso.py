@@ -13,7 +13,14 @@ class Congress(object):
         return self._conn.getDB()[collection]
 
     def searchAll(self,collection=None):
+        """
+        :param collection:
+        :return: List
+        """
         return [ element for element in self._getCollection(collection).find()]
+
+    def searchByparam(self, collection=None, param={}):
+        return self._getCollection(collection).find(param)
 
     def getNotAnnotatedInitiatives(self, dictname):
         return self._getCollection('iniciativas').find({'$or': [{'annotate.%s'%dictname : {'$exists': False}}, {'annotate.%s'%dictname : False}]}, no_cursor_timeout=True)
@@ -336,6 +343,21 @@ class Congress(object):
     def getUserswithAlert(self):
         #return cursor
         return self._getCollection('users').find({"profile.dicts":{'$exists': True}})
+
+    def getAgregatefrompipeline(self,collection,pipeline):
+        """
+        :param collection: For match
+        :param pipeline: any pipeline
+        :return: List
+        """
+        return list(self._getCollection(collection).aggregate(pipeline=pipeline))
+
+    def deletecollection(self,collection):
+        #Warning
+        self._getCollection(collection).drop()
+
+    def insertstat(self,collection="statdistics",dict={}):
+        self._getCollection(collection).insert(dict)
 
 
 

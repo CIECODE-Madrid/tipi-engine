@@ -4,10 +4,7 @@ from database.congreso import Congress
 import pdb
 
 class NotifyTipi(object):
-
-    list = []
     conn = Congress()
-
     def __init__(self):
         self.sendAlerttousers()
 

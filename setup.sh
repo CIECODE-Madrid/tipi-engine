@@ -11,7 +11,6 @@ sudo apt-get update && sudo apt-get install build-essential autoconf libtool pkg
 
 
 if [ ! -d "engineenv" ]; then
-    echo "no estsas"
     virtualenv engineenv
 fi
 
