@@ -12,10 +12,8 @@ six>=1.5.2
 PyDispatcher>=2.0.5
 service_identity
 parsel>=0.9.5
-cython
-unqlite
 pdb
-lxml #apt-get install python-dev libxml2-dev libxslt1-dev zlib1g-dev
+lxml
 cryptography #apt-get install libssl-dev
 scrapy
 datetime
@@ -24,4 +22,4 @@ pymongo
 fuzzywuzzy
 email
 progressbar
-
+luigi
