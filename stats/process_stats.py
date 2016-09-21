@@ -40,7 +40,7 @@ class InsertStats(object):
             if len(dataset)>0:
                 subdoc=dict()
                 subdoc['_id']= element['name']
-                subdoc['deputies']=sorted(dataset, key=itemgetter('count'))[:3]
+                subdoc['deputies']=sorted(dataset, key=itemgetter('count'), reverse=True)[:3]
                 self.dictforinsert['bydeputies'].append(subdoc)
 
     def byGroups(self):
@@ -54,7 +54,7 @@ class InsertStats(object):
             if len(dataset)>0:
                 subdoc=dict()
                 subdoc['_id']= element['name']
-                subdoc['groups']=sorted(dataset, key=itemgetter('count'))[:3]
+                subdoc['groups']=sorted(dataset, key=itemgetter('count'), reverse=True)[:3]
                 self.dictforinsert['bygroups'].append(subdoc)
 
     def latest(self):
@@ -68,7 +68,7 @@ class InsertStats(object):
             self.dictforinsert['latest'].append(subdoc)
 
     def deleteAll(self):
-        self._dbmanager.deletecollection("statdistics")
+        self._dbmanager.deletecollection("tipistats")
 
     def insertstats(self):
         self._dbmanager.insertstat(dict=self.dictforinsert)

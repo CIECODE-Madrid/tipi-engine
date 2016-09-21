@@ -356,7 +356,7 @@ class Congress(object):
         #Warning
         self._getCollection(collection).drop()
 
-    def insertstat(self,collection="statdistics",dict={}):
+    def insertstat(self,collection="tipistats",dict={}):
         self._getCollection(collection).insert(dict)
 
 
