@@ -59,7 +59,9 @@ class InsertStats(object):
 
     def latest(self):
         self.dictforinsert['latest'] = []
-        pipeline=[ { '$match': {'is.tipi': True} }, { '$sort': {'fecha': -1} }, { '$unwind': '$dicts.tipi' }, { '$group': { '_id': '$dicts.tipi' , 'items':{'$push':{ 'id': "$_id", 'titulo': "$titulo", 'fecha': "$fecha" }}} } ]
+        pipeline=[ { '$match': {'is.tipi': True} }, { '$sort': {'fecha': -1} }, { '$unwind': '$dicts.tipi' },
+                   { '$group': { '_id': '$dicts.tipi' ,
+                                 'items':{'$push':{ 'id': "$_id", 'titulo': "$titulo", 'fecha': "$fecha",'lugar': "$lugar",'autor': "$autor_diputado"  }}} } ]
         dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas", pipeline=pipeline)[:19]
         for element in dataset:
             subdoc=dict()
