@@ -1,6 +1,6 @@
 import luigi
 from alerts.alerts import GenerateAlertsTask
-from stats.process_stats import InsertStats
+from process_stats import InsertStats
 from utils import clean_files, FILES
 import pdb
 

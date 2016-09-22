@@ -2,7 +2,7 @@ import luigi
 from scraper.scraper import ScrapTask
 from targets import *
 from utils import FILES
-from labeling.motor_pcre import LabelingEngine
+from motor_pcre import LabelingEngine
 
 class LabelingTask(luigi.Task):
     task_namespace = 'labeling'
