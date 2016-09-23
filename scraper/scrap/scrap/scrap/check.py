@@ -18,11 +18,6 @@ class mongoItems(object):
     def _getCollection(self,collection="iniciativas"):
         return self._conn.getDB()[collection]
 
-    def checkItems(self):
-        allurls = UrlsScraped()
-        for url in allurls.getFile():
-            pdb.set_trace()
-
 
     def searchAll(self,collection="iniciativas"):
         return self._getCollection(collection).find(
@@ -106,7 +101,6 @@ class CheckItems():
             sys.stdout.flush()
 
         sys.stdout.write("\n")
-
         ob.deleteAll()
         del ob
         print ("Reporting Error ......")

@@ -85,10 +85,12 @@ class StackSpider(Spider):
         urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW10&PIECE=IWC0&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=34-34&QUERY=%28I%29.ACIN1.+%26+%28213%29.SINI."
         CheckItems.addElement(urlsa)
 
-        if  not Blacklist.getElement(urlsa):
-            yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
+
+        yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
                              meta={'type': u"Proyecto de ley"})
+
         """
+
 
 
     def initiatives(self, response):
@@ -432,7 +434,7 @@ class StackSpider(Spider):
                                         finishtextitem['fecha'] = item['fecha']
                                         finishtextitem['fechafin'] = item['fechafin']
                                         finishtextitem['lugar'] = item['lugar']
-                                        finishtextitem['tipotexto'] = "Texto definitivo"
+                                        finishtextitem['tipotexto'] = item['tipotexto']+" Texto definitivo"
                                         yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
                                                          errback=self.errback_httpbin,
                                                          callback=self.finishtext, dont_filter=True,

@@ -23,6 +23,9 @@ class ScrapTask(luigi.Task):
         #execfile("scraper/scrap/scrap/start.py")
 
         import os
+        pdb.set_trace()
         os.chdir("scraper/scrap/scrap")
         os.system("python start.py")
+        os.chdir("../../../")
+
         self.output().open('w').close()

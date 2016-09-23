@@ -152,16 +152,14 @@ class Congress(object):
             return False
 
     def sameInitiative(self,item,search):
-        if len(item.keys()) != len(search.keys())-1: # se descarta el content
-            return False
-        else:
-            for key, value in search.iteritems():
-                for ikey,ivalue in item.iteritems():
-                    if key == ikey:
-                        if value !=  ivalue and  key is not 'contenido':
 
-                            return False
-            return True
+        for key, value in search.iteritems():
+            for ikey,ivalue in item.iteritems():
+                if key == ikey:
+                    if value !=  ivalue and  (key is not 'contenido' and  key is not 'dicts' and
+                                              key is not 'terms' and key is not 'annotate' and key is not 'is'):
+                        return False
+        return True
 
 
     def updateorinsertAdmenment(self, collection="iniciativas",  item = None ,search = None):

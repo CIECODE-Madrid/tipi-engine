@@ -4,13 +4,14 @@ from database.congreso import Congress
 import pdb
 
 class NotifyTipi(object):
-    conn = Congress()
+    _dbmanager = Congress()
     def __init__(self):
         self.sendAlerttousers()
+        self.deleteAll()
 
     def sendAlerttousers(self):
-        tipisalerts =  self.conn.getTipisAllAlerts()
-        userswithalerts = self.conn.getUserswithAlert()
+        tipisalerts =  self._dbmanager.getTipisAllAlerts()
+        userswithalerts = self._dbmanager.getUserswithAlert()
         for user in userswithalerts:
             alerttoshow=[]
             for alert in tipisalerts:
@@ -24,6 +25,8 @@ class NotifyTipi(object):
             #send one email to user with summary
             if alerttoshow:
                 emailSparkPost.send_mail(user['emails'][0]['address'],alerttoshow)
+    def deleteAll(self):
+        self._dbmanager.deletecollection("tipialerts")
 
     def getObjects(self,objs):
         res=[]
