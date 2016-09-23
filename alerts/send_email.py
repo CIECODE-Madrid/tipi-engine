@@ -11,7 +11,7 @@ class emailSparkPost(object):
         sp = SparkPost(API_SPARKPOST)
         doc = render_html_doc(listforuser)
         response = sp.transmissions.send(
-            recipients=email,#email is a user's email
+            recipients=[email],#email is a user's email
             html=doc,
             from_email=FROM_EMAIL,
             subject='Summary of new Tipis'
