@@ -32,8 +32,8 @@ class NotifyTipi(object):
         res=[]
         for obj in objs:
             newobj = dict()
-            newobj['titulo']=obj['alert_titulo']
-            newobj['url']="{0}/{1}".format(DOMAIN,str(obj['alert_id']))
-            newobj['fecha']=obj["alert_fecha"]
+            newobj['titulo']=obj['titulo']
+            newobj['url']="{0}/{1}".format(DOMAIN,str(obj['id']))
+            newobj['fecha']=obj["fecha"]
             res.append(newobj)
         return res
