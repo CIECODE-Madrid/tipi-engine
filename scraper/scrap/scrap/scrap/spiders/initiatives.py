@@ -82,12 +82,12 @@ class StackSpider(Spider):
                 yield scrapy.Request(initiative_url,errback=self.errback_httpbin,callback=self.initiatives, meta={'type': type})
         """
         urlsa = ""
-        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW10&PIECE=IWC0&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=34-34&QUERY=%28I%29.ACIN1.+%26+%28213%29.SINI."
+        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWB2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=20-20&QUERY=%28I%29.ACIN1.+%26+%28184%29.SINI."
         CheckItems.addElement(urlsa)
 
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
-                             meta={'type': u"Proyecto de ley"})
+                             meta={'type': u"Pregunta al Gobierno con respuesta escrita"})
 
         """
 
@@ -275,7 +275,7 @@ class StackSpider(Spider):
                 try:
                     item['autor_grupo'].append(self.getGroupfrommember(name=oneaut)['nombre'])
                 except:
-                     CheckSystem.systemlog("Fallo en enmienda, no encuentra grupo parlamentario en la db" + response.url)
+                    CheckSystem.systemlog("Fallo en enmienda, no encuentra grupo parlamentario en la db" + response.url)
             elif typeaut is 'grupo':
                 item['autor_grupo'].append(self.getGroup(name=oneaut)['nombre'])
             elif typeaut is 'otro':
