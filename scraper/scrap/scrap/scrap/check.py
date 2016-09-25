@@ -19,12 +19,11 @@ class mongoItems(object):
         return self._conn.getDB()[collection]
 
 
-    def searchAll(self,collection="iniciativas"):
-        return self._getCollection(collection).find(
-            {"$and": [{"tipotexto":{"$not":re.compile('Enmienda')}}, {"tipotexto":{"$not":re.compile('Respuesta')}},{"tipotexto":{"$not":re.compile('Texto definitivo')}}]}
+    def searchbyUrl(self,url):
 
-
-        )
+        return self._getCollection("iniciativas").find(
+            {"$and": [{'url':url},{"tipotexto":{"$not":re.compile('Enmienda')}}, {"tipotexto":{"$not":re.compile('Respuesta')}},{"tipotexto":{"$not":re.compile('Texto definitivo')}}]}
+        ).count()
 
     def countAll(self,collection="iniciativas"):
         return self._getCollection(collection).count()
@@ -50,6 +49,9 @@ class UrlsScraped(object):
 
     def getElement(self,key):
         return self._conn.get(key)
+
+    def getScan(self):
+        return self._conn.scan_iter()
 
     def addElement(self,key):
         return self._conn.set(key,key)
@@ -77,37 +79,21 @@ class CheckItems():
     def checkUrls():
         print ("Checking Items ......")
         import time
-
-
         time.sleep(5)
-        ob = UrlsScraped()
-
         con = mongoItems()
-        itemsscraps = con.searchAll()
-        control = False
-        res = []
-        toolbar_width = con.countAll()
-        sys.stdout.write("[%s]" % (" " * toolbar_width))
-        sys.stdout.flush()
-        sys.stdout.write("\b" * (toolbar_width+1))
+        ob = UrlsScraped()
+        iterredis = ob.getScan()
+        res=[]
 
-        for item in itemsscraps:
+        for url in iterredis:
+            if con.searchbyUrl(url) == 0:
+                res.append(url)
 
-            if ob.getElement(item['url']):
-                break
-            else:
-                res.append(item['url'])
-            sys.stdout.write("-")
-            sys.stdout.flush()
-
-        sys.stdout.write("\n")
         ob.deleteAll()
         del ob
         print ("Reporting Error ......")
         #escribe fichero
         CheckItems.writelogfailed(res)
-
-
         return res
 
     @staticmethod
