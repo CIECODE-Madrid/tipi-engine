@@ -53,9 +53,9 @@ class StackSpider(Spider):
         self.members = self.congress.searchAll("diputados")
         self.groups = self.congress.searchAll("grupos")
 
-        dispatcher.connect(self.writeblacklist, signals.spider_closed)
+        dispatcher.connect(self.whenFinish, signals.spider_closed)
 
-    def writeblacklist(self):
+    def whenFinish(self):
         self.time = datetime.datetime.now() - self.time
         print("********  %s " % self.time)
         email = emailScrap()
@@ -63,6 +63,7 @@ class StackSpider(Spider):
         text += '\n'.join('{}{}{}'.format(key,"\t", val) for key, val in self.crawler.stats.get_stats().items())
         text += "\n\n\n"
         notscrap = CheckItems.checkUrls()
+        CheckItems.deleteDb()
 
         #email.send_mail(text, "Scrapy Stats")
 
@@ -88,8 +89,8 @@ class StackSpider(Spider):
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
                              meta={'type': u"Pregunta al Gobierno con respuesta escrita"})
-
         """
+
 
 
 

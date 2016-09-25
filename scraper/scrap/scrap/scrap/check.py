@@ -56,7 +56,7 @@ class UrlsScraped(object):
     def addElement(self,key):
         return self._conn.set(key,key)
 
-    def deleteAll(self):
+    def deletedb(self):
         return self._conn.flushdb()
 
 
@@ -76,6 +76,12 @@ class CheckItems():
         return file.addElement(key)
 
     @staticmethod
+    def deleteDb():
+        file = UrlsScraped()
+
+        return file.deletedb()
+
+    @staticmethod
     def checkUrls():
         print ("Checking Items ......")
         import time
@@ -88,9 +94,6 @@ class CheckItems():
         for url in iterredis:
             if con.searchbyUrl(url) == 0:
                 res.append(url)
-
-        ob.deleteAll()
-        del ob
         print ("Reporting Error ......")
         #escribe fichero
         CheckItems.writelogfailed(res)
