@@ -5,5 +5,4 @@ process = CrawlerProcess(get_project_settings())
 
 # start two spider
 process.crawl('members')
-process.crawl('initiatives')
 process.start()

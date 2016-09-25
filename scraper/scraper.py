@@ -20,11 +20,12 @@ class ScrapTask(luigi.Task):
 
     def run(self):
         print("{task} says: ready to scrap!".format(task=self.__class__.__name__))
-        #execfile("scraper/scrap/scrap/start.py")
+        #execfile("scraper/scrap/scrap/initiatives.py")
 
         import os
         os.chdir("scraper/scrap/scrap")
-        os.system("python start.py")
+        os.system("python members.py")
+        os.system("python initiatives.py")
         os.chdir("../../../")
 
         self.output().open('w').close()
