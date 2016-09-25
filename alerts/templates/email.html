@@ -5,20 +5,17 @@
     <title>Title</title>
 </head>
 <body>
-
-      <ul>
         {% for n in items %}
             {% for key, value in n.iteritems()%}
-                <li>Dictionary {{key}}
-                    Initiatives update:
+                <h2>Tematica "{{key}}</h2>
+                <h5>Últimas iniciativas:</h5>
+                <ul>
                     {% for val in value %}
-                        Titulo: {{val.titulo}}
-                        Url: {{val.url}}<br>
-                        fecha: {{val.fecha}}
-
-                    {% endfor %}
-                </li>
+                        <li><a href="{{val.url}}">{{val.titulo}} ({{val.fecha}})</a></li>
+                    {%> endfor %}
+                </ul>
             {% endfor %}
+            <hr>
         {% endfor %}
 </body>
 </html>
