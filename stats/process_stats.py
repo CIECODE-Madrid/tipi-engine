@@ -49,7 +49,7 @@ class InsertStats(object):
 
         for element in dictscopy:
             pipeline = [{'$match': {'dicts.tipi':element['name'],'is.tipi': True}}, {'$unwind': '$autor_grupo'},
-                        {'$group': {'_id': '$autor_diputado', 'count': {'$sum': 1}}}]
+                        {'$group': {'_id': '$autor_grupo', 'count': {'$sum': 1}}}]
             dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas", pipeline=pipeline)
             if len(dataset)>0:
                 subdoc=dict()
@@ -66,7 +66,7 @@ class InsertStats(object):
         for element in dataset:
             subdoc=dict()
             subdoc['_id'] = element['_id']
-            subdoc['items'] = sorted(element['items'], key=itemgetter('fecha'), reverse=True)[:20]
+            subdoc['items'] = sorted(element['items'], key=itemgetter('fecha'), reverse=True)[:10]
             self.dictforinsert['latest'].append(subdoc)
 
     def deleteAll(self):
