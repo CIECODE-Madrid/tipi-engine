@@ -25,9 +25,15 @@ config = {
 
 Init Luigi
 =======
+Inside Virtualenv:
 ```
 ./base.py
 ```
+or exec cron.sh
+```
+./cron.sh
+```
+
 Add to Crontab /etc/crontab
 =======
 ```
