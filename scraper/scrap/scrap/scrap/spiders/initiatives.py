@@ -83,21 +83,19 @@ class StackSpider(Spider):
                 yield scrapy.Request(initiative_url,errback=self.errback_httpbin,callback=self.initiatives, meta={'type': type})
         """
         urlsa = ""
-        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWB2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=20-20&QUERY=%28I%29.ACIN1.+%26+%28184%29.SINI."
-        CheckItems.addElement(urlsa)
+        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=16-16&QUERY=%28I%29.ACIN1.+%26+%28213%29.SINI."
+        #CheckItems.addElement(urlsa)
 
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
                              meta={'type': u"Pregunta al Gobierno con respuesta escrita"})
+
         """
 
 
 
-
     def initiatives(self, response):
-
         type = response.meta['type']
-
         first_url = Selector(response).xpath('//div[@class="resultados_encontrados"]/p/a/@href').extract()[0]
 
         num_inis = Selector(response).xpath('//div[@class="SUBTITULO_CONTENIDO"]/span/text()').extract()
@@ -129,9 +127,14 @@ class StackSpider(Spider):
 
         presentado = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="texto" and contains(text(),"Presentado")]').extract()
 
-        autors = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
+        aut = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
          and contains(.,"Autor:") ]/following-sibling::\
         p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"Autor:")]]')
+
+        aut1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
+            and contains(.,"Autor:") ]/following-sibling::\
+           p[@class="texto"]')
+
 
         ##DEPENDE DE DONDE ESTEN SITUADOS LOS BOLETINES
         #si no estan los ultimos
@@ -192,7 +195,6 @@ class StackSpider(Spider):
 
 
 
-
         #switch para saber si esta el ultimo o no
         boletines = None
         diarios = None
@@ -200,6 +202,12 @@ class StackSpider(Spider):
         restramitacion= None
         ponentes = None
         comision = None
+        autors=None
+
+        if aut:
+            autors = aut
+        elif not aut:
+            autors = aut1
 
         if bol:
             boletines = bol
@@ -268,7 +276,6 @@ class StackSpider(Spider):
         item['autor_diputado'] = []
         item['autor_grupo'] = []
         item['autor_otro'] = []
-
         for oneaut in listautors:
             typeaut = self.typeAutor(name=oneaut)
             if typeaut is 'diputado':
@@ -281,12 +288,8 @@ class StackSpider(Spider):
                 item['autor_grupo'].append(self.getGroup(name=oneaut)['nombre'])
             elif typeaut is 'otro':
                 item['autor_otro'].append(oneaut)
-
-
         #si hubiera varios autores del mismo grupo
         item['autor_grupo']= list(set(item['autor_grupo']))
-
-
         item['tipotexto'] = type
         item['tipo'] = re.search('[0-9]{3}', expt).group(0)
 
