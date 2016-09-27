@@ -2,21 +2,35 @@
 Motor de tareas y procesos internos de Tipi
 
 ## Requerimientos
-
+Install setup and it will install all dependencies and libraries
 ```
-pip install luigi
+./setup.sh
+```
+Setup database configuration in database/variables.py
 =======
-Crear un virtualenv y luego ejecutar:
+```
+config = {
+    
+    "MONGO_USERNAME": None,
+    "MONGO_PASSWORD": None,
+    "MONGO_HOST": "HOST",
+    "MONGO_PORT": PORT,
+    "MONGO_DB_NAME": "dbname",
+    
+}
+
 
 ```
-pip install luigi
-add2virtualenv .
-```
 
-## Ejecución
 
-```
-python base.py
+Init Luigi
 =======
+```
 ./base.py
 ```
+Add to Crontab /etc/crontab
+=======
+```
+0 2	*/3 * * root	bash /path/to/cron.sh
+```
+
