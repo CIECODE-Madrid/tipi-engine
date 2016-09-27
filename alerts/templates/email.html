@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+        {% for n in items %}
+            {% for key, value in n.iteritems()%}
+                <h2>Tematica "{{key}}</h2>
+                <h5>Últimas iniciativas:</h5>
+                <ul>
+                    {% for val in value %}
+                        <li><a href="{{val.url}}">{{val.titulo}} ({{val.fecha}})</a></li>
+                    {%> endfor %}
+                </ul>
+            {% endfor %}
+            <hr>
+        {% endfor %}
+</body>
+</html>
