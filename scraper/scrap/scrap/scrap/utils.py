@@ -147,7 +147,8 @@ class Utils(object):
 
     @staticmethod
     def clearTitle(string):
-        res = re.sub('(\.?) ([\(|\{].*?.$)|(.$)', '' , string.strip()).strip()
+        res = re.sub('(\.?)([\(|\{].*?.$)|(.$)', '' , string.strip()).strip()
+        res = re.sub('(.$)','',res.strip())
         BLANK = re.compile(r'\n')
         return BLANK.sub(' ', res)
 

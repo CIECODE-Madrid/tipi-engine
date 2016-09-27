@@ -72,7 +72,6 @@ class StackSpider(Spider):
                                    formdata = {'idLegislatura':'12'} , callback = self.parse)]
 
     def parse(self, response):
-
         list_types = Selector(response).xpath('//div[@class="listado_1"]//ul/li/a')
         for types in list_types:
             href=  types.xpath("./@href").extract()
@@ -83,12 +82,12 @@ class StackSpider(Spider):
                 yield scrapy.Request(initiative_url,errback=self.errback_httpbin,callback=self.initiatives, meta={'type': type})
         """
         urlsa = ""
-        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=16-16&QUERY=%28I%29.ACIN1.+%26+%28213%29.SINI."
+        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=1-1&QUERY=%28I%29.ACIN1.+%26+%28214%29.SINI."
         #CheckItems.addElement(urlsa)
 
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
-                             meta={'type': u"Pregunta al Gobierno con respuesta escrita"})
+                             meta={'type': u"Comparecencia del Gobierno en Comisión"})
 
         """
 
@@ -193,8 +192,6 @@ class StackSpider(Spider):
             and contains(.,"n competente:") ]/following-sibling::\
            p[@class="texto"]')
 
-
-
         #switch para saber si esta el ultimo o no
         boletines = None
         diarios = None
@@ -238,7 +235,6 @@ class StackSpider(Spider):
         elif not bol:
             comision = com1
 
-
         listautors=[]
 
         for autor in (autors):
@@ -268,10 +264,6 @@ class StackSpider(Spider):
         item['ref'] = expt
         item['titulo'] = Utils.clearTitle(title)
         item['url'] = response.url
-
-
-
-
         ##control autor
         item['autor_diputado'] = []
         item['autor_grupo'] = []
@@ -336,8 +328,6 @@ class StackSpider(Spider):
             item["tramitacion"] = Utils.removeHTMLtags(tr)
         else:
             item["tramitacion"] = "Desconocida"
-
-
 
         #saber si se ha actualizado
 
