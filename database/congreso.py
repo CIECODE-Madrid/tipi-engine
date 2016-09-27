@@ -78,7 +78,7 @@ class Congress(object):
     def _updateInitiative(self,collection,item):
         coll = self._getCollection(collection=collection)
         coll.update_one({
-                 'ref': item['ref'],
+                'ref': item['ref'],
                 'tipotexto': item['tipotexto'],
 
 
@@ -116,6 +116,7 @@ class Congress(object):
 
 
     def _updateInitiativecontent(self,collection,item):
+
         coll = self._getCollection(collection=collection)
         coll.update_one({
                  'ref': item['ref'],
@@ -152,12 +153,11 @@ class Congress(object):
             return False
 
     def sameInitiative(self,item,search):
-
         for key, value in search.iteritems():
             for ikey,ivalue in item.iteritems():
-                if key == ikey:
-                    if value !=  ivalue and  (key is not 'contenido' and  key is not 'dicts' and
-                                              key is not 'terms' and key is not 'annotate' and key is not 'is'):
+                if key == ikey and (key != 'contenido' and  key != 'dicts' and
+                                              key != 'terms' and key != 'annotate' and key != 'is'):
+                    if value != ivalue:
                         return False
         return True
 
