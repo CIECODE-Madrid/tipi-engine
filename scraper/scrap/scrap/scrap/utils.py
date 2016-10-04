@@ -154,7 +154,7 @@ class Utils(object):
     @staticmethod
     def checkContestacion(array):
         for element in array:
-            if  re.search("contestaci(.+?) del gobierno", element, re.IGNORECASE):
+            if  re.search("contestaci(.+?) del gobierno", element, re.IGNORECASE) or re.search("iniciativa", element, re.IGNORECASE):
                 return True
 
         return False

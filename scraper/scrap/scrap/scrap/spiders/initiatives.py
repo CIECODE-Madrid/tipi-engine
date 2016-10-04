@@ -83,16 +83,14 @@ class StackSpider(Spider):
                 yield scrapy.Request(initiative_url,errback=self.errback_httpbin,callback=self.initiatives, meta={'type': type})
         """
         urlsa = ""
-        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=19-19&QUERY=%28I%29.ACIN1.+%26+%28162%29.SINI."
+        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWA2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=19-19&QUERY=%28I%29.ACIN1.+%26+%28122%29.SINI."
 
-        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=40-40&QUERY=%28I%29.ACIN1.+%26+%28162%29.SINI."
 
         #CheckItems.addElement(urlsa)
 
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
-                             meta={'type': u"Proposición no de Ley ante el Pleno"})
-
+                             meta={'type': u"Pregunta al Gobierno con respuesta escrita"})
         """
 
 
@@ -334,10 +332,8 @@ class StackSpider(Spider):
             item["tramitacion"] = "Desconocida"
 
         #saber si se ha actualizado
-
-        search = self.congress.getInitiative(collection="test",ref=item['ref'],tipotexto=item['tipotexto'],
-                                 titulo=item['titulo'])
-        if search and (not Utils.checkTypewithAmendments(type) or  Utils.hasSearchEnd(search["tramitacion"])): #
+        search = self.congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],titulo=item['titulo'])
+        if search and ((not Utils.checkTypewithAmendments(type) and not Utils.checkPreguntas(type)) or  Utils.hasSearchEnd(search["tramitacion"])  ): #
             #se actualiza en el PIPELINE
             yield item
         else:#no existe el objeto luego se tiene que scrapear
@@ -349,9 +345,7 @@ class StackSpider(Spider):
                 if boletines:
                     hasaprobdef = AmendmentFlow.hasAprobDef(boletines)
                     for boletin in boletines:
-
                         text=boletin.xpath("text()").extract()
-
                         try:
 
                             serie= re.search('m. (.+?)-', text[0]).group(1)
@@ -384,14 +378,9 @@ class StackSpider(Spider):
                                     enmmocion.append(url[0])
 
                             #buscando enmiendas
-                            #elif Utils.checkEnmiendainarray(text,serie):
-                            #
-                            #elif Utils.checkMocionEnmiendas(text,serie):
-                            #    enmmocion.append(url[0])
                             elif Utils.checkPreguntas(type) and Utils.checkContestacion(text):
                                 ##Aqui van las respuestas
                                 txtendurl = url[0]
-
                                 responseitem = ResponseItem()
                                 responseitem['ref'] = item['ref']
                                 responseitem['titulo'] = item['titulo']
@@ -708,8 +697,7 @@ class StackSpider(Spider):
             yield item
 
     def responses(self,response):
-        #tmb debe tener recursion
-
+        #tambien debe tener recursion
         text = response.meta['text']
         item = response.meta['responseitem']
         links = response.meta['linksenmiendas']
@@ -717,10 +705,11 @@ class StackSpider(Spider):
         number = response.meta['number']
         try:
             text += Selector(response).xpath('//div[@class="texto_completo"]').extract()[0]
+
             if number:
-                rsponsetext = Utils.removeHTMLtags(self.extractbypagandref(text, item['ref'],number))
+                rsponsetext = self.extractbypagandref(text, item['ref'],number)
             else:
-                rsponsetext = Utils.removeHTMLtags(self.extractbyref(text, item['ref']))
+                rsponsetext = self.extractbyref(text, item['ref'])
         except:
             CheckSystem.systemlog("No tiene texto para 'RESPUESTAS' " + response.url + " Item url " + item['url'])
 
@@ -745,6 +734,7 @@ class StackSpider(Spider):
                 item["contenido"].append(haspdf[0])
             else:
                 item["contenido"].append(rsponsetext)
+            Utils.removeHTMLtags(item['contenido'][0])
             yield item
 
 

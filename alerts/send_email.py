@@ -16,6 +16,7 @@ class emailSparkPost(object):
             from_email=FROM_EMAIL,
             subject='Summary of new Tipis'
         )
+        print "Sending email to "+email
 
 def render_html_doc(items):
     DIR = os.path.dirname(os.path.abspath(__file__))+"/templates"
