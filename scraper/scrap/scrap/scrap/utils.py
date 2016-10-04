@@ -72,8 +72,22 @@ class Utils(object):
         control = True
         if not re.search('[0-9]{3}\/[0-9]{6}',line):
             control = False
-
         return control
+
+    @staticmethod
+    def checkotherRefandnotOwn(line,ref):
+        control = False
+        if re.search('[0-9]{3}\/[0-9]{6}',line) and not re.search(ref,line) :
+            control = True
+        return control
+
+    @staticmethod
+    def isDiferentFirstTime(line,ref):
+        lista = re.findall('[0-9]{3}\/[0-9]{6}',line)
+        for element in lista:
+            if element != ref:
+                return True
+        return False
 
     @staticmethod
     def geturl(list):
@@ -175,5 +189,7 @@ class Utils(object):
         else:
             object="Desconocida"
         return object
-
+    @staticmethod
+    def convertPagToNum(list):
+        return [Utils.getnumber(element) for element in list]
 

@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Summary of new tipis</title>
 </head>
 <body>
         {% for n in items %}
             {% for key, value in n.iteritems()%}
-                <h2>Tematica "{{key}}</h2>
+                <h2>Temática {{key}}</h2>
                 <h5>Últimas iniciativas:</h5>
                 <ul>
                     {% for val in value %}

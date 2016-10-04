@@ -72,6 +72,7 @@ class StackSpider(Spider):
                                    formdata = {'idLegislatura':'12'} , callback = self.parse)]
 
     def parse(self, response):
+
         list_types = Selector(response).xpath('//div[@class="listado_1"]//ul/li/a')
         for types in list_types:
             href=  types.xpath("./@href").extract()
@@ -82,12 +83,15 @@ class StackSpider(Spider):
                 yield scrapy.Request(initiative_url,errback=self.errback_httpbin,callback=self.initiatives, meta={'type': type})
         """
         urlsa = ""
-        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=1-1&QUERY=%28I%29.ACIN1.+%26+%28214%29.SINI."
+        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=19-19&QUERY=%28I%29.ACIN1.+%26+%28162%29.SINI."
+
+        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=40-40&QUERY=%28I%29.ACIN1.+%26+%28162%29.SINI."
+
         #CheckItems.addElement(urlsa)
 
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
-                             meta={'type': u"Comparecencia del Gobierno en Comisión"})
+                             meta={'type': u"Proposición no de Ley ante el Pleno"})
 
         """
 
@@ -735,7 +739,6 @@ class StackSpider(Spider):
 
             #timeprueba = datetime.datetime.now() - timeprueba
             #print("********  %s " % timeprueba)
-            #pdb.set_trace()
             item["contenido"] = []
             haspdf =re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+.pdf', rsponsetext)
             if haspdf:
@@ -1110,23 +1113,25 @@ class StackSpider(Spider):
         if not Utils.checkownRef(textfragment,ref):
             return Utils.removeHTMLtags(textfragment)
 
-        diffexpt=re.findall('[0-9]{3}\/[0-9]{6}',textfragment)
-
-        numexpt=re.findall(ref,textfragment)
-
         texto = self.extractbyref(textfragment,ref,number)
         pages = Selector(response).xpath('//a/@name').extract()
-            #bbusca mas texto
-        for page in pages:
-            num = Utils.getnumber(page)
-            if int(num)> int(number):
-                textfragment = self.fragmenttxt(response, num)
-                texto += self.extractother(textfragment, ref)
 
-                if not Utils.checkownRef(textfragment, ref) and Utils.checkotherRef(textfragment):
-                    break
+        #para empezar desde el indice
+        #bbusca mas texto
+        hasfirsttext = False
+        if Utils.isDiferentFirstTime(textfragment,ref):
+            hasfirsttext=True
+        if not hasfirsttext:
+            pages = Utils.convertPagToNum(pages)
+            index = pages.index(number)
+            for page in pages[index:]:
+                if int(page) > int(number):
+                    textfragment = self.fragmenttxt(response, page)
+                    texto += self.extractother(textfragment, ref)
+                        #si encuentra el otro rompe bucle
+                    if Utils.checkotherRefandnotOwn(textfragment,ref):
+                        break
         res = Utils.removeHTMLtags(texto)
-
         return res
 
     def extractbyref(self,text, ref ,number=None):
@@ -1159,7 +1164,6 @@ class StackSpider(Spider):
                 result.append(line)
             elif controlpag and controlref and (Utils.checkotherRef(line) and not Utils.checkownRef(line, ref)):
                 break
-
         return Utils.concatlist(result)
 
     def extractother(self,text,ref):
