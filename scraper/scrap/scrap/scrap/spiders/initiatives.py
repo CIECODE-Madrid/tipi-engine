@@ -379,7 +379,6 @@ class StackSpider(Spider):
                             #buscando enmiendas
                             elif Utils.checkPreguntas(type) and Utils.checkContestacion(text,type):
                                 ##Aqui van las respuestas
-                                pdb.set_trace()
                                 txtendurl = url[0]
                                 responseitem = ResponseItem()
                                 responseitem['ref'] = item['ref']
