@@ -377,7 +377,7 @@ class StackSpider(Spider):
                                     enmmocion.append(url[0])
 
                             #buscando enmiendas
-                            elif Utils.checkPreguntas(type) and Utils.checkContestacion(text,type):
+                            elif Utils.checkPreguntas(type) and Utils.checkContestacion(text):
                                 ##Aqui van las respuestas
                                 txtendurl = url[0]
                                 responseitem = ResponseItem()
