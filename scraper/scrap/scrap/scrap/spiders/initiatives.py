@@ -83,14 +83,13 @@ class StackSpider(Spider):
                 yield scrapy.Request(initiative_url,errback=self.errback_httpbin,callback=self.initiatives, meta={'type': type})
         """
         urlsa = ""
-        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWA2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=19-19&QUERY=%28I%29.ACIN1.+%26+%28122%29.SINI."
-
+        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWA2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=14-14&QUERY=%28I%29.ACIN1.+%26+%28181%29.SINI."
 
         #CheckItems.addElement(urlsa)
 
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
-                             meta={'type': u"Pregunta al Gobierno con respuesta escrita"})
+                             meta={'type': u"Pregunta oral al Gobierno en Comisión"})
         """
 
 
@@ -378,8 +377,9 @@ class StackSpider(Spider):
                                     enmmocion.append(url[0])
 
                             #buscando enmiendas
-                            elif Utils.checkPreguntas(type) and Utils.checkContestacion(text):
+                            elif Utils.checkPreguntas(type) and Utils.checkContestacion(text,type):
                                 ##Aqui van las respuestas
+                                pdb.set_trace()
                                 txtendurl = url[0]
                                 responseitem = ResponseItem()
                                 responseitem['ref'] = item['ref']
