@@ -1,22 +1,26 @@
 from send_email import emailSparkPost
 from setting import DOMAIN
+import sys
+sys.path.append("../")
 from database.congreso import Congress
 import pdb
+import copy
 
 class NotifyTipi(object):
     _dbmanager = Congress()
     def __init__(self):
         self.sendAlerttousers()
-        self.deleteAll()
+        #self.deleteAll()
 
     def sendAlerttousers(self):
-        tipisalerts =  self._dbmanager.getTipisAllAlerts()
+        tipisalerts = self._dbmanager.getTipisAllAlerts()
         userswithalerts = self._dbmanager.getUserswithAlert()
         for user in userswithalerts:
-            alerttoshow=[]
-            for alert in tipisalerts:
+            alerttoshow=list()
+            copycursotalert= copy.copy(tipisalerts)
+            for alert in copycursotalert:
                 #dict with name dict with list element
-                #example sanidad:[item1,item2,item3]
+                #example sanidad:[item1,item2,item3]alert['dict']
                 if alert['dict'] in user['profile']['dicts']:
                     objects = self.getObjects(alert['items'])
                     alertsanditems = dict()
@@ -37,3 +41,5 @@ class NotifyTipi(object):
             newobj['fecha']=obj["fecha"]
             res.append(newobj)
         return res
+#if __name__ == "__main__":
+#    a = NotifyTipi()
