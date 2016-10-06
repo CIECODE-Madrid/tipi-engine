@@ -83,13 +83,13 @@ class StackSpider(Spider):
                 yield scrapy.Request(initiative_url,errback=self.errback_httpbin,callback=self.initiatives, meta={'type': type})
         """
         urlsa = ""
-        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWA2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=14-14&QUERY=%28I%29.ACIN1.+%26+%28181%29.SINI."
+        urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=100-100&QUERY=%28I%29.ACIN1.+%26+%28161%29.SINI."
 
         #CheckItems.addElement(urlsa)
 
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
-                             meta={'type': u"Pregunta oral al Gobierno en Comisión"})
+                             meta={'type': u"Proposición no de Ley en Comisión"})
         """
 
 
@@ -1112,7 +1112,10 @@ class StackSpider(Spider):
             hasfirsttext=True
         if not hasfirsttext:
             pages = Utils.convertPagToNum(pages)
-            index = pages.index(number)
+            try:
+                index = pages.index(number)
+            except:
+                index=0
             for page in pages[index:]:
                 if int(page) > int(number):
                     textfragment = self.fragmenttxt(response, page)
@@ -1121,6 +1124,7 @@ class StackSpider(Spider):
                     if Utils.checkotherRefandnotOwn(textfragment,ref):
                         break
         res = Utils.removeHTMLtags(texto)
+
         return res
 
     def extractbyref(self,text, ref ,number=None):
