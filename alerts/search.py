@@ -10,7 +10,7 @@ class NotifyTipi(object):
     _dbmanager = Congress()
     def __init__(self):
         self.sendAlerttousers()
-        #self.deleteAll()
+        self.deleteAll()
 
     def sendAlerttousers(self):
         tipisalerts = self._dbmanager.getTipisAllAlerts()
@@ -28,7 +28,12 @@ class NotifyTipi(object):
                     alerttoshow.append(alertsanditems)
             #send one email to user with summary
             if alerttoshow:
-                emailSparkPost.send_mail(user['emails'][0]['address'],alerttoshow)
+                try:
+                        emailSparkPost.send_mail(user['emails'][0]['address'],alerttoshow)
+                except Exception,e:
+                        print str(e)+" "+user['emails'][0]['address']+" no es un email valido"
+
+
     def deleteAll(self):
         self._dbmanager.deletecollection("tipialerts")
 
