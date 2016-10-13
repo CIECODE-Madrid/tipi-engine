@@ -59,13 +59,12 @@ class StackSpider(Spider):
         self.time = datetime.datetime.now() - self.time
         print("********  %s " % self.time)
         email = emailScrap()
-        text = "Ha tardado: "+ (" %s " % self.time) +"\n\n"
-        text += '\n'.join('{}{}{}'.format(key,"\t", val) for key, val in self.crawler.stats.get_stats().items())
+        text = "Ha tardado: "+ (" %s " % self.time) +"\n\n<br>"
+        text += '<br>'.join('{}{}{}'.format(key,"\t", val) for key, val in self.crawler.stats.get_stats().items())
         text += "\n\n\n"
         notscrap = CheckItems.checkUrls()
         CheckItems.deleteDb()
-
-        #email.send_mail(text, "Scrapy Stats")
+        email.send_mail(text, "Scrapy Stats")
 
     def start_requests(self):
         return [scrapy.FormRequest("http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335505_73_1335500_1335500.next_page=/wc/cambioLegislatura",
@@ -85,13 +84,11 @@ class StackSpider(Spider):
         urlsa = ""
         urlsa = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335503_73_1335500_1335500.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&PIECE=IWC2&FMT=INITXD1S.fmt&FORM1=INITXLUS.fmt&DOCS=100-100&QUERY=%28I%29.ACIN1.+%26+%28161%29.SINI."
 
-        #CheckItems.addElement(urlsa)
-
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
                              meta={'type': u"Proposición no de Ley en Comisión"})
-        """
 
+        """
 
 
     def initiatives(self, response):
