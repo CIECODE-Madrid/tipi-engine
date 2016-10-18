@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import re
 
+import datetime
+
 from conn import MongoDBconn
 import pdb
+
+
 
 class Congress(object):
     _conn = None
@@ -73,7 +77,12 @@ class Congress(object):
             raise
 
     def _insertInitiative(self,collection,item):
-        self._getCollection(collection=collection).insert(dict(item))
+        insertdict = dict(item)
+        if insertdict['fecha']=="Desconocida":
+            insertdict['actualizacion']= datetime.datetime.utcnow()
+        else:
+            insertdict["actualizacion"] = insertdict['fecha']
+        self._getCollection(collection=collection).insert(insertdict)
 
     def _updateInitiative(self,collection,item):
         coll = self._getCollection(collection=collection)
@@ -94,6 +103,7 @@ class Congress(object):
             'fecha': item['fecha'],
             'lugar': item['lugar'],
             'fechafin': item['fechafin'],
+            'actualizacion': datetime.datetime.utcnow()
 
                     }
             ,}
@@ -135,9 +145,9 @@ class Congress(object):
             'lugar': item['lugar'],
             'fechafin': item['fechafin'],
             'contenido': item['contenido'],
-
+            'actualizacion': datetime.datetime.utcnow()
                     }
-            ,}
+            }
         )
 
 
@@ -170,7 +180,7 @@ class Congress(object):
             return False
         for key, value in search.iteritems():
             for ikey,ivalue in item.iteritems():
-                if key == ikey and (key != 'contenido' and  key != 'dicts' and
+                if key == ikey and (key != 'actualizacion') and  (key != 'contenido' and  key != 'dicts' and
                                               key != 'terms' and key != 'annotate' and key != 'is'):
                     if value != ivalue:
                         return False
@@ -201,9 +211,8 @@ class Congress(object):
                 'url': item['url'],
                 'lugar': item['lugar'],
                 'tramitacion': item['tramitacion'],
-                'contenido':[item["contenido"]]
-
-
+                'contenido':[item["contenido"]],
+                'actualizacion': item["fecha"] if item["fecha"]!="Desconocida" else datetime.datetime.utcnow()
             }
             self._getCollection(collection=collection).insert(insert)
         else:
@@ -235,6 +244,7 @@ class Congress(object):
                     'autor_diputado': list(set(beforeautor)),
                     'autor_otro': list(set(beforeotro)),
                     'contenido':before,
+                    'actualizacion': datetime.datetime.utcnow()
                             }
                     ,}
                 )
@@ -264,7 +274,12 @@ class Congress(object):
             raise
 
     def _insertFinishsTextorResponse(self, collection, item):
-        self._getCollection(collection=collection).insert(dict(item))
+        insertdict = dict(item)
+        if insertdict['fecha']=="Desconocida":
+            insertdict['actualizacion']= datetime.datetime.utcnow()
+        else:
+            insertdict["actualizacion"] = insertdict['fecha']
+        self._getCollection(collection=collection).insert(insertdict)
 
     def _updateFinishTextorResponse(self, collection, item):
         coll = self._getCollection(collection=collection)
@@ -284,7 +299,8 @@ class Congress(object):
                     'fecha': item['fecha'],
                     'lugar': item['lugar'],
                     'fechafin': item['fechafin'],
-                    'contenido': item['contenido']
+                    'contenido': item['contenido'],
+                    'actualizacion': datetime.datetime.utcnow()
 
                 }
                 ,}
