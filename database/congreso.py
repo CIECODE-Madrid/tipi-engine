@@ -116,7 +116,6 @@ class Congress(object):
 
 
     def _updateInitiativecontent(self,collection,item):
-
         coll = self._getCollection(collection=collection)
         coll.update_one({
                  'ref': item['ref'],
@@ -145,20 +144,37 @@ class Congress(object):
 
 
     def isDiffinitiative(self, collection="iniciativas", item = None, search = None):
-
-
         if search:#existe
             return not self.sameInitiative(item,search)
         else:
             return False
 
+    def deletefields(self,search):
+        coll = self._getCollection(collection="iniciativas")
+        coll.update_one({
+             'ref': search['ref'],
+                'tipotexto': search['tipotexto'],},
+            {'$unset': {'dicts':1,'terms':1,'is':1,'annotate':1}},False,True
+        )
+
+    def notEnmienda(self,url):
+
+            return self._getCollection("iniciativas").find(
+            {"$and": [{'url':url},{"tipotexto":{"$not":re.compile('Enmienda')}}]}
+        ).count()
+
     def sameInitiative(self,item,search):
+        #item['contenido']=[]
+        if not search["contenido"] and item['contenido'] and self.notEnmienda(search['url'])>0:
+            self.deletefields(search)
+            return False
         for key, value in search.iteritems():
             for ikey,ivalue in item.iteritems():
                 if key == ikey and (key != 'contenido' and  key != 'dicts' and
                                               key != 'terms' and key != 'annotate' and key != 'is'):
                     if value != ivalue:
                         return False
+
         return True
 
 

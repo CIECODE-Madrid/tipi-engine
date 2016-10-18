@@ -35,34 +35,21 @@ class MongoDBPipeline(object):
 
             except:
                 print ("**** FAILURE *****")
-            if not Utils.checkTypewithAmendments(item['tipotexto']):
-                congress = Congress()
-                search = congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],
+            congress = Congress()
+            search = congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],
                                                 titulo=item['titulo'])
-                if congress.isDiffinitiative(collection="iniciativas",item=item, search=search):
+            if congress.isDiffinitiative(collection="iniciativas",item=item, search=search):
                     #actualizar
-                    congress.updateorinsertInitiative(collection="iniciativas",item=item,type='update')
+                congress.updateorinsertInitiativecontent(collection="iniciativas",item=item,type='update')
 
-                elif not search:
+            elif not search:
                     #no existe
                     #insertar sin mas
-                    congress.updateorinsertInitiative(collection="iniciativas",item=item,type='insert')
-                else:
-                        #not DIFF
-                    print "es el mismo, no cambia"
+                congress.updateorinsertInitiativecontent(collection="iniciativas",item=item,type='insert')
             else:
-                congress = Congress()
-                search = congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],
-                                                titulo=item['titulo'])
-                if congress.isDiffinitiative(item=item, search=search):
-                    #actualizar
-                    congress.updateorinsertInitiativecontent(collection="iniciativas",item=item,type='update')
-                elif not search:
-                    #no existe
-                    #insertar sin mas
-                    congress.updateorinsertInitiativecontent(collection="iniciativas",item=item,type='insert')
-                else:
-                    print "es el mismo, no cambia"
+                        #not DIFF
+                print "es el mismo, no cambia"
+
 
 
         elif isinstance(item, AmendmentItem):
