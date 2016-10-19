@@ -72,7 +72,6 @@ class RegexEngine:
                                 });
                 else:
                     new_terms.append(term)
-        print new_terms
         return new_terms
 
     def loadTerms(self, dict):
