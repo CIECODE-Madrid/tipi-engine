@@ -14,7 +14,7 @@ class emailSparkPost(object):
             recipients=[email],#email is a user's email
             html=doc,
             from_email=FROM_EMAIL,
-            subject='Summary of new Tipis'
+            subject='Hay nuevos Tipis para ti'
         )
         print "Sending email to "+email
 
