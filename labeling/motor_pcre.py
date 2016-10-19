@@ -29,15 +29,14 @@ class LabelingEngine:
                     for groupname in dbmanager.getDictGroups():
                         dicts = list(dbmanager.getDictsByGroup(groupname))
                         for dict in dicts:
+                            print "Inicializando %s" % dict['name']
                             regex_engine.loadTerms(dict)
-                            regex_engine.matchTerms(i)
+                            regex_engine.matchTerms()
                             print "[%d en %s]: " % (len(regex_engine.getTermsFound()),dict['name'])
                         dbmanager.addDictToInitiative(iniciativa['_id'], groupname, regex_engine.getDictsFound(), regex_engine.getTermsFound())
                         if groupname == 'tipi':
                             for df in regex_engine.getDictsFound():
                                 dbmanager.addAlert(df, iniciativa['_id'], iniciativa['titulo'], iniciativa['fecha'])
-                                # raw_input("Press any key to continue...")
-
                         regex_engine.cleanDictsAndTermsFound()
             except Exception, e:
                 regex_engine.cleanDictsAndTermsFound()
@@ -61,17 +60,19 @@ class RegexEngine:
         new_terms = []
         delimiter = '.*'
         for term in terms:
-            term['original'] = term['term']
-            if term['shuffle']:
-                perms = itertools.permutations(term['term'].split(delimiter))
-                for perm in perms:
-                    new_terms.append({
-                            'term': delimiter.join(perm),
-                            'humanterm': term['humanterm'],
-                            'original': term['original']
-                            });
-            else:
-                new_terms.append(term)
+            if term is not None:
+                term['original'] = term['term']
+                if term['shuffle']:
+                    perms = itertools.permutations(term['term'].split(delimiter))
+                    for perm in perms:
+                        new_terms.append({
+                                'term': delimiter.join(perm),
+                                'humanterm': term['humanterm'],
+                                'original': term['original']
+                                });
+                else:
+                    new_terms.append(term)
+        print new_terms
         return new_terms
 
     def loadTerms(self, dict):
@@ -115,7 +116,7 @@ class RegexEngine:
             if term['dict'] not in self.__dicts_found:
                 self.__dicts_found.append(term['dict'])
 
-    def matchTerms(self, i):
+    def matchTerms(self):
         print 'Comprobando terminos...'
         terms = self.getTerms()
         iniciativa = self.getIniciativa()
@@ -135,6 +136,6 @@ class RegexEngine:
                     break
 
 
-# if __name__ == '__main__':
-#     labeling_engine = LabelingEngine()
-#     labeling_engine.run()
+if __name__ == '__main__':
+    labeling_engine = LabelingEngine()
+    labeling_engine.run()
