@@ -1,5 +1,5 @@
 from send_email import emailSparkPost
-from setting import DOMAIN
+from setting import TIPIS_URL
 import sys
 sys.path.append("../")
 from database.congreso import Congress
@@ -42,7 +42,7 @@ class NotifyTipi(object):
         for obj in objs:
             newobj = dict()
             newobj['titulo']=obj['titulo']
-            newobj['url']="{0}/{1}".format(DOMAIN,str(obj['id']))
+            newobj['url']="{0}{1}".format(TIPIS_URL,str(obj['id']))
             newobj['fecha']=obj["fecha"]
             res.append(newobj)
         return res
