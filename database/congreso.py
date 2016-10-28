@@ -164,7 +164,7 @@ class Congress(object):
         coll.update_one({
              'ref': search['ref'],
                 'tipotexto': search['tipotexto'],},
-            {'$unset': {'dicts':1,'terms':1,'is':1,'annotate':1}},False,True
+            {'$unset': {'dicts.tipi':1,'terms.tipi':1,'is.tipi':1,'annotate.tipi':1}},False,True
         )
 
     def notEnmienda(self,url):

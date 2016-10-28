@@ -36,7 +36,7 @@ class LabelingEngine:
                         dbmanager.addDictToInitiative(iniciativa['_id'], groupname, regex_engine.getDictsFound(), regex_engine.getTermsFound())
                         if groupname == 'tipi':
                             for df in regex_engine.getDictsFound():
-                                dbmanager.addAlert(df, iniciativa['_id'], iniciativa['titulo'], iniciativa['fecha'])
+                                dbmanager.addAlert(df, iniciativa['_id'], iniciativa['titulo'], iniciativa['actualizacion'])
                         regex_engine.cleanDictsAndTermsFound()
             except Exception, e:
                 regex_engine.cleanDictsAndTermsFound()
