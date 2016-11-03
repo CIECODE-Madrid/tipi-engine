@@ -185,10 +185,11 @@ class Utils(object):
             try:
                 object = datetime.datetime(int(splitdate[2]),int(splitdate[1]),int(splitdate[0]))
             except:
-                object = "Desconocida"
+                object = ""
         else:
-            object="Desconocida"
+            object=""
         return object
+
     @staticmethod
     def convertPagToNum(list):
         return [Utils.getnumber(element) for element in list]

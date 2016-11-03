@@ -52,7 +52,6 @@ class StackSpider(Spider):
         self.congress = Congress()
         self.members = self.congress.searchAll("diputados")
         self.groups = self.congress.searchAll("grupos")
-
         dispatcher.connect(self.whenFinish, signals.spider_closed)
 
     def whenFinish(self):
@@ -292,7 +291,7 @@ class StackSpider(Spider):
         item["lugar"] = self.extractplace(DS = diarios, com = comision , type = type)
         item["tramitacion"] = ""
 
-        item['fecha'] = "Desconocida"
+        item['fecha'] = ""
         item['fechafin'] = "En trámite"
         try:
             if presentado:

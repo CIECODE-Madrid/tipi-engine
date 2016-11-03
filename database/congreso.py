@@ -78,10 +78,7 @@ class Congress(object):
 
     def _insertInitiative(self,collection,item):
         insertdict = dict(item)
-        if insertdict['fecha']=="Desconocida":
-            insertdict['actualizacion']= datetime.datetime.utcnow()
-        else:
-            insertdict["actualizacion"] = insertdict['fecha']
+        insertdict["actualizacion"] = insertdict['fecha']
         self._getCollection(collection=collection).insert(insertdict)
 
     def _updateInitiative(self,collection,item):
@@ -178,6 +175,15 @@ class Congress(object):
         if not search["contenido"] and item['contenido'] and self.notEnmienda(search['url'])>0:
             self.deletefields(search)
             return False
+        if search:
+            if search['tramitacion'] != item['tramitacion']:
+                return False
+
+        return True
+
+    def sameAdmendment(self,item,search):
+        #item['contenido']=[]
+
         for key, value in search.iteritems():
             for ikey,ivalue in item.iteritems():
                 if key == ikey and (key != 'actualizacion') and  (key != 'contenido' and  key != 'dicts' and
@@ -186,7 +192,6 @@ class Congress(object):
                         return False
 
         return True
-
 
     def updateorinsertAdmenment(self, collection="iniciativas",  item = None ,search = None):
         #metodo para el pipeline
@@ -212,7 +217,7 @@ class Congress(object):
                 'lugar': item['lugar'],
                 'tramitacion': item['tramitacion'],
                 'contenido':[item["contenido"]],
-                'actualizacion': item["fecha"] if item["fecha"]!="Desconocida" else datetime.datetime.utcnow()
+                'actualizacion': item["fecha"]
             }
             self._getCollection(collection=collection).insert(insert)
         else:
@@ -275,10 +280,7 @@ class Congress(object):
 
     def _insertFinishsTextorResponse(self, collection, item):
         insertdict = dict(item)
-        if insertdict['fecha']=="Desconocida":
-            insertdict['actualizacion']= datetime.datetime.utcnow()
-        else:
-            insertdict["actualizacion"] = insertdict['fecha']
+        insertdict["actualizacion"] = insertdict['fecha']
         self._getCollection(collection=collection).insert(insertdict)
 
     def _updateFinishTextorResponse(self, collection, item):

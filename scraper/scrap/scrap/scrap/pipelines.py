@@ -38,6 +38,7 @@ class MongoDBPipeline(object):
             congress = Congress()
             search = congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],
                                                 titulo=item['titulo'])
+
             if congress.isDiffinitiative(collection="iniciativas",item=item, search=search):
                     #actualizar
                 congress.updateorinsertInitiativecontent(collection="iniciativas",item=item,type='update')
