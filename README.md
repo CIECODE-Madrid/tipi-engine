@@ -40,3 +40,14 @@ Add to Crontab /etc/crontab
 0 2	*/3 * * root	bash /path/to/cron.sh
 ```
 
+Reset blacklist
+=======
+Access to redis-cli and flush:
+```
+flushall
+```
+If you want only flush a specific db:
+```
+select [number db]
+flushdb
+```
