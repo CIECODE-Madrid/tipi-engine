@@ -17,6 +17,6 @@ class GenerateAlertsTask(luigi.Task):
 
     def run(self):
         print("{task} says: ready to generate alerts!".format(task=self.__class__.__name__))
-        NotifyTipi()
+        a = NotifyTipi()
         self.output().open('w').close()
 
