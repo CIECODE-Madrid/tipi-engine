@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
 import urlparse
-
 import datetime
 from scrapy import signals
 from scrapy.xlib.pydispatch import dispatcher
@@ -10,28 +9,16 @@ import scrapy
 from scrapy import Spider
 from scrapy.selector import Selector
 import pdb
-
 from scrapy.spidermiddlewares.httperror import HttpError
-
 from scrap.term import Terms
-
 from scrap.items import InitiativeItem,AmendmentItem, FinishTextItem, ResponseItem
-
 from twisted.internet.error import DNSLookupError, TimeoutError
-
 from scrap.blacklist import Blacklist
 from scrapy.contrib.spiders import CrawlSpider, Rule
-
-
-
 from scrap.utils import Utils
-
 from scrap.mail import emailScrap
-
 from scrap.check import CheckItems, CheckSystem
-
 from scrap.typeamendment import AmendmentFlow
-
 from database.congreso import Congress
 
 
@@ -86,17 +73,15 @@ class StackSpider(Spider):
 
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
                              meta={'type': u"Proposición no de Ley en Comisión"})
-
         """
+        
 
 
     def initiatives(self, response):
         type = response.meta['type']
         first_url = Selector(response).xpath('//div[@class="resultados_encontrados"]/p/a/@href').extract()[0]
-
         num_inis = Selector(response).xpath('//div[@class="SUBTITULO_CONTENIDO"]/span/text()').extract()
         split = first_url.partition("&DOCS=1-1")
-
         for i in range(1,int(num_inis[0])+1):
             new_url = split[0]+"&DOCS="+str(i)+"-"+str(i)+split[2]
             initiative_url = Utils.createUrl(response.url,new_url)
@@ -111,7 +96,6 @@ class StackSpider(Spider):
                                      callback=self.oneinitiative, meta = {'type':type})
 
     def oneinitiative(self,response):
-
         type = response.meta['type'] #tipotexto
         try:
             title = Selector(response).xpath('//p[@class="titulo_iniciativa"]/text()').extract()[0]
@@ -120,45 +104,32 @@ class StackSpider(Spider):
             #refresco por si no carga
             yield scrapy.Request(response.url, errback=self.errback_httpbin, callback=self.oneinitiative,
                                  meta={'type': type})
-
         presentado = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="texto" and contains(text(),"Presentado")]').extract()
-
         aut = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
          and contains(.,"Autor:") ]/following-sibling::\
         p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"Autor:")]]')
-
         aut1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
             and contains(.,"Autor:") ]/following-sibling::\
            p[@class="texto"]')
-
-
         ##DEPENDE DE DONDE ESTEN SITUADOS LOS BOLETINES
         #si no estan los ultimos
         bol = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
          and text()="Boletines:" ]/following-sibling::\
         p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[. = "Boletines:"]]')
-
         #si estan los ultimos
         bol1= Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
             and text()="Boletines:" ]/following-sibling::\
            p[@class="texto"]')
-
-
         ds = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
          and text()="Diarios de Sesiones:" ]/following-sibling::\
         p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[. = "Diarios de Sesiones:"]]')
-
-
         ds1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
             and text()="Diarios de Sesiones:" ]/following-sibling::\
            p[@class="texto"]')
-
-
         # para las tramitaciones
         tn = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
          and contains(.,"seguida por la iniciativa:") ]/following-sibling::\
         p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"seguida por la iniciativa:")]]')
-
         tn1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
             and contains(.,"seguida por la iniciativa:") ]/following-sibling::\
            p[@class="texto"]')
@@ -167,28 +138,22 @@ class StackSpider(Spider):
         restr = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
          and contains(.,"ultado de la tramitac") ]/following-sibling::\
         p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"Resultado de la tramitac")]]')
-
         restr1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
             and contains(.,"ultado de la tramitac") ]/following-sibling::\
            p[@class="texto"]')
         #para ponentes por si los hubiere
-
         pon = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
          and contains(.,"Ponentes:") ]/following-sibling::\
         p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"Ponentes:")]]')
-
         pon1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
             and contains(.,"Ponentes:") ]/following-sibling::\
            p[@class="texto"]')
-
         com = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
          and contains(.,"n competente:") ]/following-sibling::\
         p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"n competente:")]]')
-
         com1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
             and contains(.,"n competente:") ]/following-sibling::\
            p[@class="texto"]')
-
         #switch para saber si esta el ultimo o no
         boletines = None
         diarios = None
@@ -241,7 +206,6 @@ class StackSpider(Spider):
             else:
                 add= add[0]
             listautors.append(re.sub('(([\(|\{].*?.$)|(y otr(os|as))|^(Don|Do(.+?)a))', '' , add).strip()) #quita () si lo hubiere
-
         if ponentes:
             for ponente in ponentes:
                 add = ponente.xpath("a/b/text()").extract()
@@ -255,8 +219,6 @@ class StackSpider(Spider):
                     if add:
                         add= add[0]
                         listautors.append(add)
-
-
         item = InitiativeItem()
         item['ref'] = expt
         item['titulo'] = Utils.clearTitle(title)
@@ -327,184 +289,160 @@ class StackSpider(Spider):
             item["tramitacion"] = "Desconocida"
 
         #saber si se ha actualizado
-        search = self.congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],titulo=item['titulo'])
-        if search and ((not Utils.checkTypewithAmendments(type) and not Utils.checkPreguntas(type)) or  Utils.hasSearchEnd(search["tramitacion"])  ): #
+        #search = self.congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],titulo=item['titulo'])
+        #if search and ((not Utils.checkTypewithAmendments(type) and not Utils.checkPreguntas(type)) or  Utils.hasSearchEnd(search["tramitacion"])  ): #
             #se actualiza en el PIPELINE
-            yield item
-        else:#no existe el objeto luego se tiene que scrapear
+        #    yield item
+        #else:#no existe el objeto luego se tiene que scrapear
             #BOLETINES
-            if boletines or diarios:
-                listurls=[]
-                enmiendas = []
-                enmmocion = []
-                if boletines:
-                    hasaprobdef = AmendmentFlow.hasAprobDef(boletines)
-                    for boletin in boletines:
-                        text=boletin.xpath("text()").extract()
-                        try:
-
-                            serie= re.search('m. (.+?)-', text[0]).group(1)
-                            haswordcongress = re.search('Congreso', text[0])
-
-
-
-                        except:
-                            serie = False
-                            haswordcongress = False
-                        url = boletin.xpath("a/@href").extract()
-
-                        if (serie and haswordcongress):
-                            listserie =[]
-                            if Terms.isTextvalid(type,serie)\
-                                    and not AmendmentFlow.checkTypeAmendment(type=type,array=text,serie=serie)\
-                                    and not Utils.checkPreguntas(type)\
-                                    and not AmendmentFlow.checkTextodefinitivoarray(type=type,array=text,aprobdef=hasaprobdef):
-                                    #and not Utils.checkEnmiendainarray(text,serie)\
-                                    #and not Utils.checkTextodefinitivoarray(text) and not Utils.checkMocionEnmiendas(text,serie)\
-                                     #Si es valido el texto y no son enmiendas
-                                listserie.append(serie)
-                                listserie.append(url[0])
-                                listurls.append(listserie)
-                            elif AmendmentFlow.checkTypeAmendment(type=type,array=text,serie=serie):
-                                if AmendmentFlow.getTypeAmendment(type) == "B":
-                                    enmiendas.append(url[0])
-
-                                elif AmendmentFlow.getTypeAmendment(type) == "A":
-                                    enmmocion.append(url[0])
-
-                            #buscando enmiendas
-                            elif Utils.checkPreguntas(type) and Utils.checkContestacion(text):
+        if boletines or diarios:
+            listurls=[]
+            enmiendas = []
+            enmmocion = []
+            if boletines:
+                hasaprobdef = AmendmentFlow.hasAprobDef(boletines)
+                for boletin in boletines:
+                    text=boletin.xpath("text()").extract()
+                    try:
+                        serie= re.search('m. (.+?)-', text[0]).group(1)
+                        haswordcongress = re.search('Congreso', text[0])
+                    except:
+                        serie = False
+                        haswordcongress = False
+                    url = boletin.xpath("a/@href").extract()
+                    if (serie and haswordcongress):
+                        listserie =[]
+                        if Terms.isTextvalid(type,serie)\
+                                and not AmendmentFlow.checkTypeAmendment(type=type,array=text,serie=serie)\
+                                and not Utils.checkPreguntas(type)\
+                                and not AmendmentFlow.checkTextodefinitivoarray(type=type,array=text,aprobdef=hasaprobdef):
+                                #and not Utils.checkEnmiendainarray(text,serie)\
+                                #and not Utils.checkTextodefinitivoarray(text) and not Utils.checkMocionEnmiendas(text,serie)\
+                                #Si es valido el texto y no son enmiendas
+                            listserie.append(serie)
+                            listserie.append(url[0])
+                            listurls.append(listserie)
+                        elif AmendmentFlow.checkTypeAmendment(type=type,array=text,serie=serie):
+                            if AmendmentFlow.getTypeAmendment(type) == "B":
+                                enmiendas.append(url[0])
+                            elif AmendmentFlow.getTypeAmendment(type) == "A":
+                                enmmocion.append(url[0])
+                        #buscando enmiendas
+                        elif Utils.checkPreguntas(type) and Utils.checkContestacion(text):
                                 ##Aqui van las respuestas
-                                txtendurl = url[0]
-                                responseitem = ResponseItem()
-                                responseitem['ref'] = item['ref']
-                                responseitem['titulo'] = item['titulo']
-                                responseitem['autor_diputado'] = []
-                                responseitem['autor_grupo'] = []
-                                responseitem['autor_otro'] = ["Gobierno"]
-                                responseitem['url'] = item['url']
-                                responseitem['contenido'] = []
-                                responseitem['tipo'] = item ['tipo']
-                                responseitem['tramitacion'] = item['tramitacion']
-                                responseitem['fecha'] = item['fecha']
-                                responseitem['fechafin'] = item['fechafin']
-                                responseitem['lugar'] = item['lugar']
-                                responseitem['tipotexto'] = "Respuesta"
-                                number = Utils.getnumber(txtendurl)
-                                yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
-                                         errback=self.errback_httpbin,
-                                         callback=self.responses, dont_filter=True,
-                                            meta= {'responseitem':responseitem, 'text':"", 'linksenmiendas':None, 'isfirst':True, 'number':number}
+                            txtendurl = url[0]
+                            responseitem = ResponseItem()
+                            responseitem['ref'] = item['ref']
+                            responseitem['titulo'] = item['titulo']
+                            responseitem['autor_diputado'] = []
+                            responseitem['autor_grupo'] = []
+                            responseitem['autor_otro'] = ["Gobierno"]
+                            responseitem['url'] = item['url']
+                            responseitem['contenido'] = []
+                            responseitem['tipo'] = item ['tipo']
+                            responseitem['tramitacion'] = item['tramitacion']
+                            responseitem['fecha'] = item['fecha']
+                            responseitem['fechafin'] = item['fechafin']
+                            responseitem['lugar'] = item['lugar']
+                            responseitem['tipotexto'] = "Respuesta"
+                            number = Utils.getnumber(txtendurl)
+                            yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
+                                    errback=self.errback_httpbin,
+                                    callback=self.responses, dont_filter=True,
+                                    meta= {'responseitem':responseitem, 'text':"", 'linksenmiendas':None, 'isfirst':True, 'number':number}
                                          )
 
-                            elif AmendmentFlow.checkTextodefinitivoarray(type=type,array=text,aprobdef=hasaprobdef):
-                                #crea nuevo texto
-                                if rtr: #si aprobado con modificaciones
-                                    if re.search('aprobado(.?)con(.?)modificaciones',rtr, re.IGNORECASE): # deberia ir todo los textos definitivos
-                                        #se crea el nuevo objeto
-                                        txtendurl = url[0]
-                                        finishtextitem = FinishTextItem()
-                                        finishtextitem['ref'] = item['ref']
-                                        finishtextitem['titulo'] = item['titulo']
-                                        finishtextitem['autor_diputado'] = []
-                                        finishtextitem['autor_grupo'] = []
-                                        finishtextitem['autor_otro'] = ["Gobierno"]
-                                        finishtextitem['url'] = item['url']
-                                        finishtextitem['contenido'] = []
-                                        finishtextitem['tipo'] = item ['tipo']
-                                        finishtextitem['tramitacion'] = item['tramitacion']
-                                        finishtextitem['fecha'] = item['fecha']
-                                        finishtextitem['fechafin'] = item['fechafin']
-                                        finishtextitem['lugar'] = item['lugar']
-                                        finishtextitem['tipotexto'] = item['tipotexto']+" Texto definitivo"
-                                        yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
-                                                         errback=self.errback_httpbin,
-                                                         callback=self.finishtext, dont_filter=True,
-                                                             meta= {'fisnishitem':finishtextitem}
-
+                        elif AmendmentFlow.checkTextodefinitivoarray(type=type,array=text,aprobdef=hasaprobdef):
+                            #crea nuevo texto
+                            if rtr: #si aprobado con modificaciones
+                                if re.search('aprobado(.?)con(.?)modificaciones',rtr, re.IGNORECASE): # deberia ir todo los textos definitivos
+                                    #se crea el nuevo objeto
+                                    txtendurl = url[0]
+                                    finishtextitem = FinishTextItem()
+                                    finishtextitem['ref'] = item['ref']
+                                    finishtextitem['titulo'] = item['titulo']
+                                    finishtextitem['autor_diputado'] = []
+                                    finishtextitem['autor_grupo'] = []
+                                    finishtextitem['autor_otro'] = ["Gobierno"]
+                                    finishtextitem['url'] = item['url']
+                                    finishtextitem['contenido'] = []
+                                    finishtextitem['tipo'] = item ['tipo']
+                                    finishtextitem['tramitacion'] = item['tramitacion']
+                                    finishtextitem['fecha'] = item['fecha']
+                                    finishtextitem['fechafin'] = item['fechafin']
+                                    finishtextitem['lugar'] = item['lugar']
+                                    finishtextitem['tipotexto'] = item['tipotexto']+" Texto definitivo"
+                                    yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
+                                                    errback=self.errback_httpbin,
+                                                    callback=self.finishtext, dont_filter=True,
+                                                    meta= {'fisnishitem':finishtextitem}
                                                          )
                 #ENMIENDAS
-                if enmiendas:
-                    for enm in enmiendas:
-
-                        yield scrapy.Request(Utils.createUrl(response.url, enm),
+            if enmiendas:
+                for enm in enmiendas:
+                    yield scrapy.Request(Utils.createUrl(response.url, enm),
                                          errback=self.errback_httpbin,
                                          callback=self.enmiendas, dont_filter=True,
                                             meta= {'item':item, 'text':"", 'linksenmiendas':None, 'isfirst':True}
                                          )
                 #MOCION ENMIENDAS
-
-                if enmmocion:
-                    for moen in enmmocion:
-                                refmon = expt
-                                number = Utils.getnumber(moen)
-                                yield scrapy.Request(Utils.createUrl(response.url, moen),
+            if enmmocion:
+                for moen in enmmocion:
+                        refmon = expt
+                        number = Utils.getnumber(moen)
+                        yield scrapy.Request(Utils.createUrl(response.url, moen),
                                                      errback=self.errback_httpbin,
                                                      callback=self.monenmiendas, dont_filter=True,
                                                      meta={'item': item, 'text': "", 'linksenmiendas': None, 'isfirst': True, 'pag':number,'ref':refmon}
                                                      )
-
-
                 ##DIARIOS
-                if diarios:
-                    if "DS" in Terms.getTypetext(type):
-                        for diario in diarios:
-                            text = diario.xpath("text()").extract()
-                            url = diario.xpath("a/@href").extract()
-                            if Utils.checkPreguntas(type):
-                                ##Aqui van las respuestas
-                                txtendurl = url[0]
-                                responseitem = ResponseItem()
-                                responseitem['ref'] = item['ref']
-                                responseitem['titulo'] = item['titulo']
-                                responseitem['autor_diputado'] = []
-                                responseitem['autor_grupo'] = []
-                                responseitem['autor_otro'] = ["Gobierno"]
-                                responseitem['url'] = item['url']
-                                responseitem['contenido'] = []
-                                responseitem['tipo'] = item ['tipo']
-                                responseitem['tramitacion'] = item['tramitacion']
-                                responseitem['fecha'] = item['fecha']
-                                responseitem['fechafin'] = item['fechafin']
-                                responseitem['lugar'] = item['lugar']
-                                responseitem['tipotexto'] = "Respuesta"
-
-                                yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
+            if diarios:
+                if "DS" in Terms.getTypetext(type):
+                    for diario in diarios:
+                        text = diario.xpath("text()").extract()
+                        url = diario.xpath("a/@href").extract()
+                        if Utils.checkPreguntas(type):
+                            ##Aqui van las respuestas
+                            txtendurl = url[0]
+                            responseitem = ResponseItem()
+                            responseitem['ref'] = item['ref']
+                            responseitem['titulo'] = item['titulo']
+                            responseitem['autor_diputado'] = []
+                            responseitem['autor_grupo'] = []
+                            responseitem['autor_otro'] = ["Gobierno"]
+                            responseitem['url'] = item['url']
+                            responseitem['contenido'] = []
+                            responseitem['tipo'] = item ['tipo']
+                            responseitem['tramitacion'] = item['tramitacion']
+                            responseitem['fecha'] = item['fecha']
+                            responseitem['fechafin'] = item['fechafin']
+                            responseitem['lugar'] = item['lugar']
+                            responseitem['tipotexto'] = "Respuesta"
+                            yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
                                          errback=self.errback_httpbin,
                                          callback=self.responses, dont_filter=True,
                                             meta= {'responseitem':responseitem, 'text':"", 'linksenmiendas':None, 'isfirst':True,'number':None}
                                          )
-
-
-
-
-
-                            else:
-                                if re.search('Congreso', text[0]) :
-                                    listDS =[]
-                                    listDS.append("DS")
-                                    listDS.append(url[0])
-                                    listurls.append(listDS)
-
-
-
-                if listurls:
-                    first_url = Utils.geturl(listurls[0])
-                    onlyserie = Utils.getserie(listurls[0])
-
-                    number = Utils.getnumber(first_url)
-                    Utils.delfirstelement(listurls)
-                    yield scrapy.Request(Utils.createUrl(response.url,first_url),
+                        else:
+                            if re.search('Congreso', text[0]) :
+                                listDS =[]
+                                listDS.append("DS")
+                                listDS.append(url[0])
+                                listurls.append(listDS)
+            if listurls:
+                first_url = Utils.geturl(listurls[0])
+                onlyserie = Utils.getserie(listurls[0])
+                number = Utils.getnumber(first_url)
+                Utils.delfirstelement(listurls)
+                yield scrapy.Request(Utils.createUrl(response.url,first_url),
                                          errback=self.errback_httpbin,
                                          callback=self.recursiveletters, dont_filter = True,
                                          meta={'pag': number, 'item':item,'urls':listurls, 'isfirst': True, 'next':False,
                                                'serie': onlyserie })
-                else:
-                    yield item
-
-
             else:
                 yield item
+        else:
+            yield item
 
     def extractplace(self, DS = None , com = None, type = None):
         try:
