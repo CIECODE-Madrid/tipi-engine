@@ -43,7 +43,7 @@ class NotifyTipi(object):
             newobj = dict()
             newobj['titulo']=obj['titulo']
             newobj['url']="{0}{1}".format(TIPIS_URL,str(obj['id']))
-            newobj['actualizacion']=obj["actualizacion"]
+            newobj['fecha']=obj["fecha"]
             res.append(newobj)
         return res
 #if __name__ == "__main__":
