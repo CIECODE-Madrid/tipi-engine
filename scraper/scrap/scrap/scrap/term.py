@@ -35,7 +35,7 @@ dicc = {
       u'Proposición no de Ley ante el Pleno': ["D"],
       u'Proposición no de Ley en Comisión':["D"],
       u'Proyecto de ley': ["A"],
-      u'Real Decreto-Ley':["D","DS"],
+      u'Real Decreto-Ley':["D"],
       u'Real Decreto legislativo que aprueba texto refundido': ["D"],
       u'Solicitud de creación de Comisión de Investigación':["D"],
       u'Solicitud de creación de Comisión permanente':["D","DS"],
