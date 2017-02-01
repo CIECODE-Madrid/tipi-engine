@@ -4,7 +4,7 @@ import pdb
 
 dicc = {
     #Z para los que no tengan
-      u'Autorización de Convenios Internacionales': ["C","DS"],
+      u'Autorización de Convenios Internacionales': ["C"],
       u'Comisión permanente':["D"],
       u'Comisión de Investigación':["D"],
       u'Otras Comisiones no permanentes':["D"],
