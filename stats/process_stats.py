@@ -18,14 +18,21 @@ class InsertStats(object):
 
     def stats(self):
         self.deleteAll()
+        self.initiatives()
         self.overall()
         self.bydeputies()
         self.byGroups()
         self.latest()
         self.insertstats()
 
+    def initiatives(self): 
+        self.dictforinsert['initiatives'] = {}
+        self.dictforinsert['initiatives']['all'] = self._dbmanager.countAllInitiatives()
+        self.dictforinsert['initiatives']['tipi'] = self._dbmanager.countTipiInitiatives()
+
+
     def overall(self):
-        self.dictforinsert['overall']= []
+        self.dictforinsert['overall'] = []
         pipeline=[{ '$match': {'is.tipi': True} }, { '$unwind': '$dicts.tipi' }, { '$group': { '_id': '$dicts.tipi', 'count': { '$sum': 1 } } } ]
         dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas",pipeline=pipeline)
         for element in dataset:

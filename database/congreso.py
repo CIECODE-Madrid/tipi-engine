@@ -26,6 +26,12 @@ class Congress(object):
     def searchByparam(self, collection=None, param={}):
         return self._getCollection(collection).find(param)
 
+    def countTipiInitiatives(self, collection='iniciativas'):
+        return self._getCollection(collection).find({'is.tipi': True}).count()
+
+    def countAllInitiatives(self, collection='iniciativas'):
+        return self._getCollection(collection).find().count()
+
     def getNotAnnotatedInitiatives(self, dictname):
         return self._getCollection('iniciativas').find({'$or': [{'annotate.%s'%dictname : {'$exists': False}}, {'annotate.%s'%dictname : False}]}, no_cursor_timeout=True)
 
@@ -390,14 +396,3 @@ class Congress(object):
 
     def insertstat(self,collection="tipistats",dict={}):
         self._getCollection(collection).insert(dict)
-
-
-
-        
-
-
-
-
-
-
-
