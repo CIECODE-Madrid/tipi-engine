@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <title>Hay nuevos Tipis para ti</title>
 </head>
-<body>
-        {% for n in items %}
-            {% for key, value in n.iteritems()%}
-                <h2>Temática {{key}}</h2>
-                <h5>Últimas iniciativas:</h5>
-                <ul>
+<body style="background:#222222;">
+    <div style="text-align:center;">
+        <a href="http://tipiciudadano.es"><img src="http://tipiciudadano.es/images/logos-tipi/logo2_blanco.svg" style="width:10%;padding:20px;"></a>
+    </div>
+    {% for n in items %}
+        {% for key, value in n.iteritems()%}
+            <div class="links" style="margin-bottom:40px;">
+                <h2 style="color:#FBC239;margin-bottom:10px;font-size:2em;padding-left: 10px;">{{key}}</h2>
+                <ul style="list-style:none;">
                     {% for val in value %}
-                        <li><a href="{{val.url}}">{{val.titulo}} ({{val.fecha}})</a></li>
+                        <li style="margin-bottom:10px;"><a href="{{val.url}}" style="color:#fff;font-size:1.2em;text-decoration:none;">{{val.titulo}}</a></li>
                     {% endfor %}
                 </ul>
-            {% endfor %}
-            <hr>
+            </div>
         {% endfor %}
+    {% endfor %}
 </body>
 </html>
