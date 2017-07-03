@@ -1,5 +1,5 @@
 from send_email import emailSparkPost
-from setting import TIPIS_URL
+from settings import TIPIS_URL
 import sys
 sys.path.append("../")
 from database.congreso import Congress
