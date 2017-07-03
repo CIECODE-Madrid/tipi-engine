@@ -1,6 +1,6 @@
 import pdb
 from sparkpost import SparkPost
-from setting import API_SPARKPOST, FROM_EMAIL
+from settings import API_SPARKPOST, FROM_NAME, FROM_EMAIL
 from jinja2 import Environment, FileSystemLoader
 import os
 
@@ -14,6 +14,7 @@ class emailSparkPost(object):
             recipients=[email],#email is a user's email
             html=doc,
             from_email=FROM_EMAIL,
+            from_name=FROM_NAME,
             subject='Hay nuevos Tipis para ti'
         )
         print "Sending email to "+email
