@@ -1,0 +1,4 @@
+TIPIS_URL = "http://tipiciudadano.es/tipis/"
+API_SPARKPOST = ""
+FROM_EMAIL = "info@tipiciudadano.es"
+FROM_NAME = "TIPI Ciudadano"

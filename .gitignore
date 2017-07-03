@@ -72,3 +72,9 @@ blacklist
 *.db
 *.db*
 *.log
+
+# ALerts
+alerts/settings.py
+
+# For production site
+engineenv
