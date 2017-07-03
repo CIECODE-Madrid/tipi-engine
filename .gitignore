@@ -73,8 +73,9 @@ blacklist
 *.db*
 *.log
 
-# ALerts
+# Alerts and database
 alerts/settings.py
+database/variables.py
 
 # For production site
 engineenv
