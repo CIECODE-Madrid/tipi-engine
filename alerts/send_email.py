@@ -13,8 +13,7 @@ class emailSparkPost(object):
         response = sp.transmissions.send(
             recipients=[email],#email is a user's email
             html=doc,
-            from_email=FROM_EMAIL,
-            from_name=FROM_NAME,
+            from_email="%s <%s>"%(FROM_NAME,FROM_EMAIL),
             subject='Hay nuevos Tipis para ti'
         )
         print "Sending email to "+email
