@@ -79,3 +79,6 @@ database/variables.py
 
 # For production site
 engineenv
+
+# For testing
+quickex.py
