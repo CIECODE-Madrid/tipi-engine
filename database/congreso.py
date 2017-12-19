@@ -39,7 +39,7 @@ class Congress(object):
         return self._getCollection('dicts').find({'group': group})
 
 
-    def addDictToInitiative(self, initiative_id, dictgroup, dicts, terms):
+    def addDictsAndTermsToInitiative(self, initiative_id, dictgroup, dicts, terms):
         coll = self._getCollection(collection='iniciativas')
         coll.update_one({
             '_id': initiative_id,

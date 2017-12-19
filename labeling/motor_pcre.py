@@ -14,35 +14,35 @@ sys.setdefaultencoding('utf-8')
 
 
 class LabelingEngine:
+    DICTGROUP_WITH_ALERTS = 'tipi'
 
     def run(self):
         dbmanager = Congress()
-        iniciativas = dbmanager.getNotAnnotatedInitiatives('tipi')
         regex_engine = RegexEngine()
-        i = 0
-        for iniciativa in iniciativas:
-            i += 1
-            print "%s [%d]:" % (str(iniciativa['_id']), i)
-            try:
-                if iniciativa.has_key('titulo') or iniciativa.has_key('contenido'):
-                    regex_engine.loadIniciativa(iniciativa)
-                    for groupname in dbmanager.getDictGroups():
-                        dicts = list(dbmanager.getDictsByGroup(groupname))
-                        for dict in dicts:
-                            print "Inicializando %s" % dict['name']
-                            regex_engine.loadTerms(dict)
+        for groupname in dbmanager.getDictGroups():
+            dicts = list(dbmanager.getDictsByGroup(groupname))
+            iniciativas = dbmanager.getNotAnnotatedInitiatives(groupname)
+            i = 1
+            total = iniciativas.count()
+            for iniciativa in iniciativas:
+                try:
+                    print "%s [%d/%d]:" % (groupname, i, total)
+                    if iniciativa.has_key('titulo') or iniciativa.has_key('contenido'):
+                        regex_engine.loadIniciativa(iniciativa)
+                        for dictio in dicts:
+                            regex_engine.loadTerms(dictio)
                             regex_engine.matchTerms()
-                            print "[%d en %s]: " % (len(regex_engine.getTermsFound()),dict['name'])
-                        dbmanager.addDictToInitiative(iniciativa['_id'], groupname, regex_engine.getDictsFound(), regex_engine.getTermsFound())
-                        if groupname == 'tipi':
+                        dbmanager.addDictsAndTermsToInitiative(iniciativa['_id'], groupname, regex_engine.getDictsFound(), regex_engine.getTermsFound())
+                        if self.DICTGROUP_WITH_ALERTS == groupname:
                             for df in regex_engine.getDictsFound():
                                 dbmanager.addAlert(df, iniciativa['_id'], iniciativa['titulo'], iniciativa['actualizacion'])
-                        regex_engine.cleanDictsAndTermsFound()
-            except Exception, e:
-                regex_engine.cleanDictsAndTermsFound()
-                print str(iniciativa['_id']) + ": " + str(e)
-                break
-            print '============================'
+                    i += 1
+                    regex_engine.cleanDictsAndTermsFound()
+                except Exception, e:
+                    regex_engine.cleanDictsAndTermsFound()
+                    print "Error procesando la iniciativa " + str(iniciativa['_id'])
+                    break
+        print '============================'
 
 
 
@@ -116,22 +116,21 @@ class RegexEngine:
                 self.__dicts_found.append(term['dict'])
 
     def matchTerms(self):
-        print 'Comprobando terminos...'
         terms = self.getTerms()
         iniciativa = self.getIniciativa()
         if iniciativa.has_key('titulo'):
             if not iniciativa.has_key('contenido'):
                 iniciativa['contenido'] = []
-            # else:
-            #     iniciativa['contenido'] = list(iniciativa['contenido'])
             iniciativa['contenido'].append(iniciativa['titulo'])
         for line in iniciativa['contenido']:
+            if isinstance(line, list) and len(line) > 0:
+                line = line[0]
             for term in terms:
                 try:
-                    if pcre.search(term['compileterm'], line, 0):
+                    if pcre.search(term['compileterm'], line):
                         self.addTermToFounds(term);
                 except Exception, e:
-                    print str(e) + " : " + str(term['term'])
+                    print str(e) + " : " + str(term['term']) + " || en iniciativa " + str(iniciativa['_id'])
                     break
 
 
