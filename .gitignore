@@ -73,9 +73,10 @@ blacklist
 *.db*
 *.log
 
-# Alerts and database
+# Alerts, database and tweetbot
 alerts/settings.py
 database/variables.py
+tweetbot/credentials.py
 
 # For production site
 engineenv

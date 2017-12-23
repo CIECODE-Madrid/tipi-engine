@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
-import re
-
-import datetime
-
+import re, random, time, datetime
 from conn import MongoDBconn
-import pdb
 
 
 
@@ -35,9 +31,29 @@ class Congress(object):
     def getNotAnnotatedInitiatives(self, dictname):
         return self._getCollection('iniciativas').find({'$or': [{'annotate.%s'%dictname : {'$exists': False}}, {'annotate.%s'%dictname : False}]}, no_cursor_timeout=True)
 
+    def getDeputyByName(self, name):
+        return list(self._getCollection('diputados').find({'nombre': name}))[0]
+
+    def getBestDeputyByTopic(self, topic):
+        random.seed(time.time())
+        bydeputies = list(self._getCollection('tipistats').find({}, {'bydeputies': 1}))
+        bydeputy = filter(lambda bydeputy: bydeputy['_id'] == topic, bydeputies[0]['bydeputies'])
+        return random.choice(bydeputy[0]['deputies'])['_id']
+
+    def getGroupByName(self, name):
+        return list(self._getCollection('grupos').find({'nombre': name}))[0]
+
+    def getBestGroupByTopic(self, topic):
+        random.seed(time.time())
+        bygroups = list(self._getCollection('tipistats').find({}, {'bygroups': 1}))
+        bygroup = filter(lambda bygroup: bygroup['_id'] == topic, bygroups[0]['bygroups'])
+        return random.choice(bygroup[0]['groups'])['_id']
+
     def getDictsByGroup(self, group):
         return self._getCollection('dicts').find({'group': group})
 
+    def getDictByGroup(self, group):
+        return self._getCollection('dicts').find({'group': group}, {'name': 1, 'slug': 1})
 
     def addDictsAndTermsToInitiative(self, initiative_id, dictgroup, dicts, terms):
         coll = self._getCollection(collection='iniciativas')
