@@ -361,9 +361,11 @@ class StackSpider(Spider):
                                     finishtextitem = FinishTextItem()
                                     finishtextitem['ref'] = item['ref']
                                     finishtextitem['titulo'] = item['titulo']
-                                    finishtextitem['autor_diputado'] = []
-                                    finishtextitem['autor_grupo'] = []
-                                    finishtextitem['autor_otro'] = ["Gobierno"]
+                                    # Inicio de caso especial para las 121 (proyecos de ley) en la que su autor siempre es Gobierno (autor_otro)
+                                    finishtextitem['autor_diputado'] = [] if item['tipo'] == "121" else item['autor_diputado']
+                                    finishtextitem['autor_grupo'] = [] if item['tipo'] == "121" else item['autor_grupo']
+                                    finishtextitem['autor_otro'] = item['autor_otro']
+                                    # Fin de caso especial
                                     finishtextitem['url'] = item['url']
                                     finishtextitem['contenido'] = []
                                     finishtextitem['tipo'] = item ['tipo']
