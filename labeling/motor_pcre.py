@@ -53,7 +53,6 @@ class RegexEngine:
         self.__terms = []
         self.__iniciativa = []
         self.__dicts_found = []
-        self.__terms_found = []
         self.__terms_struct_found = []
 
     def __shuffleTerms(self, terms):
@@ -102,15 +101,13 @@ class RegexEngine:
         return self.__terms_struct_found
 
     def cleanTermsFound(self):
-        self.__terms_found = []
         self.__terms_struct_found = []
 
     def getIniciativa(self):
         return self.__iniciativa
 
     def addTermToFounds(self, term):
-        if term['term'] not in self.__terms_found:
-            self.__terms_found.append(term['term'])
+        if term['struct'] not in self.__terms_struct_found:
             self.__terms_struct_found.append(term['struct'])
             if term['dict'] not in self.__dicts_found:
                 self.__dicts_found.append(term['dict'])
