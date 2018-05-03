@@ -5,5 +5,4 @@ config = {
     "MONGO_HOST": "localhost",
     "MONGO_PORT": 27017,
     "MONGO_DB_NAME": "test",
-    # Other config follows
 }
