@@ -17,4 +17,5 @@ fi
 
 source engineenv/bin/activate
 
+pip install cryptography
 pip install -r requirements.txt

@@ -7,7 +7,6 @@ backports.shutil-get-terminal-size==1.0.0
 certifi==2017.4.17
 cffi==1.10.0
 constantly==15.1.0
-cryptography==1.8.1
 cssselect==1.0.1
 DateTime==4.2
 decorator==4.1.2
@@ -31,7 +30,6 @@ packaging==16.8
 parsel==1.1.0
 pathlib==1.0.1
 pathlib2==2.3.0
-pdb==0.1
 pexpect==4.2.1
 pickleshare==0.7.4
 progressbar==2.3
