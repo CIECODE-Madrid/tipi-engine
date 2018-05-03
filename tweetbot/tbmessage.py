@@ -53,9 +53,7 @@ class LatestInitiativesByBestDeputyMessage(TBMessage):
             best_deputy_name = self.dbmanager.getBestDeputyByTopic(random_topic_name)
             best_deputy = self.dbmanager.getDeputyByName(best_deputy_name)
             if best_deputy['twitter'] == "":
-                best_deputy_name = best_deputy_name.split(',')
-                best_deputy_name.reverse()
-                best_deputy['twitter'] = " ".join(best_deputy_name)
+                best_deputy['twitter'] = " ".join(best_deputy_name.split(',').reverse())
             else:
                 best_deputy['twitter'] = "@" + best_deputy['twitter'].split('/')[3]
             return u"Éstas son las últimas iniciativas de %s que ha presentado %s, una de las personas con más actividad en el @Congreso_es sobre esta temática: https://tipiciudadano.es/escaner?dicts=%s&autor=%s" % (random_topic_name.upper(), best_deputy['twitter'], _str_to_url(random_topic_name), _str_to_url(best_deputy_name))
@@ -79,5 +77,7 @@ class LatestInitiativesByGroupMessage(TBMessage):
 
 ### HELPERS ###
 
+from urllib import quote
+
 def _str_to_url(s):
-    return s.replace(' ', '+')
+    return quote(s.encode('utf-8'))
