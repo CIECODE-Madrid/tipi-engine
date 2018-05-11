@@ -9,30 +9,26 @@ class Congress(object):
     def __init__(self):
         self._conn = MongoDBconn()
 
-    def _getCollection(self,collection):
+    def _getCollection(self, collection):
         return self._conn.getDB()[collection]
 
-    def searchAll(self,collection=None):
-        """
-        :param collection:
-        :return: List
-        """
+    def searchAll(self, collection):
         return [ element for element in self._getCollection(collection).find()]
 
-    def searchByparam(self, collection=None, param={}):
+    def searchByParams(self, collection, param={}):
         return self._getCollection(collection).find(param)
 
-    def countTipiInitiatives(self, collection='iniciativas'):
-        return self._getCollection(collection).find({'is.tipi': True}).count()
+    def countTipiInitiatives(self):
+        return self._getCollection('initiatives').find({'is.tipi': True}).count()
 
-    def countAllInitiatives(self, collection='iniciativas'):
-        return self._getCollection(collection).find().count()
+    def countAllInitiatives(self):
+        return self._getCollection('initiatives').find().count()
 
-    def getNotAnnotatedInitiatives(self, dictname):
-        return self._getCollection('iniciativas').find({'$or': [{'annotate.%s'%dictname : {'$exists': False}}, {'annotate.%s'%dictname : False}]}, no_cursor_timeout=True)
+    def getNotAnnotatedInitiatives(self, topic):
+        return self._getCollection('initiatives').find({'$or': [{'annotate.%s'%topic : {'$exists': False}}, {'annotate.%s'%topic : False}]}, no_cursor_timeout=True)
 
     def getDeputyByName(self, name):
-        return list(self._getCollection('diputados').find({'nombre': name}))[0]
+        return list(self._getCollection('deputies').find({'name': name}))[0]
 
     def getBestDeputyByTopic(self, topic):
         random.seed(time.time())
@@ -40,375 +36,328 @@ class Congress(object):
         bydeputy = filter(lambda bydeputy: bydeputy['_id'] == topic, bydeputies[0]['bydeputies'])
         return random.choice(bydeputy[0]['deputies'])['_id']
 
-    def getGroupByName(self, name):
-        return list(self._getCollection('grupos').find({'nombre': name}))[0]
+    def getParliamentaryGroupByName(self, name):
+        return list(self._getCollection('parliamentarygroups').find({'name': name}))[0]
 
-    def getBestGroupByTopic(self, topic):
+    def getBestParliamentaryGroupByTopic(self, topic):
         random.seed(time.time())
         bygroups = list(self._getCollection('tipistats').find({}, {'bygroups': 1}))
         bygroup = filter(lambda bygroup: bygroup['_id'] == topic, bygroups[0]['bygroups'])
         return random.choice(bygroup[0]['groups'])['_id']
 
-    def getDictsByGroup(self, group):
-        return self._getCollection('dicts').find({'group': group})
+    def getTopicsByGroup(self, group):
+        return self._getCollection('topics').find({'group': group})
 
-    def getDictByGroup(self, group):
-        return self._getCollection('dicts').find({'group': group}, {'name': 1, 'slug': 1})
+    def getTopicByGroup(self, group):
+        return self._getCollection('topics').find({'group': group}, {'name': 1, 'slug': 1})
 
-    def addDictsAndTermsToInitiative(self, initiative_id, dictgroup, dicts, terms):
-        coll = self._getCollection(collection='iniciativas')
+    def annotateInitiative(self, initiative_id, topicgroup, topics, tags):
+        coll = self._getCollection('initiatives')
         coll.update_one({
             '_id': initiative_id,
         },{
             '$set': {
-            'annotate.%s'%dictgroup: True,
-            'is.%s'%dictgroup: True if len(dicts) > 0 else False,
-            'dicts.%s'%dictgroup: dicts,
-            'terms.%s'%dictgroup: terms,
+            'annotate.%s'%topicgroup: True,
+            'is.%s'%topicgroup: True if len(topics) > 0 else False,
+            'topics.%s'%topicgroup: topics,
+            'tags.%s'%topicgroup: tags,
             }
         ,}
         )
 
 
-    def getDictGroups(self):
-        coll = self._getCollection(collection='dicts')
-        return coll.find({}, {'group': 1}).distinct('group')
+    def getTopicGroups(self):
+        return self._getCollection('topics').find({}, {'group': 1}).distinct('group')
     
 
-    def getInitiative(self, collection="iniciativas", ref = None, tipotexto= None, titulo = None):
-        search = self._getCollection(collection).find_one(
+    def getInitiative(self, reference = None, initiative_type_alt= None, title = None):
+        return self._getCollection('initiatives').find_one(
             {
-                'ref': ref,
-                'tipotexto': tipotexto,
-                'titulo': titulo
+                'reference': reference,
+                'initiative_type_alt': initiative_type_alt,
+                'title': title
             }
         )
-        return search
 
 
-    def updateorinsertInitiative(self, collection="iniciativas", type = "insert", item = None):
-        #metodo para el pipeline
+    def updateorinsertInitiative(self, type = "insert", item = None):
+        # Pipeline method
         if type is 'insert':
-            self._insertInitiative(collection,item)
-            #update
+            self._insertInitiative(item)
         elif type is 'update':
-            self._updateInitiative(collection,item)
-            #inserta
+            self._updateInitiative(item)
         else:
             print "Not type accepted"
             raise
 
-    def _insertInitiative(self,collection,item):
-        insertdict = dict(item)
-        insertdict["actualizacion"] = insertdict['fecha']
-        self._getCollection(collection=collection).insert(insertdict)
+    def _insertInitiative(self, item):
+        item_to_insert = dict(item)
+        item_to_insert["updated"] = item_to_insert['created']
+        # TODO Create SHA1 _id
+        self._getCollection('initiatives').insert(item_to_insert)
 
-    def _updateInitiative(self,collection,item):
-        coll = self._getCollection(collection=collection)
-        coll.update_one({
-                'ref': item['ref'],
-                'tipotexto': item['tipotexto'],
-
-
-        },{
-            '$set': {
-            'titulo': item['titulo'],
-            'autor_diputado': item['autor_diputado'],
-            'autor_grupo': item['autor_grupo'],
-            'autor_otro': item['autor_otro'],
-            'url': item['url'],
-            'tipo': item['tipo'],
-            'tramitacion': item['tramitacion'],
-            'fecha': item['fecha'],
-            'lugar': item['lugar'],
-            'fechafin': item['fechafin'],
-            'actualizacion': datetime.datetime.utcnow()
-
-                    }
-            ,}
-        )
+    def _updateInitiative(self, item):
+        self._getCollection('initiatives').update_one({
+                'reference': item['reference'],
+                'initiative_type_alt': item['initiative_type_alt']
+            },{
+                '$set': {
+                    'title': item['title'],
+                    'author_deputies': item['author_deputies'],
+                    'author_parliamentarygroups': item['author_parliamentarygroups'],
+                    'author_others': item['author_others'],
+                    'url': item['url'],
+                    'initiative_type': item['initiative_type'],
+                    'processing': item['processing'],
+                    'place': item['place'],
+                    'created': item['created'],
+                    'updated': datetime.datetime.utcnow(),
+                    'ended': item['ended']
+                }
+            })
 
 
-
-    def updateorinsertInitiativecontent(self, collection="iniciativas", type = "insert", item = None):
-        #metodo para el pipeline
+    def updateorinsertInitiativecontent(self, type="insert", item=None):
+        # Pipeline method
         if type is 'insert':
-            self._insertInitiative(collection,item)
-            #update
+            self._insertInitiative(item)
         elif type is 'update':
-            self._updateInitiativecontent(collection,item)
-            #inserta
+            self._updateInitiativecontent(item)
         else:
             print "Not type accepted"
             raise
 
 
 
-    def _updateInitiativecontent(self,collection,item):
-        coll = self._getCollection(collection=collection)
-        coll.update_one({
-                 'ref': item['ref'],
-                'tipotexto': item['tipotexto'],
-
-
+    def _updateInitiativecontent(self, item):
+        self._getCollection('initiatives').update_one({
+                 'reference': item['reference'],
+                'initiative_type_alt': item['initiative_type_alt']
         },{
             '$set': {
-            'titulo': item['titulo'],
-            'autor_diputado': item['autor_diputado'],
-            'autor_grupo': item['autor_grupo'],
-            'autor_otro': item['autor_otro'],
+            'content': item['content'],
+            'title': item['title'],
+            'author_deputies': item['author_deputies'],
+            'author_parliamentarygroups': item['author_parliamentarygroups'],
+            'author_others': item['author_others'],
             'url': item['url'],
-            'tipo': item['tipo'],
-            'tramitacion': item['tramitacion'],
-            'fecha': item['fecha'],
-            'lugar': item['lugar'],
-            'fechafin': item['fechafin'],
-            'contenido': item['contenido'],
-            'actualizacion': datetime.datetime.utcnow()
-                    }
+            'initiative_type': item['initiative_type'],
+            'processing': item['processing'],
+            'place': item['place'],
+            'created': item['created'],
+            'updated': datetime.datetime.utcnow(),
+            'ended': item['ended']
             }
-        )
+        })
 
 
 
-
-    def isDiffinitiative(self, collection="iniciativas", item = None, search = None):
-        if search:#existe
-            return not self.sameInitiative(item,search)
-        else:
+    def isDiffInitiative(self, item=None, search=None):
+        if not search:
             return False
+        return not self.sameInitiative(item, search)
 
-    def deletefields(self,search):
-        coll = self._getCollection(collection="iniciativas")
+
+    def deletefields(self, search):
+        coll = self._getCollection('initiatives')
         coll.update_one({
-             'ref': search['ref'],
-                'tipotexto': search['tipotexto'],},
-            {'$unset': {'dicts.tipi':1,'terms.tipi':1,'is.tipi':1,'annotate.tipi':1}},False,True
-        )
+                'reference': search['reference'],
+                'initiative_type_alt': search['initiative_type_alt']
+            },
+            {
+                '$unset':
+                {
+                    'topics':1,
+                    'tags':1,
+                    'is':1,
+                    'annotate':1
+                }
+            },False,True)
 
-    def notEnmienda(self,url):
+    def notEnmienda(self, url):
+            return self._getCollection('initiatives').find({"$and": [{'url':url},{"initiative_type_alt":{"$not":re.compile('Enmienda')}}]}).count()
 
-            return self._getCollection("iniciativas").find(
-            {"$and": [{'url':url},{"tipotexto":{"$not":re.compile('Enmienda')}}]}
-        ).count()
-
-    def sameInitiative(self,item,search):
-        #item['contenido']=[]
-        if not search["contenido"] and item['contenido'] and self.notEnmienda(search['url'])>0:
+    def sameInitiative(self, item, search):
+        if not search["content"] and item['content'] and self.notEnmienda(search['url'])>0:
             self.deletefields(search)
             return False
         if search:
-            if search['tramitacion'] != item['tramitacion']:
+            if search['processing'] != item['processing']:
                 return False
-
         return True
 
     def sameAdmendment(self,item,search):
-        #item['contenido']=[]
-
         for key, value in search.iteritems():
             for ikey,ivalue in item.iteritems():
-                if key == ikey and (key != 'actualizacion') and  (key != 'contenido' and  key != 'dicts' and
-                                              key != 'terms' and key != 'annotate' and key != 'is'):
+                if key == ikey and (key != 'updated') and (key != 'content' and  key != 'topics' and key != 'tags' and key != 'annotate' and key != 'is'):
                     if value != ivalue:
                         return False
-
         return True
 
-    def updateorinsertAdmenment(self, collection="iniciativas",  item = None ,search = None):
-        #metodo para el pipeline
 
-        self._insertAdmendment(collection,item,search)
-            #update
+    def updateorinsertAdmenment(self, item = None ,search = None):
+        # Pipeline method
+        self._insertAdmendment(item, search)
 
 
-    def _insertAdmendment(self,collection,item,search):
-
+    def _insertAdmendment(self, item, search):
         if not search:
-            insert ={
-                'ref': item['ref'],
-                'tipotexto':item['tipotexto'],
-                'titulo': item['titulo'],
-                'tipo':item['tipo'],
-                'autor_grupo': item["autor_grupo"],
-                'autor_diputado':item["autor_diputado"],
-                'autor_otro' : item["autor_otro"],
-                'fecha': item["fecha"],
-                'fechafin': item["fechafin"],
+            # TODO Create SHA1 _id
+            insert = {
+                'title': item['title'],
+                'reference': item['reference'],
+                'initiative_type':item['initiative_type'],
+                'initiative_type_alt':item['initiative_type_alt'],
+                'author_deputies': item['author_deputies'],
+                'author_parliamentarygroups': item['author_parliamentarygroups'],
+                'author_others': item['author_others'],
+                'created': item["created"],
+                'updated': item["created"],
+                'ended': item["ended"],
                 'url': item['url'],
-                'lugar': item['lugar'],
-                'tramitacion': item['tramitacion'],
-                'contenido':[item["contenido"]],
-                'actualizacion': item["fecha"]
+                'place': item['place'],
+                'processing': item['processing'],
+                'content':[item["content"]]
             }
-            self._getCollection(collection=collection).insert(insert)
+            self._getCollection('initiatives').insert(insert)
         else:
-            self._updateAdmendment(collection,item,search)
+            self._updateAdmendment(item, search)
 
-    def _updateAdmendment(self,collection,item,search):
 
-        autor = item["autor_grupo"]
-
-        coll = self._getCollection(collection=collection)
-        append = item["contenido"]
-        before = search["contenido"]
-        beforeautor = search["autor_diputado"]
-        beforeotro = search["autor_otro"]
-        if item["autor_diputado"]:
-            beforeautor = beforeautor + item["autor_diputado"]
-        if item["autor_otro"]:
-            beforeotro=beforeotro+item["autor_otro"]
+    def _updateAdmendment(self, item, search):
+        parliamentarygroups = item["author_parliamentarygroups"]
+        coll = self._getCollection('initiatives')
+        append = item["content"]
+        before = search["content"]
+        before_deputies = search["author_deputies"]
+        before_others = search["author_others"]
+        if item["author_deputies"]:
+            before_deputies = before_deputies + item["author_deputies"]
+        if item["author_others"]:
+            before_others = before_others + item["author_others"]
         if append not in before:
             before.append(append)
             coll.update_one({
-                        'ref': item['ref'],
-                        'tipotexto': item['tipotexto'],
-                        'autor_grupo' : autor
-
-
+                        'reference': item['reference'],
+                        'initiative_type_alt': item['initiative_type_alt'],
+                        'author_parliamentarygroups': parliamentarygroups
                 },{
                     '$set': {
-                    'autor_diputado': list(set(beforeautor)),
-                    'autor_otro': list(set(beforeotro)),
-                    'contenido':before,
-                    'actualizacion': datetime.datetime.utcnow()
-                            }
-                    ,}
-                )
+                    'author_deputies': list(set(before_deputies)),
+                    'author_others': list(set(before_others)),
+                    'content': before,
+                    'updated': datetime.datetime.utcnow()
+                    }
+                })
 
-    def getAdmendment(self, collection="iniciativas", ref = None, tipotexto= None, autor = None):
-        search = self._getCollection(collection).find_one(
+
+    def getAdmendment(self, reference=None, initiative_type_alt=None, parliamentarygroup=None):
+        return self._getCollection('initiatives').find_one(
         {
-                'ref': ref,
-                'tipotexto': tipotexto,
-                'autor_grupo': autor
-        }
-        )
-
-        return search
+                'reference': reference,
+                'initiative_type_alt': initiative_type_alt,
+                'author_parliamentarygroups': parliamentarygroup
+        })
 
 
-    def updateorinsertFinishtextorResponse(self, collection="iniciativas", type="insert", item=None):
-            # metodo para el pipeline
+    def updateorinsertFinishtextorResponse(self, type="insert", item=None):
+        # Pipeline method
         if type is 'insert':
-            self._insertFinishsTextorResponse(collection, item)
-                # update
+            self._insertFinishsTextorResponse(item)
         elif type is 'update':
-            self._updateFinishTextorResponse(collection, item)
-                # inserta
+            self._updateFinishTextorResponse(item)
         else:
             print "Not type accepted"
             raise
 
-    def _insertFinishsTextorResponse(self, collection, item):
-        insertdict = dict(item)
-        insertdict["actualizacion"] = insertdict['fecha']
-        self._getCollection(collection=collection).insert(insertdict)
+    def _insertFinishsTextorResponse(self, item):
+        item_to_insert = dict(item)
+        item_to_insert["updated"] = item_to_insert['created']
+        self._getCollection('initiatives').insert(item_to_insert)
 
-    def _updateFinishTextorResponse(self, collection, item):
-        coll = self._getCollection(collection=collection)
-        coll.update_one({
-                'ref': item['ref'],
-                'tipotexto': item['tipotexto'],
+    def _updateFinishTextorResponse(self, item):
+        self._getCollection('initiatives').update_one({
+                'reference': item['reference'],
+                'initiative_type_alt': item['initiative_type_alt'],
 
             }, {
                 '$set': {
-                    'titulo': item['titulo'],
-                    'autor_diputado': item['autor_diputado'],
-                    'autor_grupo': item['autor_grupo'],
-                    'autor_otro': item['autor_otro'],
+                    'title': item['title'],
+                    'author_deputies': item['author_deputies'],
+                    'author_parliamentarygroups': item['author_parliamentarygroups'],
+                    'author_others': item['author_others'],
                     'url': item['url'],
-                    'tipo': item['tipo'],
-                    'tramitacion': item['tramitacion'],
-                    'fecha': item['fecha'],
-                    'lugar': item['lugar'],
-                    'fechafin': item['fechafin'],
-                    'contenido': item['contenido'],
-                    'actualizacion': datetime.datetime.utcnow()
-
+                    'initiative_type': item['initiative_type'],
+                    'processing': item['processing'],
+                    'place': item['place'],
+                    'created': item['created'],
+                    'updated': datetime.datetime.utcnow(),
+                    'ended': item['ended'],
+                    'content': item['content']
                 }
-                ,}
-            )
+            })
 
-    def getMember(self, collection="diputados", name = None):
-        search = self._getCollection(collection).find_one(
-            {
-                'nombre': name,
-            }
-        )
-        return search
+    def getDeputy(self, name=None):
+        return self._getCollection('deputies').find_one({'name': name})
 
 
-    def updateorinsertMember(self, collection="diputados", type = "insert", item = None):
-        #metodo para el pipeline
+    def updateorinsertDeputy(self, type = "insert", item = None):
+        # Pipeline method
         if type is 'insert':
-            self._insertMember(collection,item)
-            #update
+            self._insertDeputy(item)
         elif type is 'update':
-            self._updateMember(collection,item)
-            #inserta
+            self._updateDeputy(item)
         else:
             print "Not type accepted"
             raise
 
-    def _insertMember(self, collection, item):
-        self._getCollection(collection=collection).insert(dict(item))
+    def _insertDeputy(self, item):
+        self._getCollection('deputies').insert(dict(item))
 
-    def _updateMember(self, collection, item):
-        coll = self._getCollection(collection=collection)
-        coll.update_one({
-            'nombre': item['nombre'],
-
+    def _updateDeputy(self, item):
+        self._getCollection('deputies').update_one({
+            'name': item['name'],
 
         }, {
             '$set': {
-                'url': item['url'],
-                'grupo': item['grupo'],
-                'correo': item['correo'],
+                'parliamentarygroup': item['parliamentarygroup'],
+                'image': item['image'],
+                'email': item['email'],
                 'web': item['web'],
                 'twitter': item['twitter'],
-                'fecha_alta': item['fecha_alta'],
-                'fecha_baja': item['fecha_baja'],
-                'imagen': item['imagen']
-
+                'start_date': item['start_date'],
+                'end_date': item['end_date'],
+                'url': item['url']
             }
         })
 
 
 
     def addAlert(self, dictname, init_id, init_title, init_date):
-        coll = self._getCollection(collection='tipialerts')
-        coll.update_one({
+        self._getCollection('tipialerts').update_one({
             'dict': dictname,
             }, {
                 '$addToSet': {
                     'items': {
                         'id': str(init_id),
-                        'titulo': init_title,
-                        'fecha': init_date,
+                        'title': init_title,
+                        'date': init_date,
                         }
                 }
             }, upsert=True)
 
     def getTipisAllAlerts(self):
-        #return cursor
-        return self._getCollection('tipialerts').find({'items':{'$exists':True,'$not':{'$size':0}}}) #Contain alert
+        return self._getCollection('tipialerts').find({'items':{'$exists':True,'$not':{'$size':0}}})
 
     def getUserswithAlert(self):
-        #return cursor
         return self._getCollection('users').find({"profile.dicts":{'$exists': True}})
 
-    def getAgregatefrompipeline(self,collection,pipeline):
-        """
-        :param collection: For match
-        :param pipeline: any pipeline
-        :return: List
-        """
-        return list(self._getCollection(collection).aggregate(pipeline=pipeline))
+    def getAggregatedInitiativesByPipeline(self, pipeline):
+        return list(self._getCollection('initiatives').aggregate(pipeline=pipeline))
 
     def deletecollection(self,collection):
         #Warning
         self._getCollection(collection).drop()
 
-    def insertstat(self,collection="tipistats",dict={}):
-        self._getCollection(collection).insert(dict)
+    def insertstat(self, dict={}):
+        self._getCollection('tipistats').insert(dict)

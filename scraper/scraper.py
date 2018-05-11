@@ -1,9 +1,7 @@
-from scrapy.utils.project import get_project_settings
-
-from scrapy.crawler import CrawlerProcess, Crawler
-
+import os
 import luigi
-import pdb
+from scrapy.utils.project import get_project_settings
+from scrapy.crawler import CrawlerProcess, Crawler
 
 
 
@@ -22,7 +20,6 @@ class ScrapTask(luigi.Task):
         print("{task} says: ready to scrap!".format(task=self.__class__.__name__))
         #execfile("scraper/scrap/scrap/initiatives.py")
 
-        import os
         os.chdir("scraper/scrap/scrap")
         os.system("python members.py")
         os.system("python initiatives.py")

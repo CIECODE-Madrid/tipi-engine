@@ -15,7 +15,7 @@ class TBMessage:
     
     def random_topic(self):
         random.seed(time.time())
-        return random.choice(list(self.dbmanager.getDictByGroup('tipi')))
+        return random.choice(list(self.dbmanager.getTopicByGroup('tipi')))
 
     def get_message(self):
         raise NotImplementedError("Subclass must implement abstract method")
@@ -66,7 +66,7 @@ class LatestInitiativesByGroupMessage(TBMessage):
     def get_message(self):
         try:
             random_topic_name = self.random_topic()['name']
-            best_group_name = self.dbmanager.getBestGroupByTopic(random_topic_name)
+            best_group_name = self.dbmanager.getBestParliamentaryGroupByTopic(random_topic_name)
             best_group_twitter = TWITTERACCOUNT_BY_GROUP[best_group_name]
             return u"Éstas son las últimas iniciativas de %s que ha presentado %s, uno de los grupos parlamentarios más activos en esta temática: https://tipiciudadano.es/escaner?dicts=%s&grupootro=%s" % (random_topic_name.upper(), best_group_twitter, _str_to_url(random_topic_name), _str_to_url(best_group_name))
         except:

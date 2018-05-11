@@ -12,7 +12,7 @@ class InsertStats(object):
     dictforinsert = None
     def __init__(self):
         self._dbmanager = Congress()
-        self._curdict=self._dbmanager.searchByparam(collection="dicts", param={'group': 'tipi'})
+        self._curdict=self._dbmanager.searchByParams(collection="dicts", param={'group': 'tipi'})
         self.dictforinsert = dict()
         self.stats()
 
@@ -34,7 +34,7 @@ class InsertStats(object):
     def overall(self):
         self.dictforinsert['overall'] = []
         pipeline=[{ '$match': {'is.tipi': True} }, { '$unwind': '$dicts.tipi' }, { '$group': { '_id': '$dicts.tipi', 'count': { '$sum': 1 } } } ]
-        dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas",pipeline=pipeline)
+        dataset = self._dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
         for element in dataset:
             self.dictforinsert['overall'].append(element)
 
@@ -45,7 +45,7 @@ class InsertStats(object):
         for element in dictscopy:
             pipeline = [{'$match': {'dicts.tipi':element['name'],'is.tipi': True}}, {'$unwind': '$autor_diputado'},
                         {'$group': {'_id': '$autor_diputado', 'count': {'$sum': 1}}}]
-            dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas", pipeline=pipeline)
+            dataset = self._dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
             if len(dataset)>0:
                 subdoc=dict()
                 subdoc['_id']= element['name']
@@ -59,7 +59,7 @@ class InsertStats(object):
         for element in dictscopy:
             pipeline = [{'$match': {'dicts.tipi':element['name'],'is.tipi': True}}, {'$unwind': '$autor_grupo'},
                         {'$group': {'_id': '$autor_grupo', 'count': {'$sum': 1}}}]
-            dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas", pipeline=pipeline)
+            dataset = self._dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
             if len(dataset)>0:
                 subdoc=dict()
                 subdoc['_id']= element['name']
@@ -71,7 +71,7 @@ class InsertStats(object):
         pipeline=[ { '$match': {'is.tipi': True} }, { '$sort': {'actualizacion': -1} }, { '$unwind': '$dicts.tipi' },
                    { '$group': { '_id': '$dicts.tipi' ,
                                  'items':{'$push':{ 'id': "$_id", 'titulo': "$titulo", 'fecha': "$actualizacion",'lugar': "$lugar",'autor': "$autor_diputado"  }}} } ]
-        dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas", pipeline=pipeline)
+        dataset = self._dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
         for element in dataset:
             subdoc=dict()
             subdoc['_id'] = element['_id']

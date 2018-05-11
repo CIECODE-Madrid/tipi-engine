@@ -15,12 +15,10 @@ import pdb
 import json
 
 from scrap.blacklist import Blacklist
-
 from scrap.items import InitiativeItem, FinishTextItem, AmendmentItem,ResponseItem
-
+from scrap.utils import Utils
 from database.congreso import Congress
 
-from scrap.utils import Utils
 
 
 class MongoDBPipeline(object):
@@ -36,17 +34,16 @@ class MongoDBPipeline(object):
             except:
                 print ("**** FAILURE *****")
             congress = Congress()
-            search = congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],
-                                                titulo=item['titulo'])
+            search = congress.getInitiative(reference=item['reference'], initiative_type_alt=item['initiative_type_alt'], title=item['title'])
 
-            if congress.isDiffinitiative(collection="iniciativas",item=item, search=search):
+            if congress.isDiffInitiative(item=item, search=search):
                     #actualizar
-                congress.updateorinsertInitiativecontent(collection="iniciativas",item=item,type='update')
+                congress.updateorinsertInitiativecontent(item=item, type='update')
 
             elif not search:
                     #no existe
                     #insertar sin mas
-                congress.updateorinsertInitiativecontent(collection="iniciativas",item=item,type='insert')
+                congress.updateorinsertInitiativecontent(item=item, type='insert')
             else:
                         #not DIFF
                 print "es el mismo, no cambia"
@@ -55,39 +52,36 @@ class MongoDBPipeline(object):
 
         elif isinstance(item, AmendmentItem):
             congress = Congress()
-            search = congress.getAdmendment(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],
-                                            autor=item['autor_grupo'])
+            search = congress.getAdmendment(reference=item['reference'], initiative_type_alt=item['initiative_type_alt'], parliamentarygroup=item['author_parliamentarygroups'])
 
             #esta de otra forma estructurado
-            congress.updateorinsertAdmenment(collection="iniciativas",item=item,search=search)
+            congress.updateorinsertAdmenment(item=item, search=search)
         elif isinstance(item, FinishTextItem):
             congress = Congress()
-            search = congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],
-                                            titulo=item['titulo'])
-            if congress.isDiffinitiative(item=item, search=search):
+            search = congress.getInitiative(reference=item['reference'], initiative_type_alt=item['initiative_type_alt'], title=item['title'])
+            if congress.isDiffInitiative(item=item, search=search):
                 #actualizar
-                congress.updateorinsertFinishtextorResponse(collection="iniciativas",item=item,type='update')
+                congress.updateorinsertFinishtextorResponse(item=item, type='update')
 
             elif not search:
                 #no existe
                 #insertar sin mas
-                congress.updateorinsertFinishtextorResponse(collection="iniciativas",item=item,type='insert')
+                congress.updateorinsertFinishtextorResponse(item=item, type='insert')
             else:
                     #not DIFF
                 print "es el mismo, no cambia"
 
         elif isinstance(item, ResponseItem):
             congress = Congress()
-            search = congress.getInitiative(ref=item['ref'],tipotexto=item['tipotexto'],
-                                            titulo=item['titulo'])
-            if congress.isDiffinitiative(item=item, search=search):
+            search = congress.getInitiative(reference=item['reference'], initiative_type_alt=item['initiative_type_alt'], title=item['title'])
+            if congress.isDiffInitiative(item=item, search=search):
                 #actualizar
-                congress.updateorinsertFinishtextorResponse(collection="iniciativas",item=item,type='update')
+                congress.updateorinsertFinishtextorResponse(item=item, type='update')
 
             elif not search:
                 #no existe
                 #insertar sin mas
-                congress.updateorinsertFinishtextorResponse(collection="iniciativas",item=item,type='insert')
+                congress.updateorinsertFinishtextorResponse(item=item, type='insert')
             else:
                     #not DIFF
                 print "es el mismo, no cambia"

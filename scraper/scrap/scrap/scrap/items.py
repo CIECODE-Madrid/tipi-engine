@@ -4,82 +4,47 @@
 #
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/items.html
+
 from scrapy.item import Item, Field
 
 
-class InitiativeItem(Item):
-    ref = Field()
-    titulo = Field()
-    autor_diputado = Field()
-    autor_grupo = Field()
-    autor_otro = Field()
+class InitiativeItemBase(Item):
+    title = Field()
+    reference = Field()
+    initiative_type = Field()
+    initiative_type_alt = Field()
+    content = Field()
+    author_deputies = Field()
+    author_parliamentarygroups = Field()
+    author_others = Field()
+    place = Field()
+    processing = Field()
+    created = Field()
+    ended = Field()
     url = Field()
-    contenido = Field()
-    tipo = Field()
-    tipotexto = Field()
-    tramitacion = Field()
-    fecha = Field()
-    fechafin = Field()
-    lugar = Field()
+
+class InitiativeItem(InitiativeItemBase):
+    pass
+
+class AmendmentItem(InitiativeItemBase):
+    pass
+
+class FinishTextItem(InitiativeItemBase):
+    pass
+
+class ResponseItem(InitiativeItemBase):
+    pass
 
 
-class AmendmentItem(Item):
-    ref = Field()
-    titulo = Field()
-    autor_diputado = Field()
-    autor_grupo = Field()
-    autor_otro = Field()
-    url = Field()
-    contenido = Field()
-    tipo = Field()
-    tipotexto = Field()
-    tramitacion = Field()
-    fecha = Field()
-    fechafin = Field()
-    lugar = Field()
-
-class FinishTextItem(Item):
-    ref = Field()
-    titulo = Field()
-    autor_diputado = Field()
-    autor_grupo = Field()
-    autor_otro = Field()
-    url = Field()
-    contenido = Field()
-    tipo = Field()
-    tipotexto = Field()
-    tramitacion = Field()
-    restramitacion = Field()
-    fecha = Field()
-    fechafin = Field()
-    lugar = Field()
-
-class ResponseItem(Item):
-    ref = Field()
-    titulo = Field()
-    autor_diputado = Field()
-    autor_grupo = Field()
-    autor_otro = Field()
-    url = Field()
-    contenido = Field()
-    tipo = Field()
-    tipotexto = Field()
-    tramitacion = Field()
-    restramitacion = Field()
-    fecha = Field()
-    fechafin = Field()
-    lugar = Field()
 
 class MemberItem(Item):
-    nombre = Field()
-    url = Field()
-    grupo = Field()
-    correo = Field()
+    name = Field()
+    image = Field()
+    parliamentarygroup = Field()
+    email = Field()
     web = Field()
     twitter= Field()
-    fecha_alta = Field()
-    fecha_baja = Field()
-    imagen = Field()
-    tipi=Field()
-    activo=Field()
-
+    start_date = Field()
+    end_date = Field()
+    active = Field()
+    url = Field()
