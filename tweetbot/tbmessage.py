@@ -15,7 +15,7 @@ class TBMessage:
     
     def random_topic(self):
         random.seed(time.time())
-        return random.choice(list(self.dbmanager.getTopicByGroup('tipi')))
+        return random.choice(list(self.dbmanager.getTopics(simplified=True)))
 
     def get_message(self):
         raise NotImplementedError("Subclass must implement abstract method")

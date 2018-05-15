@@ -7,41 +7,35 @@ import itertools
 
 from database.congreso import Congress
 
-
 reload(sys)    # to re-enable sys.setdefaultencoding()
 sys.setdefaultencoding('utf-8')
 
 
-
 class LabelingEngine:
-    DICTGROUP_WITH_ALERTS = 'tipi'
 
     def run(self):
         dbmanager = Congress()
         regex_engine = RegexEngine()
-        for groupname in dbmanager.getTopicGroups():
-            topics = list(dbmanager.getTopicsByGroup(groupname))
-            iniciativas = dbmanager.getNotAnnotatedInitiatives(groupname)
-            i = 1
-            total = iniciativas.count()
-            for iniciativa in iniciativas:
-                try:
-                    print "%s [%d/%d]:" % (groupname, i, total)
-                    if iniciativa.has_key('titulo') or iniciativa.has_key('contenido'):
-                        regex_engine.loadIniciativa(iniciativa)
-                        for topic in topics:
-                            regex_engine.loadTags(topic)
-                            regex_engine.matchTags()
-                        dbmanager.annotateInitiative(iniciativa['_id'], groupname, regex_engine.getTopicsFound(), regex_engine.getTagsFound())
-                        if self.DICTGROUP_WITH_ALERTS == groupname:
-                            for topic in regex_engine.getTopicsFound():
-                                dbmanager.addAlert(topic, iniciativa['_id'], iniciativa['titulo'], iniciativa['actualizacion'])
-                    i += 1
-                    regex_engine.cleanTopicsAndTagsFound()
-                except Exception, e:
-                    regex_engine.cleanTopicsAndTagsFound()
-                    print "Error procesando la iniciativa " + str(iniciativa['_id'])
-                    break
+        topics = list(dbmanager.getTopics())
+        initiatives = dbmanager.getNotTaggedInitiatives(groupname)
+        i = 1
+        total = initiatives.count()
+        for initiative in initiatives:
+            try:
+                print "Tagging initiative %d of %d:" % (i, total)
+                if initiative.has_key('title') or initiative.has_key('content'):
+                    regex_engine.loadInitiative(initiative)
+                    for topic in topics:
+                        regex_engine.loadTags(topic)
+                        regex_engine.matchTags()
+                    dbmanager.taggingInitiative(initiative['_id'], regex_engine.getTopicsFound(), regex_engine.getTagsFound())
+                    for topic in regex_engine.getTopicsFound():
+                        dbmanager.addAlert(topic, initiative['_id'], initiative['title'], initiative['updated'])
+                i += 1
+                regex_engine.cleanTopicsAndTagsFound()
+            except Exception, e:
+                regex_engine.cleanTopicsAndTagsFound()
+                print "Error tagging the initiative " + str(initiative['_id'])
         print '============================'
 
 
@@ -51,7 +45,7 @@ class RegexEngine:
     
     def __init__(self):
         self.__tags = []
-        self.__iniciativa = []
+        self.__initiative = []
         self.__topics_found = []
         self.__tags_struct_found = []
 
@@ -86,8 +80,8 @@ class RegexEngine:
                 'struct': {'regex': tag['original'], 'tag': tag['tag'], 'topic': topic['name'], 'subtopic': tag['subtopic']}
                 });
 
-    def loadIniciativa(self, iniciativa):
-        self.__iniciativa = iniciativa
+    def loadInitiative(self, initiative):
+        self.__initiative = initiative
     
     def getTags(self):
         return self.__tags
@@ -105,8 +99,8 @@ class RegexEngine:
     def cleanTagsFound(self):
         self.__tags_struct_found = []
 
-    def getIniciativa(self):
-        return self.__iniciativa
+    def getinitiative(self):
+        return self.__initiative
 
     def addTagsToFounds(self, tag):
         if tag['struct'] not in self.__tags_struct_found:
@@ -116,12 +110,12 @@ class RegexEngine:
 
     def matchTags(self):
         tags = self.getTags()
-        iniciativa = self.getIniciativa()
-        if iniciativa.has_key('titulo'):
-            if not iniciativa.has_key('contenido'):
-                iniciativa['contenido'] = []
-            iniciativa['contenido'].append(iniciativa['titulo'])
-        for line in iniciativa['contenido']:
+        initiative = self.getinitiative()
+        if initiative.has_key('title'):
+            if not initiative.has_key('content'):
+                initiative['content'] = []
+            initiative['content'].append(initiative['title'])
+        for line in initiative['content']:
             if isinstance(line, list) and len(line) > 0:
                 line = line[0]
             for tag in tags:
@@ -129,7 +123,7 @@ class RegexEngine:
                     if pcre.search(tag['compiletag'], line):
                         self.addTagsToFounds(tag);
                 except Exception, e:
-                    print str(e) + " : " + str(term['term']) + " || en iniciativa " + str(iniciativa['_id'])
+                    print str(e) + " : " + str(term['term']) + " || on initiative " + str(initiative['_id'])
                     break
 
 

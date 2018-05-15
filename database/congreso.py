@@ -13,26 +13,26 @@ class Congress(object):
         return self._conn.getDB()[collection]
 
     def searchAll(self, collection):
-        return [ element for element in self._getCollection(collection).find()]
+        return [element for element in self._getCollection(collection).find()]
 
     def searchByParams(self, collection, param={}):
         return self._getCollection(collection).find(param)
 
-    def countTipiInitiatives(self):
-        return self._getCollection('initiatives').find({'is.tipi': True}).count()
-
     def countAllInitiatives(self):
         return self._getCollection('initiatives').find().count()
 
-    def getNotAnnotatedInitiatives(self, topic):
-        return self._getCollection('initiatives').find({'$or': [{'annotate.%s'%topic : {'$exists': False}}, {'annotate.%s'%topic : False}]}, no_cursor_timeout=True)
+    def countTaggedInitiatives(self):
+        return self._getCollection('initiatives').find({'topics': {$exists: True, $not: {$size: 0}}})
+
+    def getNotTaggedInitiatives(self, topic):
+        return self._getCollection('initiatives').find({'$or': [{'tagged.%s'%topic : {'$exists': False}}, {'tagged.%s'%topic : False}]}, no_cursor_timeout=True)
 
     def getDeputyByName(self, name):
         return list(self._getCollection('deputies').find({'name': name}))[0]
 
     def getBestDeputyByTopic(self, topic):
         random.seed(time.time())
-        bydeputies = list(self._getCollection('tipistats').find({}, {'bydeputies': 1}))
+        bydeputies = list(self._getCollection('reports').find({}, {'bydeputies': 1}))
         bydeputy = filter(lambda bydeputy: bydeputy['_id'] == topic, bydeputies[0]['bydeputies'])
         return random.choice(bydeputy[0]['deputies'])['_id']
 
@@ -41,34 +41,30 @@ class Congress(object):
 
     def getBestParliamentaryGroupByTopic(self, topic):
         random.seed(time.time())
-        bygroups = list(self._getCollection('tipistats').find({}, {'bygroups': 1}))
+        bygroups = list(self._getCollection('reports').find({}, {'bygroups': 1}))
         bygroup = filter(lambda bygroup: bygroup['_id'] == topic, bygroups[0]['bygroups'])
         return random.choice(bygroup[0]['groups'])['_id']
 
-    def getTopicsByGroup(self, group):
-        return self._getCollection('topics').find({'group': group})
+    def getTopics(self, simplified=False):
+        if simplified:
+            return self._getCollection('topics').find({}, {'name': 1, 'slug': 1})
+        return self._getCollection('topics').find()
 
-    def getTopicByGroup(self, group):
+    def getSimplifiedTopics(self):
         return self._getCollection('topics').find({'group': group}, {'name': 1, 'slug': 1})
 
-    def annotateInitiative(self, initiative_id, topicgroup, topics, tags):
+    def taggingInitiative(self, initiative_id, topics, tags):
         coll = self._getCollection('initiatives')
         coll.update_one({
             '_id': initiative_id,
         },{
             '$set': {
-            'annotate.%s'%topicgroup: True,
-            'is.%s'%topicgroup: True if len(topics) > 0 else False,
-            'topics.%s'%topicgroup: topics,
-            'tags.%s'%topicgroup: tags,
+                'topics': topics,
+                'tags': tags,
+                'tagged': True,
             }
         ,}
         )
-
-
-    def getTopicGroups(self):
-        return self._getCollection('topics').find({}, {'group': 1}).distinct('group')
-    
 
     def getInitiative(self, reference = None, initiative_type_alt= None, title = None):
         return self._getCollection('initiatives').find_one(
@@ -78,7 +74,6 @@ class Congress(object):
                 'title': title
             }
         )
-
 
     def updateorinsertInitiative(self, type = "insert", item = None):
         # Pipeline method
@@ -116,7 +111,6 @@ class Congress(object):
                 }
             })
 
-
     def updateorinsertInitiativecontent(self, type="insert", item=None):
         # Pipeline method
         if type is 'insert':
@@ -126,8 +120,6 @@ class Congress(object):
         else:
             print "Not type accepted"
             raise
-
-
 
     def _updateInitiativecontent(self, item):
         self._getCollection('initiatives').update_one({
@@ -150,13 +142,10 @@ class Congress(object):
             }
         })
 
-
-
     def isDiffInitiative(self, item=None, search=None):
         if not search:
             return False
         return not self.sameInitiative(item, search)
-
 
     def deletefields(self, search):
         coll = self._getCollection('initiatives')
@@ -167,10 +156,9 @@ class Congress(object):
             {
                 '$unset':
                 {
-                    'topics':1,
-                    'tags':1,
-                    'is':1,
-                    'annotate':1
+                    'topics': 1,
+                    'tags': 1,
+                    'tagged': 1,
                 }
             },False,True)
 
@@ -189,16 +177,14 @@ class Congress(object):
     def sameAdmendment(self,item,search):
         for key, value in search.iteritems():
             for ikey,ivalue in item.iteritems():
-                if key == ikey and (key != 'updated') and (key != 'content' and  key != 'topics' and key != 'tags' and key != 'annotate' and key != 'is'):
+                if key == ikey and (key != 'updated') and (key != 'content' and  key != 'topics' and key != 'tags' and key != 'tagged'):
                     if value != ivalue:
                         return False
         return True
 
-
     def updateorinsertAdmenment(self, item = None ,search = None):
         # Pipeline method
         self._insertAdmendment(item, search)
-
 
     def _insertAdmendment(self, item, search):
         if not search:
@@ -222,7 +208,6 @@ class Congress(object):
             self._getCollection('initiatives').insert(insert)
         else:
             self._updateAdmendment(item, search)
-
 
     def _updateAdmendment(self, item, search):
         parliamentarygroups = item["author_parliamentarygroups"]
@@ -250,7 +235,6 @@ class Congress(object):
                     }
                 })
 
-
     def getAdmendment(self, reference=None, initiative_type_alt=None, parliamentarygroup=None):
         return self._getCollection('initiatives').find_one(
         {
@@ -258,7 +242,6 @@ class Congress(object):
                 'initiative_type_alt': initiative_type_alt,
                 'author_parliamentarygroups': parliamentarygroup
         })
-
 
     def updateorinsertFinishtextorResponse(self, type="insert", item=None):
         # Pipeline method
@@ -300,7 +283,6 @@ class Congress(object):
     def getDeputy(self, name=None):
         return self._getCollection('deputies').find_one({'name': name})
 
-
     def updateorinsertDeputy(self, type = "insert", item = None):
         # Pipeline method
         if type is 'insert':
@@ -331,23 +313,21 @@ class Congress(object):
             }
         })
 
-
-
-    def addAlert(self, dictname, init_id, init_title, init_date):
-        self._getCollection('tipialerts').update_one({
-            'dict': dictname,
+    def addAlert(self, topic, initiative_id, initiative_title, initiative_date):
+        self._getCollection('alerts').update_one({
+            'topic': topic,
             }, {
                 '$addToSet': {
                     'items': {
-                        'id': str(init_id),
-                        'title': init_title,
-                        'date': init_date,
+                        'id': str(initiative_id),
+                        'title': initiative_title,
+                        'date': initiative_date,
                         }
                 }
             }, upsert=True)
 
-    def getTipisAllAlerts(self):
-        return self._getCollection('tipialerts').find({'items':{'$exists':True,'$not':{'$size':0}}})
+    def getAllAlerts(self):
+        return self._getCollection('alerts').find({'items':{'$exists':True,'$not':{'$size':0}}})
 
     def getUserswithAlert(self):
         return self._getCollection('users').find({"profile.dicts":{'$exists': True}})
@@ -359,5 +339,5 @@ class Congress(object):
         #Warning
         self._getCollection(collection).drop()
 
-    def insertstat(self, dict={}):
-        self._getCollection('tipistats').insert(dict)
+    def insertStats(self, document={}):
+        self._getCollection('reports').insert(document)

@@ -1,6 +1,6 @@
 import luigi
 from alerts.alerts import GenerateAlertsTask
-from process_stats import InsertStats
+from process_stats import GenerateStats
 from utils import clean_files, FILES
 import pdb
 
@@ -13,5 +13,5 @@ class GenerateStatsTask(luigi.Task):
 
     def run(self):
         print("{task} says: ready to generate stats!".format(task=self.__class__.__name__))
-        InsertStats()
+        GenerateStats()
         clean_files()
