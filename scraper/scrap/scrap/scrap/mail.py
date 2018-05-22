@@ -1,14 +1,16 @@
 from sparkpost import SparkPost
 
+from alerts.settings import API_SPARKPOST
+
 
 class emailScrap(object):
 
     @staticmethod
     def send_mail( message, title):
-        sp = SparkPost("f70be647f745f194cc0ccf68ee88ad96b10e3e17")
+        sp = SparkPost(API_SPARKPOST)
         doc = message
         response = sp.transmissions.send(
-            recipients=["javier.perez@ciecode.es","pablo.martin@enreda.coop","quique@enreda.coop"],  # email is a user's email
+            recipients=["javier.perez@ciecode.es","pablo.martin@iciecode.es"],  # email is a user's email
             html=doc,
             from_email="scrap@tipiciudadano.es",
             subject=title,
