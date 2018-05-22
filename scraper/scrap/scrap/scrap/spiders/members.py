@@ -5,7 +5,6 @@ from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from scrapy.selector import HtmlXPathSelector, Selector
 from scrapy.item import Item, Field
-import pdb
 import re
 from dateutil.parser import parse
 
@@ -75,7 +74,6 @@ class MemberSpider(CrawlSpider):
 
                 group = curriculum.xpath('a/text()')
 
-                #pdb.set_trace()
                 if group:
                     # url is in list, extract it
                     item['parliamentarygroup'] = re.search('\((.*?)\)', group.extract()[0]).group(1).strip()

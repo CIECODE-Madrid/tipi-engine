@@ -11,7 +11,6 @@ import pymongo
 from scrapy.conf import settings
 from scrapy.exceptions import DropItem
 from scrapy import log
-import pdb
 import json
 
 from scrap.blacklist import Blacklist
@@ -87,7 +86,6 @@ class MongoDBPipeline(object):
                 print "es el mismo, no cambia"
 
         return item
-        #pdb.set_trace()
 
 
     def hasKey(self, item, tag):

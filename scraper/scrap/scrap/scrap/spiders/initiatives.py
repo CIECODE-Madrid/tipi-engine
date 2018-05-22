@@ -635,6 +635,7 @@ class StackSpider(Spider):
         links = response.meta['linksenmiendas']
         first = response.meta['isfirst']
         number = response.meta['number']
+        rsponsetext = ''
         try:
             text += Selector(response).xpath('//div[@class="texto_completo"]').extract()[0]
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re, random, time, datetime
 from conn import MongoDBconn
-
+from utils import generateId
 
 
 class Congress(object):
@@ -22,17 +22,17 @@ class Congress(object):
         return self._getCollection('initiatives').find().count()
 
     def countTaggedInitiatives(self):
-        return self._getCollection('initiatives').find({'topics': {$exists: True, $not: {$size: 0}}})
+        return self._getCollection('initiatives').find({'topics': {'$exists': True, '$not': {'$size': 0}}}).count()
 
-    def getNotTaggedInitiatives(self, topic):
-        return self._getCollection('initiatives').find({'$or': [{'tagged.%s'%topic : {'$exists': False}}, {'tagged.%s'%topic : False}]}, no_cursor_timeout=True)
+    def getNotTaggedInitiatives(self):
+        return self._getCollection('initiatives').find({'$or': [{'tagged': {'$exists': False}}, {'tagged': False}]}, no_cursor_timeout=True)
 
     def getDeputyByName(self, name):
         return list(self._getCollection('deputies').find({'name': name}))[0]
 
     def getBestDeputyByTopic(self, topic):
         random.seed(time.time())
-        bydeputies = list(self._getCollection('reports').find({}, {'bydeputies': 1}))
+        bydeputies = list(self._getCollection('statistics').find({}, {'bydeputies': 1}))
         bydeputy = filter(lambda bydeputy: bydeputy['_id'] == topic, bydeputies[0]['bydeputies'])
         return random.choice(bydeputy[0]['deputies'])['_id']
 
@@ -41,7 +41,7 @@ class Congress(object):
 
     def getBestParliamentaryGroupByTopic(self, topic):
         random.seed(time.time())
-        bygroups = list(self._getCollection('reports').find({}, {'bygroups': 1}))
+        bygroups = list(self._getCollection('statistics').find({}, {'bygroups': 1}))
         bygroup = filter(lambda bygroup: bygroup['_id'] == topic, bygroups[0]['bygroups'])
         return random.choice(bygroup[0]['groups'])['_id']
 
@@ -86,10 +86,10 @@ class Congress(object):
             raise
 
     def _insertInitiative(self, item):
-        item_to_insert = dict(item)
-        item_to_insert["updated"] = item_to_insert['created']
-        # TODO Create SHA1 _id
-        self._getCollection('initiatives').insert(item_to_insert)
+        initiative = dict(item)
+        initiative['_id'] = self._generateIdFromInitiative(initiative)
+        initiative["updated"] = initiative['created']
+        self._getCollection('initiatives').insert(initiative)
 
     def _updateInitiative(self, item):
         self._getCollection('initiatives').update_one({
@@ -188,24 +188,10 @@ class Congress(object):
 
     def _insertAdmendment(self, item, search):
         if not search:
-            # TODO Create SHA1 _id
-            insert = {
-                'title': item['title'],
-                'reference': item['reference'],
-                'initiative_type':item['initiative_type'],
-                'initiative_type_alt':item['initiative_type_alt'],
-                'author_deputies': item['author_deputies'],
-                'author_parliamentarygroups': item['author_parliamentarygroups'],
-                'author_others': item['author_others'],
-                'created': item["created"],
-                'updated': item["created"],
-                'ended': item["ended"],
-                'url': item['url'],
-                'place': item['place'],
-                'processing': item['processing'],
-                'content':[item["content"]]
-            }
-            self._getCollection('initiatives').insert(insert)
+            initiative = dict(item)
+            initiative['_id'] = self._generateIdFromInitiative(initiative)
+            initiative['updated'] = initiative["created"]
+            self._getCollection('initiatives').insert(initiative)
         else:
             self._updateAdmendment(item, search)
 
@@ -254,9 +240,10 @@ class Congress(object):
             raise
 
     def _insertFinishsTextorResponse(self, item):
-        item_to_insert = dict(item)
-        item_to_insert["updated"] = item_to_insert['created']
-        self._getCollection('initiatives').insert(item_to_insert)
+        initiative = dict(item)
+        initiative['_id'] = self._generateIdFromInitiative(initiative)
+        initiative["updated"] = initiative['created']
+        self._getCollection('initiatives').insert(initiative)
 
     def _updateFinishTextorResponse(self, item):
         self._getCollection('initiatives').update_one({
@@ -294,7 +281,8 @@ class Congress(object):
             raise
 
     def _insertDeputy(self, item):
-        self._getCollection('deputies').insert(dict(item))
+        item['_id'] = generateId(item['name'])
+        self._getCollection('deputies').insert(item)
 
     def _updateDeputy(self, item):
         self._getCollection('deputies').update_one({
@@ -340,4 +328,12 @@ class Congress(object):
         self._getCollection(collection).drop()
 
     def insertStats(self, document={}):
-        self._getCollection('reports').insert(document)
+        self._getCollection('statistics').insert(document)
+    
+    def _generateIdFromInitiative(self, initiative):
+        return generateId(
+                initiative['reference'],
+                u''.join(initiative['author_deputies']),
+                u''.join(initiative['author_parliamentarygroups']),
+                u''.join(initiative['author_others']),
+                )

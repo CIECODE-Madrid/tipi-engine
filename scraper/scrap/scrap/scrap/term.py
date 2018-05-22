@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
-import pdb
+
 
 dicc = {
         #Z para los que no tengan

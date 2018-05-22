@@ -9,6 +9,7 @@ from scrapy.item import Item, Field
 
 
 class InitiativeItemBase(Item):
+    _id = Field()
     title = Field()
     reference = Field()
     initiative_type = Field()
@@ -38,6 +39,7 @@ class ResponseItem(InitiativeItemBase):
 
 
 class MemberItem(Item):
+    _id = Field()
     name = Field()
     image = Field()
     parliamentarygroup = Field()

@@ -1,6 +1,6 @@
 import luigi
 
-from search import NotifyTipi
+from search import NotifyByEmail
 from labeling.labeling import LabelingTask
 from targets import *
 from utils import FILES

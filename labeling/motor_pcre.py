@@ -1,9 +1,9 @@
-# This Python file uses the following encoding: utf-8
-import pcre
+# Ths Python file uses the following encoding: utf-8
 import sys
-import pymongo 
 from time import time
 import itertools
+import pcre
+import pymongo 
 
 from database.congreso import Congress
 
@@ -17,26 +17,28 @@ class LabelingEngine:
         dbmanager = Congress()
         regex_engine = RegexEngine()
         topics = list(dbmanager.getTopics())
-        initiatives = dbmanager.getNotTaggedInitiatives(groupname)
+        initiatives = dbmanager.getNotTaggedInitiatives()
         i = 1
         total = initiatives.count()
-        for initiative in initiatives:
-            try:
-                print "Tagging initiative %d of %d:" % (i, total)
-                if initiative.has_key('title') or initiative.has_key('content'):
-                    regex_engine.loadInitiative(initiative)
-                    for topic in topics:
-                        regex_engine.loadTags(topic)
-                        regex_engine.matchTags()
-                    dbmanager.taggingInitiative(initiative['_id'], regex_engine.getTopicsFound(), regex_engine.getTagsFound())
-                    for topic in regex_engine.getTopicsFound():
-                        dbmanager.addAlert(topic, initiative['_id'], initiative['title'], initiative['updated'])
+        if topics:
+            for initiative in initiatives:
+                try:
+                    print "Tagging initiative %d of %d:" % (i, total)
+                    if initiative.has_key('title') or initiative.has_key('content'):
+                        regex_engine.loadInitiative(initiative)
+                        for topic in topics:
+                            print "Processing {}".format(topic['name'])
+                            regex_engine.loadTags(topic)
+                            regex_engine.matchTags()
+                        dbmanager.taggingInitiative(initiative['_id'], regex_engine.getTopicsFound(), regex_engine.getTagsFound())
+                        for topic in regex_engine.getTopicsFound():
+                            dbmanager.addAlert(topic, initiative['_id'], initiative['title'], initiative['updated'])
+                except Exception, e:
+                    print e
+                    print "Error tagging the initiative " + str(initiative['_id'])
+                regex_engine.cleanTopicsAndTagsFound()
                 i += 1
-                regex_engine.cleanTopicsAndTagsFound()
-            except Exception, e:
-                regex_engine.cleanTopicsAndTagsFound()
-                print "Error tagging the initiative " + str(initiative['_id'])
-        print '============================'
+            print '============================'
 
 
 
@@ -73,11 +75,10 @@ class RegexEngine:
         for tag in self.__shuffleTags(topic['tags']):
             self.__tags.append({
                 'topic': topic['name'],
-                'group': topic['group'],
                 'compiletag': pcre.compile('(?i)'+tag['regex']),
                 'tag': tag['original'],
                 'subtopic': tag['subtopic'],
-                'struct': {'regex': tag['original'], 'tag': tag['tag'], 'topic': topic['name'], 'subtopic': tag['subtopic']}
+                'struct': {'tag': tag['tag'], 'subtopic': tag['subtopic'], 'topic': topic['name']}
                 });
 
     def loadInitiative(self, initiative):
@@ -123,7 +124,7 @@ class RegexEngine:
                     if pcre.search(tag['compiletag'], line):
                         self.addTagsToFounds(tag);
                 except Exception, e:
-                    print str(e) + " : " + str(term['term']) + " || on initiative " + str(initiative['_id'])
+                    print str(e) + " : " + str(tag['tag']) + " || on initiative " + str(initiative['_id'])
                     break
 
 
