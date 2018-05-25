@@ -20,6 +20,7 @@ from scrap.mail import emailScrap
 from scrap.check import CheckItems, CheckSystem
 from scrap.typeamendment import AmendmentFlow
 from database.congreso import Congress
+from alerts.settings import API_SPARKPOST
 
 
 class StackSpider(Spider):
@@ -44,7 +45,7 @@ class StackSpider(Spider):
     def whenFinish(self):
         self.time = datetime.datetime.now() - self.time
         print("********  %s " % self.time)
-        email = emailScrap()
+        email = emailScrap(API_SPARKPOST)
         text = "Ha tardado: "+ (" %s " % self.time) +"\n\n<br>"
         text += '<br>'.join('{}{}{}'.format(key,"\t", val) for key, val in self.crawler.stats.get_stats().items())
         text += "\n\n\n"
