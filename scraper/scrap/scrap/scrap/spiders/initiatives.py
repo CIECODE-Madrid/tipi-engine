@@ -45,13 +45,12 @@ class StackSpider(Spider):
     def whenFinish(self):
         self.time = datetime.datetime.now() - self.time
         print("********  %s " % self.time)
-        email = emailScrap(API_SPARKPOST)
         text = "Ha tardado: "+ (" %s " % self.time) +"\n\n<br>"
         text += '<br>'.join('{}{}{}'.format(key,"\t", val) for key, val in self.crawler.stats.get_stats().items())
         text += "\n\n\n"
         notscrap = CheckItems.checkUrls()
         CheckItems.deleteDb()
-        email.send_mail(text, "Scrapy Stats")
+        emailScrap().send_mail(API_SPARKPOST, text, "Scrapy Stats")
 
     def start_requests(self):
         return [scrapy.FormRequest("http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335505_73_1335500_1335500.next_page=/wc/cambioLegislatura",

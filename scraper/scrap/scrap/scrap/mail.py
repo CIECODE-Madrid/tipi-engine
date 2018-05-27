@@ -3,11 +3,9 @@ from sparkpost import SparkPost
 
 class emailScrap(object):
 
-    def __init__(self, apikey=''):
-        self.apikey = apikey
-
-    def send_mail( message, title):
-        sp = SparkPost(self.apikey)
+    @staticmethod
+    def send_mail(apikey='', message='', title=''):
+        sp = SparkPost(apikey)
         doc = message
         response = sp.transmissions.send(
             recipients=["javier.perez@ciecode.es","pablo.martin@iciecode.es"],  # email is a user's email
