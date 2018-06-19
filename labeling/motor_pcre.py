@@ -126,8 +126,3 @@ class RegexEngine:
                 except Exception, e:
                     print str(e) + " : " + str(tag['tag']) + " || on initiative " + str(initiative['_id'])
                     break
-
-
-if __name__ == '__main__':
-    labeling_engine = LabelingEngine()
-    labeling_engine.run()

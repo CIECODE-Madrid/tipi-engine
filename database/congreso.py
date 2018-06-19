@@ -329,6 +329,15 @@ class Congress(object):
 
     def insertStats(self, document={}):
         self._getCollection('statistics').insert(document)
+
+    def updateInitiativesStatus(self, search, status):
+        self._getCollection('initiatives').update_many(
+                search,
+                {
+                    '$set': {
+                        'status': status,
+                    }
+                })
     
     def _generateIdFromInitiative(self, initiative):
         return generateId(

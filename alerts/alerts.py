@@ -13,7 +13,7 @@ class GenerateAlertsTask(luigi.Task):
         return LabelingTask()
 
     def output(self):
-        return luigi.LocalTarget(FILES[2])
+        return luigi.LocalTarget(FILES[3])
 
     def run(self):
         print("{task} says: ready to generate alerts!".format(task=self.__class__.__name__))

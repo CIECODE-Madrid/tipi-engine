@@ -5,6 +5,7 @@ import hashlib
 
 FILES = [
     'scrap.tmp',
+    'transformations.tmp',
     'labeling.tmp',
     'alerts.tmp',
     ]
