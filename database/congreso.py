@@ -66,6 +66,9 @@ class Congress(object):
         ,}
         )
 
+    def getInitiatives(self):
+        return self._getCollection('initiatives').find()
+
     def getInitiative(self, reference = None, initiative_type_alt= None, title = None):
         return self._getCollection('initiatives').find_one(
             {
@@ -338,6 +341,17 @@ class Congress(object):
                         'status': status,
                     }
                 })
+
+    def updateInitiativeURL(self, _id, reference):
+        sref = reference.split("/")
+        new_url = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas?_piref73_2148295_73_1335437_1335437.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&FMT=INITXDSS.fmt&DOCS=1-1&DOCORDER=FIFO&OPDEF=ADJ&QUERY=({}%2F{}*.NDOC.)".format(sref[0], sref[1])
+        self._getCollection('initiatives').update_one({
+            '_id': _id,
+            }, {
+                '$set': {
+                    'url': new_url
+                }
+            })
     
     def _generateIdFromInitiative(self, initiative):
         return generateId(
