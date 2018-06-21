@@ -27,13 +27,15 @@ STATUS_MAP = {
             },
         "Respondida": {
             "processing": [
-                "Tramitado por completo sin"
+                "Tramitado por completo sin",
+                "Gobierno Reclamación"
                 ],
             "initiative_type_alt": [
                 "Interpelación urgente",
                 "Pregunta oral en Pleno",
                 "Pregunta oral al Gobierno en Comisión",
-                "Pregunta al Gobierno con respuesta escrita"
+                "Pregunta al Gobierno con respuesta escrita",
+                "Respuesta"
                 ]
             },
         "Celebrada": {
@@ -56,6 +58,8 @@ STATUS_MAP = {
                 "Junta de Portavoces",
                 "Mesa del Congreso Acuerdo",
                 "Mesa del Congreso Requerimiento",
+                "Mesa del Congreso Calificación",
+                "Mesa del Congreso Reclamación",
                 "Pleno Aprobación desde",
                 "Pleno desde",
                 "Pleno Toma en consideración",
@@ -63,7 +67,6 @@ STATUS_MAP = {
                 "Respuesta.*Gobierno",
                 "Senado desde",
                 ],
-            "initiative_type_alt": []
             },
         "No admitida a trámite": {
                 "processing": [
@@ -77,7 +80,8 @@ STATUS_MAP = {
                 },
         "Retirada": {
                 "processing": [
-                    "Retirado"
+                    "Retirado",
+                    "Extinguido por desaparición o cese del autor"
                     ]
                 },
         "Convertida en otra": {

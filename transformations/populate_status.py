@@ -31,6 +31,6 @@ class PopulateStatus:
             for processing in STATUS_MAP[status][status_key]:
                 processing_array.append(
                         {'processing': {'$regex': processing, '$options': 'gi'}}
-                        )
-                return processing_array
+                    )
+            return processing_array
         return {'$in': STATUS_MAP[status][status_key]}
