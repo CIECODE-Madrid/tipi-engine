@@ -66,6 +66,9 @@ class Congress(object):
         ,}
         )
 
+    def getSubtopics(self):
+        return self._getCollection('initiatives').distinct('tags.subtopic')
+
     def getInitiatives(self):
         return self._getCollection('initiatives').find()
 
