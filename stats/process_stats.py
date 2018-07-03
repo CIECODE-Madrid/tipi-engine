@@ -24,6 +24,8 @@ class GenerateStats(object):
         self.deputiesBySubtopics()
         self.parliamentarygroupsByTopics()
         self.parliamentarygroupsBySubtopics()
+        self.placesByTopics()
+        self.placesBySubtopics()
         self.latest()
         self.insertStats()
 
@@ -94,6 +96,51 @@ class GenerateStats(object):
                 subdoc['_id']= element
                 subdoc['parliamentarygroups'] = result
                 self.document['parliamentarygroupsBySubtopics'].append(subdoc)
+
+
+
+
+
+
+
+
+    def placesByTopics(self):
+        self.document['placesByTopics'] = []
+        for element in self.topics:
+            pipeline = [{'$match': {'topics': element['name'], 'place': {'$not': {'$eq': ""}}} },
+                    {'$group': {'_id': '$place', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
+                    {'$limit': 5}]
+            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+            if len(result) > 0:
+                subdoc = dict()
+                subdoc['_id'] = element['name']
+                subdoc['places'] = result
+                self.document['placesByTopics'].append(subdoc)
+
+    def placesBySubtopics(self):
+        self.document['placesBySubtopics'] = []
+        for element in self.subtopics:
+            pipeline = [{'$match': { 'tags.subtopic': element, 'place': {'$not': {'$eq': ""}}} }, 
+                    {'$group': {'_id': '$place', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
+                    {'$limit': 5}]
+            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+            if len(result) > 0:
+                subdoc = dict()
+                subdoc['_id'] = element
+                subdoc['places'] = result
+                self.document['placesBySubtopics'].append(subdoc)
+
+
+
+
+
+
+
+
+
+
+
+
 
     def latest(self):
         self.document['latest'] = []
