@@ -27,7 +27,6 @@ class LabelingEngine:
                     if initiative.has_key('title') or initiative.has_key('content'):
                         regex_engine.loadInitiative(initiative)
                         for topic in topics:
-                            print "Processing {}".format(topic['name'])
                             regex_engine.loadTags(topic)
                             regex_engine.matchTags()
                         dbmanager.taggingInitiative(initiative['_id'], regex_engine.getTopicsFound(), regex_engine.getTagsFound())
