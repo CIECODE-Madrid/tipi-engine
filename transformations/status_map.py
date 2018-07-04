@@ -6,7 +6,8 @@ STATUS_MAP = {
                 "Aprobado con modificaciones",
                 "Aprobado sin modificaciones",
                 "Convalidado",
-                "Tramitado por completo sin"
+                "Tramitado por completo sin",
+                "Concluido.*Aprobado con modificaciones.*desde.*",
                 ],
             "initiative_type_alt": [
                 "Información sobre Convenios Internacionales",
