@@ -233,7 +233,7 @@ class StackSpider(Spider):
                 except:
                     CheckSystem.systemlog("Fallo en enmienda, no encuentra grupo parlamentario en la db" + response.url)
             elif typeaut is 'parliamentarygroup':
-                item['author_parliamentarygroups'].append(oneaut)
+                item['author_parliamentarygroups'].append(self.getParliamentaryGroup(name=oneaut)['name'])
             elif typeaut is 'other':
                 item['author_others'].append(oneaut)
         #si hubiera varios autores del mismo grupo
