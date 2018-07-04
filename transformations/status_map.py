@@ -45,7 +45,8 @@ STATUS_MAP = [
                 {'processing': {'$regex': "Pleno Toma en consideración", '$options': 'gi'}},
                 {'processing': {'$regex': "Solicitud de amparo", '$options': 'gi'}},
                 {'processing': {'$regex': "Respuesta.*Gobierno", '$options': 'gi'}},
-                {'processing': {'$regex': "Senado desde", '$options': 'gi'}}
+                {'processing': {'$regex': "Senado desde", '$options': 'gi'}},
+                {'processing': {'$regex': "Junta Electoral Central desde", '$options': 'gi'}}
                 ]},
             'status': 'En tramitación'
         },
@@ -68,5 +69,17 @@ STATUS_MAP = [
         {
             'search': {'processing': {'$regex': 'Retirado', '$options': 'gi'}},
             'status': 'Retirada'
+        },
+        {
+            'search': {'processing': {'$regex': 'No celebración', '$options': 'gi'}},
+            'status': 'No celebrada'
+        },
+        {
+            'search': {'processing': {'$regex': 'Derogado', '$options': 'gi'}},
+            'status': 'Derogada'
+        },
+        {
+            'search': {'processing': {'$regex': 'Desconocida', '$options': 'gi'}},
+            'status': 'Desconocida'
         }
     ]
