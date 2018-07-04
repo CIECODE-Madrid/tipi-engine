@@ -1,5 +1,5 @@
 import luigi
-from transformations.transformations import ScrapTask
+from transformations.transformations import TransformationsTask
 from targets import *
 from utils import FILES
 from motor_pcre import LabelingEngine
