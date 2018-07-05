@@ -14,6 +14,18 @@ STATUS_MAP = [
             'status': 'Aprobada'
         },
         {
+            'search': {'processing': {'$regex': 'Tramitado con propuestas de resolución', '$options': 'gi'}},
+            'status': 'Aprobada'
+        },
+        {
+            'search': {'processing': {'$regex': 'Entidad Pública Contestación', '$options': 'gi'}},
+            'status': 'Respondida'
+        },
+        {
+            'search': {'processing': {'$regex': 'Pleno Contestación', '$options': 'gi'}},
+            'status': 'Respondida'
+        },
+        {
             'search': {'processing': {'$regex': 'Tramitado por completo sin', '$options': 'gi'}, 'initiative_type': {'$in': ["171", "180", "181", "184"]}},
             'status': 'Respondida'
         },
@@ -35,6 +47,7 @@ STATUS_MAP = [
                 {'processing': {'$regex': "Comisión.*desde", '$options': 'gi'}},
                 {'processing': {'$regex': "Concluido desde", '$options': 'gi'}},
                 {'processing': {'$regex': "Gobierno Contestación", '$options': 'gi'}},
+                {'processing': {'$regex': "Gobierno Reclamación", '$options': 'gi'}},
                 {'processing': {'$regex': "Junta de Portavoces", '$options': 'gi'}},
                 {'processing': {'$regex': "Mesa del Congreso Acuerdo", '$options': 'gi'}},
                 {'processing': {'$regex': "Mesa del Congreso Requerimiento", '$options': 'gi'}},
@@ -51,7 +64,7 @@ STATUS_MAP = [
             'status': 'En tramitación'
         },
         {
-            'search': {'processing': {'$regex': 'Subsumida en otra iniciativa', '$options': 'gi'}},
+            'search': {'processing': {'$regex': 'Subsumido en otra iniciativa', '$options': 'gi'}},
             'status': 'Acumulada en otra'
         },
         {
@@ -77,6 +90,14 @@ STATUS_MAP = [
         {
             'search': {'processing': {'$regex': 'Derogado', '$options': 'gi'}},
             'status': 'Derogada'
+        },
+        {
+            'search': {'processing': {'$regex': 'Extinguido', '$options': 'gi'}},
+            'status': 'Extinguida'
+        },
+        {
+            'search': {'processing': {'$regex': 'Caducado', '$options': 'gi'}},
+            'status': 'Caducada'
         },
         {
             'search': {'processing': {'$regex': 'Desconocida', '$options': 'gi'}},
