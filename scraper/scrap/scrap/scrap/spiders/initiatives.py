@@ -95,7 +95,7 @@ class StackSpider(Spider):
     def oneinitiative(self,response):
         type = response.meta['type'] #initiative_type_alt
         try:
-            title = Selector(response).xpath('//p[@class="titulo_iniciativa"]/text()').extract()[0]
+            title = Selector(response).xpath('//p[@class="titulo_iniciativa"]/text()').extract()[0][:-13]
             expt = re.search('\(([0-9]{3}\/[0-9]{6})\)', title).group(1)
         except:
             #refresco por si no carga
@@ -125,11 +125,10 @@ class StackSpider(Spider):
            p[@class="texto"]')
         # para las tramitaciones
         tn = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
-         and contains(.,"seguida por la iniciativa:") ]/following-sibling::\
-        p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"seguida por la iniciativa:")]]')
+         and contains(.,"seguida por la") ]/following-sibling::\
+        p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"seguida por la")]]')
         tn1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
-            and contains(.,"seguida por la iniciativa:") ]/following-sibling::\
-           p[@class="texto"]')
+            and contains(.,"seguida por la") ]/following-sibling::p[@class="texto"]')
 
                 # para resultado de las  tramitaciones
         restr = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
@@ -279,9 +278,9 @@ class StackSpider(Spider):
 
         #instert tramitacion in item
         if rtr:
-            item['processing'] = Utils.removeHTMLtags(rtr)
+            item['processing'] = Utils.clearProcessing(rtr)
         elif tr:
-            item['processing'] = Utils.removeHTMLtags(tr)
+            item['processing'] = Utils.clearProcessing(tr)
         else:
             item['processing'] = "Desconocida"
 
@@ -340,7 +339,7 @@ class StackSpider(Spider):
                             responseitem['initiative_type'] = item ['initiative_type']
                             responseitem['initiative_type_alt'] = "Respuesta"
                             responseitem['place'] = item['place']
-                            responseitem['processing'] = item['processing']
+                            responseitem['processing'] = Utils.clearProcessing(item['processing'])
                             responseitem['created'] = item['created']
                             responseitem['ended'] = item['ended']
                             number = Utils.getnumber(txtendurl)
@@ -369,7 +368,7 @@ class StackSpider(Spider):
                                     finishtextitem['initiative_type'] = item ['initiative_type']
                                     finishtextitem['initiative_type_alt'] = item['initiative_type_alt']+" Texto definitivo"
                                     finishtextitem['place'] = item['place']
-                                    finishtextitem['processing'] = item['processing']
+                                    finishtextitem['processing'] = Utils.clearProcessing(item['processing'])
                                     finishtextitem['created'] = item['created']
                                     finishtextitem['ended'] = item['ended']
                                     yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
@@ -415,7 +414,7 @@ class StackSpider(Spider):
                             responseitem['initiative_type'] = item ['initiative_type']
                             responseitem['initiative_type_alt'] = "Respuesta"
                             responseitem['place'] = item['place']
-                            responseitem['processing'] = item['processing']
+                            responseitem['processing'] = Utils.clearProcessing(item['processing'])
                             responseitem['created'] = item['created']
                             responseitem['ended'] = item['ended']
                             yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
@@ -827,7 +826,7 @@ class StackSpider(Spider):
                 admendmentitem['initiative_type'] = item['initiative_type']
                 admendmentitem['initiative_type_alt'] = "Enmienda a " + item['initiative_type_alt']
                 admendmentitem['place'] = item['place']
-                admendmentitem['processing'] = item['processing']
+                admendmentitem['processing'] = Utils.clearProcessing(item['processing'])
                 admendmentitem['created'] = item['created']
                 admendmentitem['ended'] = item['ended']
                 admendmentitem['url'] = item['url']
