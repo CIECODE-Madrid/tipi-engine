@@ -76,7 +76,6 @@ class Utils(object):
 
     @staticmethod
     def checkotherRefandnotOwn(line,ref):
-        import ipdb; ipdb.set_trace()
         control = False
         if re.search('[0-9]{3}\/[0-9]{6}',line) and not re.search(ref,line) :
             control = True
@@ -162,13 +161,13 @@ class Utils(object):
 
     @staticmethod
     def clearTitle(string):
-        res = re.sub('(\.$)','',res.strip())
+        res = re.sub('(\.$)','',string.strip())
         BLANK = re.compile(r'\n')
         return BLANK.sub(' ', res)
 
     @staticmethod
     def clearProcessing(string):
-        string = self.removeHTMLtags(string)
+        string = Utils.removeHTMLtags(string)
         BLANK = re.compile(r'\n')
         return BLANK.sub(' ', string)
 
