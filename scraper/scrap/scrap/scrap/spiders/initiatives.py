@@ -95,8 +95,9 @@ class StackSpider(Spider):
     def oneinitiative(self,response):
         type = response.meta['type'] #initiative_type_alt
         try:
-            title = Selector(response).xpath('//p[@class="titulo_iniciativa"]/text()').extract()[0][:-13]
-            expt = re.search('\(([0-9]{3}\/[0-9]{6})\)', title).group(1)
+            title_block = Selector(response).xpath('//p[@class="titulo_iniciativa"]/text()').extract()[0]
+            title = title_block[:-13]
+            expt = re.search('\(([0-9]{3}\/[0-9]{6})\)', title_block).group(1)
         except:
             #refresco por si no carga
             yield scrapy.Request(response.url, errback=self.errback_httpbin, callback=self.oneinitiative,
