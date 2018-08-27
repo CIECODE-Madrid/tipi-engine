@@ -94,7 +94,6 @@ class StackSpider(Spider):
                         yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
                                              callback=self.oneinitiative, meta = {'type':type})
             except IndexError as error:
-                import ipdb; ipdb.set_trace()
                 print error
 
     def oneinitiative(self,response):
