@@ -80,17 +80,22 @@ class StackSpider(Spider):
 
     def initiatives(self, response):
         type = response.meta['type']
-        first_url = Selector(response).xpath('//div[@class="resultados_encontrados"]/p/a/@href').extract()[0]
-        num_inis = Selector(response).xpath('//div[@class="SUBTITULO_CONTENIDO"]/span/text()').extract()
-        split = first_url.partition("&DOCS=1-1")
-        for i in range(1,int(num_inis[0])+1):
-            new_url = split[0]+"&DOCS="+str(i)+"-"+str(i)+split[2]
-            initiative_url = Utils.createUrl(response.url,new_url)
-            CheckItems.addElement(initiative_url)
-
-            if not Blacklist.getElement(initiative_url):
-                yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
-                                     callback=self.oneinitiative, meta = {'type':type})
+        first_url_block = Selector(response).xpath('//div[@class="resultados_encontrados"]/p/a/@href').extract()
+        if len(first_url_block):
+            try:
+                first_url = first_url_block[0]
+                num_inis = Selector(response).xpath('//div[@class="SUBTITULO_CONTENIDO"]/span/text()').extract()
+                split = first_url.partition("&DOCS=1-1")
+                for i in range(1,int(num_inis[0])+1):
+                    new_url = split[0]+"&DOCS="+str(i)+"-"+str(i)+split[2]
+                    initiative_url = Utils.createUrl(response.url,new_url)
+                    CheckItems.addElement(initiative_url)
+                    if not Blacklist.getElement(initiative_url):
+                        yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
+                                             callback=self.oneinitiative, meta = {'type':type})
+            except IndexError as error:
+                import ipdb; ipdb.set_trace()
+                print error
 
     def oneinitiative(self,response):
         type = response.meta['type'] #initiative_type_alt
