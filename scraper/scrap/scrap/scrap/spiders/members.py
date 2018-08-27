@@ -16,10 +16,11 @@ from scrap.items import MemberItem
 class MemberSpider(CrawlSpider):
     name = 'members'
     allowed_domains = ['congreso.es', ]
-    start_urls = ['http://www.congreso.es/portal/page/portal/Congreso'
-                           '/Congreso/Diputados?_piref73_1333056_73_1333049_13'
-                           '33049.next_page=/wc/menuAbecedarioInicio&tipoBusqu'
-                           'eda=completo&idLegislatura=12' ]
+    start_urls = [  'http://www.congreso.es/portal/page/portal/Congreso'
+                        '/Congreso/Diputados?_piref73_1333056_73_1333049_13'
+                        '33049.next_page=/wc/menuAbecedarioInicio&tipoBusqu'
+                        'eda=completo&idLegislatura=12',
+                    'http://www.congreso.es/portal/page/portal/Congreso/Congreso/Diputados/BajasLegAct']
 
     rules = []
     rules.append(
@@ -31,7 +32,10 @@ class MemberSpider(CrawlSpider):
                 allow=['busquedaAlfabeticaDiputados&paginaActual=\d+&idLeg'
                        'islatura=12'
                        '&tipoBusqueda=completo'], unique=True), follow=True))
-
+    rules.append(
+            Rule(LinkExtractor(
+                allow=['diputadosBajaLegActual&paginaActual=\d']
+                    , unique=True), follow=True))
 
 
 
@@ -87,13 +91,11 @@ class MemberSpider(CrawlSpider):
                     # add dates of inscription and termination
                     ins_date = curriculum.re('(?i)(?<=fecha alta:)[\s]*[\d\/]*')
                     if ins_date:
-                        item['start_date'] = parse\
-                                                   (ins_date[0], dayfirst=True)
-                    term_date = curriculum.re('(?i)(?<=caus\xf3 baja el)[\s]*['
-                                             '\d\/]*')
+                        item['start_date'] = parse(ins_date[0], dayfirst=True)
+
+                    term_date = curriculum.re('(?i)(?<=baja el)[\s]*[\d\/]*')
                     if term_date:
-                        item['end_date'] = parse\
-                                                 (term_date[0], dayfirst=True)
+                        item['end_date'] = parse(term_date[0], dayfirst=True)
                         item['active'] = False
 
             if extra_data:
