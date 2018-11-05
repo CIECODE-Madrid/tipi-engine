@@ -2,6 +2,7 @@
 import re
 import urlparse
 import datetime
+import time
 from scrapy import signals
 from scrapy.xlib.pydispatch import dispatcher
 from fuzzywuzzy import fuzz
