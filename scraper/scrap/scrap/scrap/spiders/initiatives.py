@@ -253,21 +253,23 @@ class StackSpider(Spider):
 
         item['place'] = self.extractplace(DS = diarios, com = comision , type = type)
         item['processing'] = ""
-
         item['created'] = ""
-        item['ended'] = ""
+        item['updated'] = ""
+        
         try:
             if presentado:
                 #se obtiene la fecha
 
                 fechainicio = re.search('([0-9]{2}\/[0-9]{2}\/[0-9]{4}),', presentado[0]).group(1).strip() #se obtiene la fecha
                 item['created'] = Utils.getDateobject(fechainicio)
-                #control de fecha final
-                if re.search('calificado el ([0-9]{2}\/[0-9]{2}\/[0-9]{4}) ', presentado[0]):
-                    item['ended'] = Utils.getDateobject(re.search('calificado el ([0-9]{2}\/[0-9]{2}\/[0-9]{4}) ', presentado[0]).group(1))
+                item["updated"] = item["created"]
 
-            # else:
-            #     item['created'] = "Fecha no encontrada"
+                # check last date
+                all_dates = Selector(response).css("#rg9087").re("(?:[0-9]{2}/){2}[0-9]{4}")
+                all_dates.sort(key=lambda d: time.mktime(time.strptime(d, "%d/%m/%Y")), reverse=True)
+                all_dates_filtered = [d for d in all_dates if time.mktime(time.strptime(d, "%d/%m/%Y")) < time.time()]
+                actualizacion = all_dates_filtered[0]
+                item['actualizacion'] = Utils.getDateobject(actualizacion)
 
         except:
              CheckSystem.systemlog("Falla al encontrar la fecha " + response.url)
@@ -346,7 +348,7 @@ class StackSpider(Spider):
                             responseitem['place'] = item['place']
                             responseitem['processing'] = Utils.clearProcessing(item['processing'])
                             responseitem['created'] = item['created']
-                            responseitem['ended'] = item['ended']
+                            responseitem['updated'] = item['updated']
                             number = Utils.getnumber(txtendurl)
                             yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
                                     errback=self.errback_httpbin,
@@ -375,7 +377,7 @@ class StackSpider(Spider):
                                     finishtextitem['place'] = item['place']
                                     finishtextitem['processing'] = Utils.clearProcessing(item['processing'])
                                     finishtextitem['created'] = item['created']
-                                    finishtextitem['ended'] = item['ended']
+                                    finishtextitem['updated'] = item['updated']
                                     yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
                                                     errback=self.errback_httpbin,
                                                     callback=self.finishtext, dont_filter=True,
@@ -421,7 +423,7 @@ class StackSpider(Spider):
                             responseitem['place'] = item['place']
                             responseitem['processing'] = Utils.clearProcessing(item['processing'])
                             responseitem['created'] = item['created']
-                            responseitem['ended'] = item['ended']
+                            responseitem['updated'] = item['updated']
                             yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
                                          errback=self.errback_httpbin,
                                          callback=self.responses, dont_filter=True,
@@ -750,7 +752,7 @@ class StackSpider(Spider):
                 admendmentitem['place'] = item['place']
                 admendmentitem['processing'] = item['processing']
                 admendmentitem['created'] = item['created']
-                admendmentitem['ended'] = item['ended']
+                admendmentitem['updated'] = item['updated']
                 admendmentitem['url'] = item['url']
                 splitenmienda = enmienda.split("<br><br>")
 
@@ -833,7 +835,7 @@ class StackSpider(Spider):
                 admendmentitem['place'] = item['place']
                 admendmentitem['processing'] = Utils.clearProcessing(item['processing'])
                 admendmentitem['created'] = item['created']
-                admendmentitem['ended'] = item['ended']
+                admendmentitem['updated'] = item['updated']
                 admendmentitem['url'] = item['url']
 
                 splitenmienda = enmienda.split("<br><br>")

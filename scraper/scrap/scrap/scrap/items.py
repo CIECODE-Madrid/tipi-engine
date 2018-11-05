@@ -21,7 +21,7 @@ class InitiativeItemBase(Item):
     place = Field()
     processing = Field()
     created = Field()
-    ended = Field()
+    updated = Field()
     url = Field()
 
 class InitiativeItem(InitiativeItemBase):

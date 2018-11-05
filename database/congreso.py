@@ -94,7 +94,6 @@ class Congress(object):
     def _insertInitiative(self, item):
         initiative = dict(item)
         initiative['_id'] = self._generateIdFromInitiative(initiative)
-        initiative["updated"] = initiative['created']
         self._getCollection('initiatives').insert(initiative)
 
     def _updateInitiative(self, item):
@@ -112,8 +111,7 @@ class Congress(object):
                     'processing': item['processing'],
                     'place': item['place'],
                     'created': item['created'],
-                    'updated': datetime.datetime.utcnow(),
-                    'ended': item['ended']
+                    'updated': item['updated']
                 }
             })
 
@@ -133,18 +131,17 @@ class Congress(object):
                 'initiative_type_alt': item['initiative_type_alt']
         },{
             '$set': {
-            'content': item['content'],
-            'title': item['title'],
-            'author_deputies': item['author_deputies'],
-            'author_parliamentarygroups': item['author_parliamentarygroups'],
-            'author_others': item['author_others'],
-            'url': item['url'],
-            'initiative_type': item['initiative_type'],
-            'processing': item['processing'],
-            'place': item['place'],
-            'created': item['created'],
-            'updated': datetime.datetime.utcnow(),
-            'ended': item['ended']
+                'content': item['content'],
+                'title': item['title'],
+                'author_deputies': item['author_deputies'],
+                'author_parliamentarygroups': item['author_parliamentarygroups'],
+                'author_others': item['author_others'],
+                'url': item['url'],
+                'initiative_type': item['initiative_type'],
+                'processing': item['processing'],
+                'place': item['place'],
+                'created': item['created'],
+                'updated': item['updated']
             }
         })
 
@@ -222,8 +219,7 @@ class Congress(object):
                     '$set': {
                     'author_deputies': list(set(before_deputies)),
                     'author_others': list(set(before_others)),
-                    'content': before,
-                    'updated': datetime.datetime.utcnow()
+                    'content': before
                     }
                 })
 
@@ -248,7 +244,7 @@ class Congress(object):
     def _insertFinishsTextorResponse(self, item):
         initiative = dict(item)
         initiative['_id'] = self._generateIdFromInitiative(initiative)
-        initiative["updated"] = initiative['created']
+        initiative["updated"] = initiative['updated']
         self._getCollection('initiatives').insert(initiative)
 
     def _updateFinishTextorResponse(self, item):
@@ -267,8 +263,7 @@ class Congress(object):
                     'processing': item['processing'],
                     'place': item['place'],
                     'created': item['created'],
-                    'updated': datetime.datetime.utcnow(),
-                    'ended': item['ended'],
+                    'updated': item['updated'],
                     'content': item['content']
                 }
             })
