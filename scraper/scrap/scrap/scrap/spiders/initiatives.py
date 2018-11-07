@@ -269,7 +269,7 @@ class StackSpider(Spider):
                 all_dates.sort(key=lambda d: time.mktime(time.strptime(d, "%d/%m/%Y")), reverse=True)
                 all_dates_filtered = [d for d in all_dates if time.mktime(time.strptime(d, "%d/%m/%Y")) < time.time()]
                 actualizacion = all_dates_filtered[0]
-                item['actualizacion'] = Utils.getDateobject(actualizacion)
+                item['updated'] = Utils.getDateobject(actualizacion)
 
         except:
              CheckSystem.systemlog("Falla al encontrar la fecha " + response.url)
