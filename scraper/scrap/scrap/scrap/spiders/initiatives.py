@@ -9,7 +9,6 @@ from fuzzywuzzy import fuzz
 import scrapy
 from scrapy import Spider
 from scrapy.selector import Selector
-import pdb
 from scrapy.spidermiddlewares.httperror import HttpError
 from scrap.term import Terms
 from scrap.items import InitiativeItem,AmendmentItem, FinishTextItem, ResponseItem
@@ -266,7 +265,7 @@ class StackSpider(Spider):
                 item["updated"] = item["created"]
 
                 # check last date
-                all_dates = Selector(response).css("#rg9087").re("(?:[0-9]{2}/){2}[0-9]{4}")
+                all_dates = Selector(response).css("#texto_parrafo").re("(?:[0-9]{2}/){2}[0-9]{4}")
                 all_dates.sort(key=lambda d: time.mktime(time.strptime(d, "%d/%m/%Y")), reverse=True)
                 all_dates_filtered = [d for d in all_dates if time.mktime(time.strptime(d, "%d/%m/%Y")) < time.time()]
                 actualizacion = all_dates_filtered[0]
