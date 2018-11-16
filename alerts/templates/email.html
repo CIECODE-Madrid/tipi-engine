@@ -6,7 +6,7 @@
 </head>
 <body>
     <div style="text-align:center;">
-        <a href="http://tipiciudadano.es"><img src="http://tipiciudadano.es/images/tipilogo.png" style="padding:20px;"></a>
+        <a href="https://tipiciudadano.es" style="background-color:#222;"><img src="https://tipiciudadano.es/img/logo_big.svg" style="padding:20px 40px;"></a>
     </div>
     {% for n in items %}
         {% for key, value in n.iteritems()%}
@@ -14,7 +14,7 @@
                 <h2 style="border-bottom:5px solid #FBC239;padding-bottom:10px;font-size:2em;padding-left:10px; color: #222;">{{key}}</h2>
                 <ul style="list-style:none;">
                     {% for val in value %}
-                        <li style="margin-bottom:10px;"><a href="{{val.url}}" style="color:#222;font-size:1.2em;text-decoration:none;">{{val.titulo}}</a></li>
+                        <li style="margin-bottom:10px;"><a href="{{val.url}}" style="color:#222;font-size:1.2em;text-decoration:none;">{{val.title}}</a></li>
                     {% endfor %}
                 </ul>
             </div>
