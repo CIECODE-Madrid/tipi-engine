@@ -29,7 +29,7 @@ class NotifyByEmail(object):
             if alerttoshow:
                 try:
                     emailSparkPost.send_mail(user['emails'][0]['address'],alerttoshow)
-                except Exception,e:
+                except Exception as e:
                     print str(e)+" "+user['emails'][0]['address']+" is not a valid email"
 
 
