@@ -161,10 +161,15 @@ class Utils(object):
 
     @staticmethod
     def clearTitle(string):
-        res = re.sub('(\.?)([\(|\{].*?.$)|(.$)', '' , string.strip()).strip()
-        res = re.sub('(.$)','',res.strip())
+        res = re.sub('(\.$)','',string.strip())
         BLANK = re.compile(r'\n')
         return BLANK.sub(' ', res)
+
+    @staticmethod
+    def clearProcessing(string):
+        string = Utils.removeHTMLtags(string)
+        BLANK = re.compile(r'\n')
+        return BLANK.sub(' ', string)
 
     @staticmethod
     def hasSearchEnd(string):

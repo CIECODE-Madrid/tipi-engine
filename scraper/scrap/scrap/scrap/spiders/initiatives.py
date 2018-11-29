@@ -2,13 +2,13 @@
 import re
 import urlparse
 import datetime
+import time
 from scrapy import signals
 from scrapy.xlib.pydispatch import dispatcher
 from fuzzywuzzy import fuzz
 import scrapy
 from scrapy import Spider
 from scrapy.selector import Selector
-import pdb
 from scrapy.spidermiddlewares.httperror import HttpError
 from scrap.term import Terms
 from scrap.items import InitiativeItem,AmendmentItem, FinishTextItem, ResponseItem
@@ -38,8 +38,8 @@ class StackSpider(Spider):
         super(StackSpider,self).__init__(*a, **kw)
         self.time = datetime.datetime.now()
         self.congress = Congress()
-        self.members = self.congress.searchAll("diputados")
-        self.groups = self.congress.searchAll("grupos")
+        self.members = self.congress.searchAll('deputies')
+        self.groups = self.congress.searchAll('parliamentarygroups')
         dispatcher.connect(self.whenFinish, signals.spider_closed)
 
     def whenFinish(self):
@@ -79,27 +79,28 @@ class StackSpider(Spider):
 
     def initiatives(self, response):
         type = response.meta['type']
-        first_url = Selector(response).xpath('//div[@class="resultados_encontrados"]/p/a/@href').extract()[0]
-        num_inis = Selector(response).xpath('//div[@class="SUBTITULO_CONTENIDO"]/span/text()').extract()
-        split = first_url.partition("&DOCS=1-1")
-        for i in range(1,int(num_inis[0])+1):
-            new_url = split[0]+"&DOCS="+str(i)+"-"+str(i)+split[2]
-            initiative_url = Utils.createUrl(response.url,new_url)
-            CheckItems.addElement(initiative_url)
-
-            if Blacklist.getElement(initiative_url):
-                if not Blacklist.getElement(initiative_url):
-                    yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
-                                         callback=self.oneinitiative, meta = {'type':type})
-            else:
-                yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
-                                     callback=self.oneinitiative, meta = {'type':type})
+        first_url_block = Selector(response).xpath('//div[@class="resultados_encontrados"]/p/a/@href').extract()
+        if len(first_url_block):
+            try:
+                first_url = first_url_block[0]
+                num_inis = Selector(response).xpath('//div[@class="SUBTITULO_CONTENIDO"]/span/text()').extract()
+                split = first_url.partition("&DOCS=1-1")
+                for i in range(1,int(num_inis[0])+1):
+                    new_url = split[0]+"&DOCS="+str(i)+"-"+str(i)+split[2]
+                    initiative_url = Utils.createUrl(response.url,new_url)
+                    CheckItems.addElement(initiative_url)
+                    if not Blacklist.getElement(initiative_url):
+                        yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
+                                             callback=self.oneinitiative, meta = {'type':type})
+            except IndexError as error:
+                print error
 
     def oneinitiative(self,response):
-        type = response.meta['type'] #tipotexto
+        type = response.meta['type'] #initiative_type_alt
         try:
-            title = Selector(response).xpath('//p[@class="titulo_iniciativa"]/text()').extract()[0]
-            expt = re.search('\(([0-9]{3}\/[0-9]{6})\)', title).group(1)
+            title_block = Selector(response).xpath('//p[@class="titulo_iniciativa"]/text()').extract()[0]
+            title = title_block[:-13]
+            expt = re.search('\(([0-9]{3}\/[0-9]{6})\)', title_block).group(1)
         except:
             #refresco por si no carga
             yield scrapy.Request(response.url, errback=self.errback_httpbin, callback=self.oneinitiative,
@@ -128,11 +129,10 @@ class StackSpider(Spider):
            p[@class="texto"]')
         # para las tramitaciones
         tn = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
-         and contains(.,"seguida por la iniciativa:") ]/following-sibling::\
-        p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"seguida por la iniciativa:")]]')
+         and contains(.,"seguida por la") ]/following-sibling::\
+        p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"seguida por la")]]')
         tn1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
-            and contains(.,"seguida por la iniciativa:") ]/following-sibling::\
-           p[@class="texto"]')
+            and contains(.,"seguida por la") ]/following-sibling::p[@class="texto"]')
 
                 # para resultado de las  tramitaciones
         restr = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
@@ -220,53 +220,55 @@ class StackSpider(Spider):
                         add= add[0]
                         listautors.append(add)
         item = InitiativeItem()
-        item['ref'] = expt
-        item['titulo'] = Utils.clearTitle(title)
+        item['reference'] = expt
+        item['title'] = Utils.clearTitle(title)
         item['url'] = response.url
         ##control autor
-        item['autor_diputado'] = []
-        item['autor_grupo'] = []
-        item['autor_otro'] = []
+        item['author_deputies'] = []
+        item['author_parliamentarygroups'] = []
+        item['author_others'] = []
         for oneaut in listautors:
             typeaut = self.typeAutor(name=oneaut)
-            if typeaut is 'diputado':
-                item['autor_diputado'].append(oneaut)
+            if typeaut is 'deputy':
+                item['author_deputies'].append(oneaut)
                 try:
-                    item['autor_grupo'].append(self.getGroupfrommember(name=oneaut)['nombre'])
+                    item['author_parliamentarygroups'].append(self.getParliamentaryGroupFromDeputy(name=oneaut)['name'])
                 except:
                     CheckSystem.systemlog("Fallo en enmienda, no encuentra grupo parlamentario en la db" + response.url)
-            elif typeaut is 'grupo':
-                item['autor_grupo'].append(self.getGroup(name=oneaut)['nombre'])
-            elif typeaut is 'otro':
-                item['autor_otro'].append(oneaut)
+            elif typeaut is 'parliamentarygroup':
+                item['author_parliamentarygroups'].append(self.getParliamentaryGroup(name=oneaut)['name'])
+            elif typeaut is 'other':
+                item['author_others'].append(oneaut)
         #si hubiera varios autores del mismo grupo
-        item['autor_grupo']= list(set(item['autor_grupo']))
-        item['tipotexto'] = type
-        item['tipo'] = re.search('[0-9]{3}', expt).group(0)
+        item['author_parliamentarygroups'] = list(set(item['author_parliamentarygroups']))
+        item['initiative_type_alt'] = type
+        item['initiative_type'] = re.search('[0-9]{3}', expt).group(0)
 
-        item["contenido"]=[]
+        item['content'] = []
 
         #si hay comisiones meter la comision(es donde se habla de las inicitativas
         if comision:
             comision = comision.xpath("./a/b/text()").extract()
 
-        item["lugar"] = self.extractplace(DS = diarios, com = comision , type = type)
-        item["tramitacion"] = ""
-
-        item['fecha'] = ""
-        item['fechafin'] = "En trámite"
+        item['place'] = self.extractplace(DS = diarios, com = comision , type = type)
+        item['processing'] = ""
+        item['created'] = ""
+        item['updated'] = ""
+        
         try:
             if presentado:
                 #se obtiene la fecha
 
                 fechainicio = re.search('([0-9]{2}\/[0-9]{2}\/[0-9]{4}),', presentado[0]).group(1).strip() #se obtiene la fecha
-                item['fecha'] = Utils.getDateobject(fechainicio)
-                #control de fecha final
-                if re.search('calificado el ([0-9]{2}\/[0-9]{2}\/[0-9]{4}) ', presentado[0]):
-                    item['fechafin'] = Utils.getDateobject(re.search('calificado el ([0-9]{2}\/[0-9]{2}\/[0-9]{4}) ', presentado[0]).group(1))
+                item['created'] = Utils.getDateobject(fechainicio)
+                item["updated"] = item["created"]
 
-            else:
-                item['fecha'] ="Fecha no encontrada"
+                # check last date
+                all_dates = Selector(response).css("#texto_parrafo").re("(?:[0-9]{2}/){2}[0-9]{4}")
+                all_dates.sort(key=lambda d: time.mktime(time.strptime(d, "%d/%m/%Y")), reverse=True)
+                all_dates_filtered = [d for d in all_dates if time.mktime(time.strptime(d, "%d/%m/%Y")) < time.time()]
+                actualizacion = all_dates_filtered[0]
+                item['updated'] = Utils.getDateobject(actualizacion)
 
         except:
              CheckSystem.systemlog("Falla al encontrar la fecha " + response.url)
@@ -282,21 +284,22 @@ class StackSpider(Spider):
 
         #instert tramitacion in item
         if rtr:
-            item["tramitacion"] = Utils.removeHTMLtags(rtr)
+            item['processing'] = Utils.clearProcessing(rtr)
         elif tr:
-            item["tramitacion"] = Utils.removeHTMLtags(tr)
+            item['processing'] = Utils.clearProcessing(tr)
         else:
-            item["tramitacion"] = "Desconocida"
+            item['processing'] = "Desconocida"
 
         #saber si se ha actualizado
-        #search = self.congress.getInitiative(collection="iniciativas",ref=item['ref'],tipotexto=item['tipotexto'],titulo=item['titulo'])
-        #if search and ((not Utils.checkTypewithAmendments(type) and not Utils.checkPreguntas(type)) or  Utils.hasSearchEnd(search["tramitacion"])  ): #
+        #search = self.congress.getInitiative(ref=item['reference'],initiative_type_alt=item['initiative_type_alt'],title=item['title'])
+        #if search and ((not Utils.checkTypewithAmendments(type) and not Utils.checkPreguntas(type)) or  Utils.hasSearchEnd(search['processing'])  ): #
             #se actualiza en el PIPELINE
         #    yield item
         #else:#no existe el objeto luego se tiene que scrapear
+
             #BOLETINES
         if boletines or diarios:
-            listurls=[]
+            listurls = []
             enmiendas = []
             enmmocion = []
             if boletines:
@@ -332,19 +335,19 @@ class StackSpider(Spider):
                                 ##Aqui van las respuestas
                             txtendurl = url[0]
                             responseitem = ResponseItem()
-                            responseitem['ref'] = item['ref']
-                            responseitem['titulo'] = item['titulo']
-                            responseitem['autor_diputado'] = []
-                            responseitem['autor_grupo'] = []
-                            responseitem['autor_otro'] = ["Gobierno"]
+                            responseitem['reference'] = item['reference']
+                            responseitem['title'] = item['title']
+                            responseitem['author_deputies'] = []
+                            responseitem['author_parliamentarygroups'] = []
+                            responseitem['author_others'] = ["Gobierno"]
                             responseitem['url'] = item['url']
-                            responseitem['contenido'] = []
-                            responseitem['tipo'] = item ['tipo']
-                            responseitem['tramitacion'] = item['tramitacion']
-                            responseitem['fecha'] = item['fecha']
-                            responseitem['fechafin'] = item['fechafin']
-                            responseitem['lugar'] = item['lugar']
-                            responseitem['tipotexto'] = "Respuesta"
+                            responseitem['content'] = []
+                            responseitem['initiative_type'] = item ['initiative_type']
+                            responseitem['initiative_type_alt'] = "Respuesta"
+                            responseitem['place'] = item['place']
+                            responseitem['processing'] = Utils.clearProcessing(item['processing'])
+                            responseitem['created'] = item['created']
+                            responseitem['updated'] = item['updated']
                             number = Utils.getnumber(txtendurl)
                             yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
                                     errback=self.errback_httpbin,
@@ -359,21 +362,21 @@ class StackSpider(Spider):
                                     #se crea el nuevo objeto
                                     txtendurl = url[0]
                                     finishtextitem = FinishTextItem()
-                                    finishtextitem['ref'] = item['ref']
-                                    finishtextitem['titulo'] = item['titulo']
-                                    # Inicio de caso especial para las 121 (proyecos de ley) en la que su autor siempre es Gobierno (autor_otro)
-                                    finishtextitem['autor_diputado'] = [] if item['tipo'] == "121" else item['autor_diputado']
-                                    finishtextitem['autor_grupo'] = [] if item['tipo'] == "121" else item['autor_grupo']
-                                    finishtextitem['autor_otro'] = item['autor_otro']
+                                    finishtextitem['reference'] = item['reference']
+                                    finishtextitem['title'] = item['title']
+                                    # Inicio de caso especial para las 121 (proyecos de ley) en la que su autor siempre es Gobierno (author_other)
+                                    finishtextitem['author_deputies'] = [] if item['initiative_type'] == "121" else item['author_deputies']
+                                    finishtextitem['author_parliamentarygroups'] = [] if item['initiative_type'] == "121" else item['author_parliamentarygroups']
+                                    finishtextitem['author_others'] = item['author_others']
                                     # Fin de caso especial
                                     finishtextitem['url'] = item['url']
-                                    finishtextitem['contenido'] = []
-                                    finishtextitem['tipo'] = item ['tipo']
-                                    finishtextitem['tramitacion'] = item['tramitacion']
-                                    finishtextitem['fecha'] = item['fecha']
-                                    finishtextitem['fechafin'] = item['fechafin']
-                                    finishtextitem['lugar'] = item['lugar']
-                                    finishtextitem['tipotexto'] = item['tipotexto']+" Texto definitivo"
+                                    finishtextitem['content'] = []
+                                    finishtextitem['initiative_type'] = item ['initiative_type']
+                                    finishtextitem['initiative_type_alt'] = item['initiative_type_alt']+" Texto definitivo"
+                                    finishtextitem['place'] = item['place']
+                                    finishtextitem['processing'] = Utils.clearProcessing(item['processing'])
+                                    finishtextitem['created'] = item['created']
+                                    finishtextitem['updated'] = item['updated']
                                     yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
                                                     errback=self.errback_httpbin,
                                                     callback=self.finishtext, dont_filter=True,
@@ -395,7 +398,7 @@ class StackSpider(Spider):
                         yield scrapy.Request(Utils.createUrl(response.url, moen),
                                                      errback=self.errback_httpbin,
                                                      callback=self.monenmiendas, dont_filter=True,
-                                                     meta={'item': item, 'text': "", 'linksenmiendas': None, 'isfirst': True, 'pag':number,'ref':refmon}
+                                                     meta={'item': item, 'text': "", 'linksenmiendas': None, 'isfirst': True, 'pag':number,'reference':refmon}
                                                      )
                 ##DIARIOS
             if diarios:
@@ -407,19 +410,19 @@ class StackSpider(Spider):
                             ##Aqui van las respuestas
                             txtendurl = url[0]
                             responseitem = ResponseItem()
-                            responseitem['ref'] = item['ref']
-                            responseitem['titulo'] = item['titulo']
-                            responseitem['autor_diputado'] = []
-                            responseitem['autor_grupo'] = []
-                            responseitem['autor_otro'] = ["Gobierno"]
+                            responseitem['reference'] = item['reference']
+                            responseitem['title'] = item['title']
+                            responseitem['author_deputies'] = []
+                            responseitem['author_parliamentarygroups'] = []
+                            responseitem['author_others'] = ["Gobierno"]
                             responseitem['url'] = item['url']
-                            responseitem['contenido'] = []
-                            responseitem['tipo'] = item ['tipo']
-                            responseitem['tramitacion'] = item['tramitacion']
-                            responseitem['fecha'] = item['fecha']
-                            responseitem['fechafin'] = item['fechafin']
-                            responseitem['lugar'] = item['lugar']
-                            responseitem['tipotexto'] = "Respuesta"
+                            responseitem['content'] = []
+                            responseitem['initiative_type'] = item ['initiative_type']
+                            responseitem['initiative_type_alt'] = "Respuesta"
+                            responseitem['place'] = item['place']
+                            responseitem['processing'] = Utils.clearProcessing(item['processing'])
+                            responseitem['created'] = item['created']
+                            responseitem['updated'] = item['updated']
                             yield scrapy.Request(Utils.createUrl(response.url, txtendurl),
                                          errback=self.errback_httpbin,
                                          callback=self.responses, dont_filter=True,
@@ -525,7 +528,7 @@ class StackSpider(Spider):
 
 
 
-                fgr = self.searchDS(response, number,item["ref"],item["url"])
+                fgr = self.searchDS(response, number,item['reference'],item["url"])
                 yield scrapy.Request(Utils.createUrl(response.url, first_url), callback=self.recursiveDS,
                                      dont_filter=True, meta={'item': item,'allDS':todosenlaces, "texto":fgr})
 
@@ -548,18 +551,18 @@ class StackSpider(Spider):
             if haspage:
                 if not listurls:
                     if itemserie=="DS":
-                        item["contenido"].append(self.searchDS(response, number,item["ref"],item["url"]))
+                        item['content'].append(self.searchDS(response, number,item['reference'],item["url"]))
                     else:
-                        item["contenido"].append(self.searchpages(response, number, item["ref"]))
+                        item['content'].append(self.searchpages(response, number, item['reference']))
 
                     yield item
 
 
                 else:
                     if itemserie=="DS":
-                        item["contenido"].append(self.searchDS(response, number,item["ref"],item["url"]))
+                        item['content'].append(self.searchDS(response, number,item['reference'],item["url"]))
                     else:
-                        item["contenido"].append(self.searchpages(response, number, item["ref"]))
+                        item['content'].append(self.searchpages(response, number, item['reference']))
                     first_url = Utils.geturl(listurls[0])
                     onlyserie = Utils.getserie(listurls[0])
 
@@ -577,15 +580,15 @@ class StackSpider(Spider):
                 if not listurls:
 
                     if itemserie=="DS":
-                        item["contenido"].append(self.searchDS(response, number,item["ref"],item["url"]))
+                        item['content'].append(self.searchDS(response, number,item['reference'],item["url"]))
                     else:
-                        item["contenido"].append(self.searchpages(response, number, item["ref"]))
+                        item['content'].append(self.searchpages(response, number, item['reference']))
                     yield item
                 else:
                     if itemserie=="DS":
-                        item["contenido"].append(self.searchDS(response, number,item["ref"],item["url"]))
+                        item['content'].append(self.searchDS(response, number,item['reference'],item["url"]))
                     else:
-                        item["contenido"].append(self.searchpages(response, number, item["ref"]))
+                        item['content'].append(self.searchpages(response, number, item['reference']))
                     first_url = Utils.geturl(listurls[0])
                     onlyserie = Utils.getserie(listurls[0])
 
@@ -604,9 +607,9 @@ class StackSpider(Spider):
         elif not listurls and not isfirst and not descarte:
                 if haspage:
                     if itemserie=="DS":
-                        item["contenido"].append(self.searchDS(response, number,item["ref"],item["url"]))
+                        item['content'].append(self.searchDS(response, number,item['reference'],item["url"]))
                     else:
-                        item["contenido"].append(self.searchpages(response, number, item["ref"]))
+                        item['content'].append(self.searchpages(response, number, item['reference']))
                     yield item
                 else:
                     yield item
@@ -614,9 +617,9 @@ class StackSpider(Spider):
 
         elif not descarte:
             if itemserie == "DS":
-                item["contenido"].append(self.searchDS(response, number, item["ref"], item["url"]))
+                item['content'].append(self.searchDS(response, number, item['reference'], item["url"]))
             else:
-                item["contenido"].append(self.searchpages(response, number, item["ref"]))
+                item['content'].append(self.searchpages(response, number, item['reference']))
 
             first_url = Utils.geturl(listurls[0])
             onlyserie = Utils.getserie(listurls[0])
@@ -638,13 +641,14 @@ class StackSpider(Spider):
         links = response.meta['linksenmiendas']
         first = response.meta['isfirst']
         number = response.meta['number']
+        rsponsetext = ''
         try:
             text += Selector(response).xpath('//div[@class="texto_completo"]').extract()[0]
 
             if number:
-                rsponsetext = self.extractbypagandref(text, item['ref'],number)
+                rsponsetext = self.extractbypagandref(text, item['reference'],number)
             else:
-                rsponsetext = self.extractbyref(text, item['ref'])
+                rsponsetext = self.extractbyref(text, item['reference'])
         except:
             CheckSystem.systemlog("No tiene texto para 'RESPUESTAS' " + response.url + " Item url " + item['url'])
 
@@ -663,13 +667,13 @@ class StackSpider(Spider):
 
             #timeprueba = datetime.datetime.now() - timeprueba
             #print("********  %s " % timeprueba)
-            item["contenido"] = []
+            item['content'] = []
             haspdf =re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+.pdf', rsponsetext)
             if haspdf:
-                item["contenido"].append(haspdf[0])
+                item['content'].append(haspdf[0])
             else:
-                item["contenido"].append(rsponsetext)
-            Utils.removeHTMLtags(item['contenido'][0])
+                item['content'].append(rsponsetext)
+            Utils.removeHTMLtags(item['content'][0])
             yield item
 
 
@@ -701,17 +705,17 @@ class StackSpider(Spider):
 
     def finishtext(self,response):
         finishitem = response.meta['fisnishitem']
-        finishitem['contenido'] = []
+        finishitem['content'] = []
 
         text = Selector(response).xpath('//div[@class="texto_completo"]').extract()[0]
-        text= self.extractbyref(text=text,ref=finishitem['ref'])
+        text= self.extractbyref(text=text,ref=finishitem['reference'])
         if text=="":
             try:
                 text += Selector(response).xpath('//div[@class="texto_completo"]').extract()[0]
             except:
                 CheckSystem.systemlog("No tiene texto para 'TEXTOFINAL' " + response.url + "ITEM URL "+finishitem['url'])
 
-        finishitem['contenido'].append(Utils.removeHTMLtags(text))
+        finishitem['content'].append(Utils.removeHTMLtags(text))
         yield finishitem
 
     def enmiendas(self,response):
@@ -740,15 +744,15 @@ class StackSpider(Spider):
             allenmiendas = self.amendmentFragment(response, text)
             for enmienda in allenmiendas:
                 admendmentitem =  AmendmentItem()
-                admendmentitem['titulo']= item['titulo']
-                admendmentitem['tipo'] = item['tipo']
-                admendmentitem['tipotexto'] = "Enmienda a "+item['tipotexto']
-                admendmentitem['ref'] = item['ref']
+                admendmentitem['title']= item['title']
+                admendmentitem['reference'] = item['reference']
+                admendmentitem['initiative_type'] = item['initiative_type']
+                admendmentitem['initiative_type_alt'] = "Enmienda a "+item['initiative_type_alt']
+                admendmentitem['place'] = item['place']
+                admendmentitem['processing'] = item['processing']
+                admendmentitem['created'] = item['created']
+                admendmentitem['updated'] = item['updated']
                 admendmentitem['url'] = item['url']
-                admendmentitem['lugar'] = item['lugar']
-                admendmentitem['tramitacion'] = item['tramitacion']
-                admendmentitem['fecha'] = item['fecha']
-                admendmentitem['fechafin'] = item['fechafin']
                 splitenmienda = enmienda.split("<br><br>")
 
                 index = None
@@ -763,23 +767,23 @@ class StackSpider(Spider):
                 autor = self.autorsAmendment(autors)
                 typeaut = self.typeAutor(name=autor)
 
-                admendmentitem['autor_diputado'] = []
-                admendmentitem['autor_grupo'] = []
-                admendmentitem['autor_otro'] = []
-                admendmentitem['contenido'] = []
+                admendmentitem['author_deputies'] = []
+                admendmentitem['author_parliamentarygroups'] = []
+                admendmentitem['author_others'] = []
+                admendmentitem['content'] = []
 
 
-                if typeaut is 'diputado':
-                    admendmentitem['autor_diputado'].append(autor)
+                if typeaut is 'deputy':
+                    admendmentitem['author_deputies'].append(autor)
                     try:
-                        admendmentitem['autor_grupo'].append(self.getGroupfrommember(name=autor)['nombre'])
+                        admendmentitem['author_parliamentarygroups'].append(self.getParliamentaryGroupFromDeputy(name=autor)['name'])
                     except:
                         CheckSystem.systemlog("Fallo en enmienda, no encuentra grupo parlamentario en la db" + response.url)
-                elif typeaut is 'grupo':
-                    admendmentitem['autor_grupo'].append(self.getGroup(name=autor)['nombre'])
-                elif typeaut is 'otro':
-                    admendmentitem['autor_otro'].append(autor)
-                admendmentitem['contenido'].append(Utils.removeHTMLtags(Utils.concatlist(splitenmienda[index+2:])))
+                elif typeaut is 'parliamentarygroup':
+                    admendmentitem['author_parliamentarygroups'].append(self.getParliamentaryGroup(name=autor)['name'])
+                elif typeaut is 'other':
+                    admendmentitem['author_others'].append(autor)
+                admendmentitem['content'].append(Utils.removeHTMLtags(Utils.concatlist(splitenmienda[index+2:])))
 
                 yield admendmentitem
 
@@ -823,15 +827,15 @@ class StackSpider(Spider):
             allenmiendas = self.monamendmentFragment(response, text)
             for enmienda in allenmiendas:
                 admendmentitem =  AmendmentItem()
-                admendmentitem['titulo']= item['titulo']
-                admendmentitem['tipo'] = item['tipo']
-                admendmentitem['tipotexto'] = "Enmienda a " + item['tipotexto']
-                admendmentitem['ref'] = item['ref']
+                admendmentitem['title']= item['title']
+                admendmentitem['reference'] = item['reference']
+                admendmentitem['initiative_type'] = item['initiative_type']
+                admendmentitem['initiative_type_alt'] = "Enmienda a " + item['initiative_type_alt']
+                admendmentitem['place'] = item['place']
+                admendmentitem['processing'] = Utils.clearProcessing(item['processing'])
+                admendmentitem['created'] = item['created']
+                admendmentitem['updated'] = item['updated']
                 admendmentitem['url'] = item['url']
-                admendmentitem['lugar'] = item['lugar']
-                admendmentitem['tramitacion'] = item['tramitacion']
-                admendmentitem['fecha'] = item['fecha']
-                admendmentitem['fechafin'] = item['fechafin']
 
                 splitenmienda = enmienda.split("<br><br>")
                 autors = []
@@ -848,28 +852,28 @@ class StackSpider(Spider):
 
 
                 autors = self.matchautorgroup(linesplit)
-                admendmentitem['autor_diputado'] = []
-                admendmentitem['autor_grupo'] = []
-                admendmentitem['autor_otro'] = []
-                admendmentitem['contenido'] = []
+                admendmentitem['author_deputies'] = []
+                admendmentitem['author_parliamentarygroups'] = []
+                admendmentitem['author_others'] = []
+                admendmentitem['content'] = []
 
                 for autor in autors:
-                    autor=autor['nombre']
+                    autor=autor['name']
                     typeaut = self.typeAutor(name=autor)
 
-                    if typeaut is 'diputado':
-                        admendmentitem['autor_diputado'].append(autor)
+                    if typeaut is 'deputy':
+                        admendmentitem['author_deputies'].append(autor)
                         try:
-                            admendmentitem['autor_grupo'].append(self.getGroupfrommember(name=autor)['nombre'])
+                            admendmentitem['author_parliamentarygroups'].append(self.getParliamentaryGroupFromDeputy(name=autor)['name'])
                         except:
                              CheckSystem.systemlog("Fallo en enmienda, no encuentra grupo en la db" + response.url)
-                    elif typeaut is 'grupo':
-                        admendmentitem['autor_grupo'].append(self.getGroup(name=autor)['nombre'])
-                    elif typeaut is 'otro':
-                        admendmentitem['autor_otro'].append(autor)
+                    elif typeaut is 'parliamentarygroup':
+                        admendmentitem['author_parliamentarygroups'].append(self.getParliamentaryGroup(name=autor)['name'])
+                    elif typeaut is 'other':
+                        admendmentitem['author_others'].append(autor)
 
-                admendmentitem['autor_grupo']= list(set(admendmentitem['autor_grupo']))
-                admendmentitem['contenido'].append(Utils.removeHTMLtags(enmienda))
+                admendmentitem['author_parliamentarygroups']= list(set(admendmentitem['author_parliamentarygroups']))
+                admendmentitem['content'].append(Utils.removeHTMLtags(enmienda))
 
                 yield admendmentitem
 
@@ -889,32 +893,30 @@ class StackSpider(Spider):
     def matchautorgroup(self,lists):
         all = self.members+self.groups
         res = []
-
-
         for element in lists:
-            member = None
+            subject = None
             max = 0
-            for memb in all:
-                ratio = fuzz.token_sort_ratio(element, memb['nombre'])
+            for subj in all:
+                ratio = fuzz.token_sort_ratio(element, subj['name'])
                 if ratio > max:
-                    member = memb
+                    subject = subj
                     max = ratio
-            res.append(member)
+            res.append(subject)
         return res
 
     def autorsAmendment(self,autors):
         #formatea si es un diputado de forma que se pueda buscar en la bd
         strip=autors[0].strip()
         typeaut = self.typeAutor(name=strip)
-        if typeaut is not 'grupo':
+        if typeaut is not 'parliamentarygroup':
             max = 0
             member = None
             for memb in self.members:
-                ratio = fuzz.token_sort_ratio(strip, memb['nombre'])
+                ratio = fuzz.token_sort_ratio(strip, memb['name'])
                 if ratio > max:
                     member = memb
                     max = ratio
-            return member['nombre']
+            return member['name']
 
         else:
             return strip
@@ -992,10 +994,10 @@ class StackSpider(Spider):
         text = response.meta['texto']
         item = response.meta['item']
         links = response.meta['allDS']
-        text += self.searchDS(response, ref=item["ref"], name=item["url"])
+        text += self.searchDS(response, ref=item['reference'], name=item["url"])
 
         if not links:
-            item["contenido"].append(text)
+            item['content'].append(text)
             yield item
 
 
@@ -1017,15 +1019,12 @@ class StackSpider(Spider):
         pages = Selector(response).xpath('//a/@name').extract()
         haspage = [ch for ch in pages if re.search('gina' + number + '\)', ch)]
         if haspage:
-
             publications = self.extracttext(response, number,expt)
-
             return publications
         else:
             if number=="1":
                 return self.extracttext(response, number,expt)
             else:
-
                 try:
                     return "Error  "+number + " URL: "+response.url
                 except:
@@ -1056,14 +1055,14 @@ class StackSpider(Spider):
                 if int(page) > int(number):
                     textfragment = self.fragmenttxt(response, page)
                     texto += self.extractother(textfragment, ref)
-                        #si encuentra el otro rompe bucle
+                    #si encuentra el otro rompe bucle
                     if Utils.checkotherRefandnotOwn(textfragment,ref):
                         break
         res = Utils.removeHTMLtags(texto)
 
         return res
 
-    def extractbyref(self,text, ref ,number=None):
+    def extractbyref(self,text, ref, number=None):
         splittext = text.split("<br><br>")
         control = False
         result = []
@@ -1141,20 +1140,20 @@ class StackSpider(Spider):
         return Utils.concatlist(result)
 
 
-    def getMember(self,  name=None):
+    def getDeputy(self,  name=None):
         for member in self.members:
-            if name == member['nombre']:
+            if name == member['name']:
                 return member
 
         return None
 
 
-    def getGroupfrommember(self, name=None):
-        search = self.getMember(name)
-        return self.getGroup(name=search['grupo'])
+    def getParliamentaryGroupFromDeputy(self, name=None):
+        deputy = self.getDeputy(name)
+        return self.getParliamentaryGroup(name=deputy['parliamentarygroup'])
 
 
-    def getGroup(self, name=None):
+    def getParliamentaryGroup(self, name=None):
         # sebusca por acronimo
         acronimo = None
         if re.search("la izquierda plural", name, re.IGNORECASE) \
@@ -1189,16 +1188,16 @@ class StackSpider(Spider):
             acronimo = u'GCUP-EC-EM'
 
         for group in self.groups:
-            if acronimo == group['acronimo']:
+            if acronimo == group['shortname']:
                 return group
 
         return None
 
 
     def typeAutor(self, name):
-        if self.getMember(name=name):
-            return "diputado"
-        elif self.getGroup(name=name):
-            return "grupo"
+        if self.getDeputy(name=name):
+            return 'deputy'
+        elif self.getParliamentaryGroup(name=name):
+            return 'parliamentarygroup'
         else:
-            return "otro"
+            return 'other'

@@ -1,5 +1,5 @@
 import luigi
-from scraper.scraper import ScrapTask
+from transformations.transformations import TransformationsTask
 from targets import *
 from utils import FILES
 from motor_pcre import LabelingEngine
@@ -8,10 +8,10 @@ class LabelingTask(luigi.Task):
     task_namespace = 'labeling'
 
     def requires(self):
-        return ScrapTask()
+        return TransformationsTask()
 
     def output(self):
-        return luigi.LocalTarget(FILES[1])
+        return luigi.LocalTarget(FILES[2])
 
     def run(self):
         print("{task} says: ready to search and assign labels!".format(task=self.__class__.__name__))

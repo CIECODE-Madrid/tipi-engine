@@ -1,48 +1,43 @@
-# This Python file uses the following encoding: utf-8
-import pcre
+# Ths Python file uses the following encoding: utf-8
 import sys
-import pymongo 
 from time import time
 import itertools
+import pcre
+import pymongo 
 
 from database.congreso import Congress
-
 
 reload(sys)    # to re-enable sys.setdefaultencoding()
 sys.setdefaultencoding('utf-8')
 
 
-
 class LabelingEngine:
-    DICTGROUP_WITH_ALERTS = 'tipi'
 
     def run(self):
         dbmanager = Congress()
         regex_engine = RegexEngine()
-        for groupname in dbmanager.getDictGroups():
-            dicts = list(dbmanager.getDictsByGroup(groupname))
-            iniciativas = dbmanager.getNotAnnotatedInitiatives(groupname)
-            i = 1
-            total = iniciativas.count()
-            for iniciativa in iniciativas:
+        topics = list(dbmanager.getTopics())
+        initiatives = dbmanager.getNotTaggedInitiatives()
+        i = 1
+        total = initiatives.count()
+        if topics:
+            for initiative in initiatives:
                 try:
-                    print "%s [%d/%d]:" % (groupname, i, total)
-                    if iniciativa.has_key('titulo') or iniciativa.has_key('contenido'):
-                        regex_engine.loadIniciativa(iniciativa)
-                        for dictio in dicts:
-                            regex_engine.loadTerms(dictio)
-                            regex_engine.matchTerms()
-                        dbmanager.addDictsAndTermsToInitiative(iniciativa['_id'], groupname, regex_engine.getDictsFound(), regex_engine.getTermsFound())
-                        if self.DICTGROUP_WITH_ALERTS == groupname:
-                            for df in regex_engine.getDictsFound():
-                                dbmanager.addAlert(df, iniciativa['_id'], iniciativa['titulo'], iniciativa['actualizacion'])
-                    i += 1
-                    regex_engine.cleanDictsAndTermsFound()
+                    print "Tagging initiative %d of %d:" % (i, total)
+                    if initiative.has_key('title') or initiative.has_key('content'):
+                        regex_engine.loadInitiative(initiative)
+                        for topic in topics:
+                            regex_engine.loadTags(topic)
+                            regex_engine.matchTags()
+                        dbmanager.taggingInitiative(initiative['_id'], regex_engine.getTopicsFound(), regex_engine.getTagsFound())
+                        for topic in regex_engine.getTopicsFound():
+                            dbmanager.addAlert(topic, initiative['_id'], initiative['title'], initiative['updated'])
                 except Exception, e:
-                    regex_engine.cleanDictsAndTermsFound()
-                    print "Error procesando la iniciativa " + str(iniciativa['_id'])
-                    break
-        print '============================'
+                    print e
+                    print "Error tagging the initiative " + str(initiative['_id'])
+                regex_engine.cleanTopicsAndTagsFound()
+                i += 1
+            print '============================'
 
 
 
@@ -50,87 +45,83 @@ class LabelingEngine:
 class RegexEngine:
     
     def __init__(self):
-        self.__terms = []
-        self.__iniciativa = []
-        self.__dicts_found = []
-        self.__terms_struct_found = []
+        self.__tags = []
+        self.__initiative = []
+        self.__topics_found = []
+        self.__tags_struct_found = []
 
-    def __shuffleTerms(self, terms):
-        new_terms = []
+    def __shuffleTags(self, tags):
+        new_tags = []
         delimiter = '.*'
-        for term in terms:
-            if term is not None:
-                term['original'] = term['term']
-                if term['shuffle']:
-                    perms = itertools.permutations(term['term'].split(delimiter))
+        for tag in tags:
+            if tag is not None:
+                tag['original'] = tag['regex']
+                if tag['shuffle']:
+                    perms = itertools.permutations(tag['regex'].split(delimiter))
                     for perm in perms:
-                        new_terms.append({
-                                'term': delimiter.join(perm),
-                                'humanterm': term['humanterm'],
-                                'original': term['original']
+                        new_tags.append({
+                                'regex': delimiter.join(perm),
+                                'tag': tag['tag'],
+                                'subtopic': tag['subtopic'],
+                                'original': tag['original']
                                 });
                 else:
-                    new_terms.append(term)
-        return new_terms
+                    new_tags.append(tag)
+        return new_tags
 
-    def loadTerms(self, dict):
-        self.__terms = []
-        for term in self.__shuffleTerms(dict['terms']):
-            self.__terms.append({
-                'dict': dict['name'],
-                'group': dict['group'],
-                'compileterm': pcre.compile('(?i)'+term['term']),
-                'term': term['original'],
-                'struct': {'term': term['original'], 'humanterm': term['humanterm'], 'dict': dict['name']}
+    def loadTags(self, topic):
+        self.__tags = []
+        for tag in self.__shuffleTags(topic['tags']):
+            self.__tags.append({
+                'topic': topic['name'],
+                'compiletag': pcre.compile('(?i)'+tag['regex']),
+                'tag': tag['original'],
+                'subtopic': tag['subtopic'],
+                'struct': {'tag': tag['tag'], 'subtopic': tag['subtopic'], 'topic': topic['name']}
                 });
 
-    def loadIniciativa(self, iniciativa):
-        self.__iniciativa = iniciativa
+    def loadInitiative(self, initiative):
+        self.__initiative = initiative
     
-    def getTerms(self):
-        return self.__terms
+    def getTags(self):
+        return self.__tags
 
-    def cleanDictsAndTermsFound(self):
-        self.__dicts_found = []
-        self.cleanTermsFound()
+    def cleanTopicsAndTagsFound(self):
+        self.__topics_found = []
+        self.cleanTagsFound()
 
-    def getDictsFound(self):
-        return self.__dicts_found
+    def getTopicsFound(self):
+        return self.__topics_found
 
-    def getTermsFound(self):
-        return self.__terms_struct_found
+    def getTagsFound(self):
+        return self.__tags_struct_found
 
-    def cleanTermsFound(self):
-        self.__terms_struct_found = []
+    def cleanTagsFound(self):
+        self.__tags_struct_found = []
 
-    def getIniciativa(self):
-        return self.__iniciativa
+    def getinitiative(self):
+        return self.__initiative
 
-    def addTermToFounds(self, term):
-        if term['struct'] not in self.__terms_struct_found:
-            self.__terms_struct_found.append(term['struct'])
-            if term['dict'] not in self.__dicts_found:
-                self.__dicts_found.append(term['dict'])
+    def addTagsToFounds(self, tag):
+        if tag['struct'] not in self.__tags_struct_found:
+            self.__tags_struct_found.append(tag['struct'])
+            if tag['topic'] not in self.__topics_found:
+                self.__topics_found.append(tag['topic'])
 
-    def matchTerms(self):
-        terms = self.getTerms()
-        iniciativa = self.getIniciativa()
-        if iniciativa.has_key('titulo'):
-            if not iniciativa.has_key('contenido'):
-                iniciativa['contenido'] = []
-            iniciativa['contenido'].append(iniciativa['titulo'])
-        for line in iniciativa['contenido']:
+    def matchTags(self):
+        tags = self.getTags()
+        initiative = self.getinitiative()
+        if initiative.has_key('title'):
+            if not initiative.has_key('content'):
+                initiative['content'] = []
+            initiative['content'].append(initiative['title'])
+        for line in initiative['content']:
             if isinstance(line, list) and len(line) > 0:
                 line = line[0]
-            for term in terms:
+            for tag in tags:
                 try:
-                    if pcre.search(term['compileterm'], line):
-                        self.addTermToFounds(term);
+                    if pcre.search(tag['compiletag'], line):
+                        self.addTagsToFounds(tag);
                 except Exception, e:
-                    print str(e) + " : " + str(term['term']) + " || en iniciativa " + str(iniciativa['_id'])
+                    print str(e) + " : " + str(tag['tag']) + " || on initiative " + str(initiative['_id'])
                     break
-
-
-if __name__ == '__main__':
-    labeling_engine = LabelingEngine()
-    labeling_engine.run()

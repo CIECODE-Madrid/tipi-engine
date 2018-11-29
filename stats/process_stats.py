@@ -1,89 +1,165 @@
 import sys
 sys.path.append("../")
 from database.congreso import Congress
-import copy
 from operator import itemgetter
-import pdb
 
 
-class InsertStats(object):
-    _curdict = None
-    _dbmanager = None
-    dictforinsert = None
+class GenerateStats(object):
+
+    topics = None
+    dbmanager = None
+    document = None
+
     def __init__(self):
-        self._dbmanager = Congress()
-        self._curdict=self._dbmanager.searchByparam(collection="dicts", param={'group': 'tipi'})
-        self.dictforinsert = dict()
+        self.dbmanager = Congress()
+        self.topics = self.dbmanager.searchAll('topics')
+        self.subtopics = self.dbmanager.getSubtopics()
+        self.document = dict()
         self.stats()
 
     def stats(self):
         self.deleteAll()
-        self.initiatives()
         self.overall()
-        self.bydeputies()
-        self.byGroups()
+        self.deputiesByTopics()
+        self.deputiesBySubtopics()
+        self.parliamentarygroupsByTopics()
+        self.parliamentarygroupsBySubtopics()
+        self.placesByTopics()
+        self.placesBySubtopics()
         self.latest()
-        self.insertstats()
-
-    def initiatives(self): 
-        self.dictforinsert['initiatives'] = {}
-        self.dictforinsert['initiatives']['all'] = self._dbmanager.countAllInitiatives()
-        self.dictforinsert['initiatives']['tipi'] = self._dbmanager.countTipiInitiatives()
-
+        self.insertStats()
 
     def overall(self):
-        self.dictforinsert['overall'] = []
-        pipeline=[{ '$match': {'is.tipi': True} }, { '$unwind': '$dicts.tipi' }, { '$group': { '_id': '$dicts.tipi', 'count': { '$sum': 1 } } } ]
-        dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas",pipeline=pipeline)
-        for element in dataset:
-            self.dictforinsert['overall'].append(element)
+        self.document['overall'] = {
+                'initiatives': self.dbmanager.countTaggedInitiatives(),
+                'allinitiatives': self.dbmanager.countAllInitiatives(),
+                'topics': [],
+                'subtopics': []
+                }
+        pipeline = [{ '$match': {'topics': {'$exists': True, '$not': {'$size': 0}}} }, { '$unwind': '$topics' }, { '$group': { '_id': '$topics', 'initiatives': { '$sum': 1 } } }, {'$sort': {'initiatives': -1}} ]
+        result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+        for element in result:
+            self.document['overall']['topics'].append(element)
+        for subtopic in self.subtopics:
+            pipeline = [{'$match': { 'tags.subtopic': subtopic } }, { '$group': { '_id': subtopic, 'initiatives': { '$sum': 1 } } } ]
+            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+            if len(result) > 0:
+                self.document['overall']['subtopics'].append(result[0])
+        self.document['overall']['subtopics'].sort(key=lambda x: x['initiatives'], reverse=True)
 
-    def bydeputies(self):
-        self.dictforinsert['bydeputies'] = []
-        dictscopy=copy.copy(self._curdict)
+    def deputiesByTopics(self):
+        self.document['deputiesByTopics'] = []
+        for element in self.topics:
+            pipeline = [{'$match': { 'topics': element['name'] } }, {'$unwind': '$author_deputies'},
+                    {'$group': {'_id': '$author_deputies', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
+                    {'$limit': 10}]
+            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+            if len(result) > 0:
+                subdoc = dict()
+                subdoc['_id'] = element['name']
+                subdoc['deputies'] = result
+                self.document['deputiesByTopics'].append(subdoc)
 
-        for element in dictscopy:
-            pipeline = [{'$match': {'dicts.tipi':element['name'],'is.tipi': True}}, {'$unwind': '$autor_diputado'},
-                        {'$group': {'_id': '$autor_diputado', 'count': {'$sum': 1}}}]
-            dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas", pipeline=pipeline)
-            if len(dataset)>0:
-                subdoc=dict()
+    def parliamentarygroupsByTopics(self):
+        self.document['parliamentarygroupsByTopics'] = []
+        for element in self.topics:
+            pipeline = [{'$match': {'topics':element['name']}}, {'$unwind': '$author_parliamentarygroups'},
+                    {'$group': {'_id': '$author_parliamentarygroups', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}}]
+            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+            if len(result) > 0:
+                subdoc = dict()
                 subdoc['_id']= element['name']
-                subdoc['deputies']=sorted(dataset, key=itemgetter('count'), reverse=True)[:3]
-                self.dictforinsert['bydeputies'].append(subdoc)
+                subdoc['parliamentarygroups'] = result
+                self.document['parliamentarygroupsByTopics'].append(subdoc)
 
-    def byGroups(self):
-        self.dictforinsert['bygroups'] = []
-        dictscopy=copy.copy(self._curdict)
+    def deputiesBySubtopics(self):
+        self.document['deputiesBySubtopics'] = []
+        for element in self.subtopics:
+            pipeline = [{'$match': { 'tags.subtopic': element } }, {'$unwind': '$author_deputies'},
+                    {'$group': {'_id': '$author_deputies', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
+                    {'$limit': 10}]
+            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+            if len(result) > 0:
+                subdoc = dict()
+                subdoc['_id'] = element
+                subdoc['deputies'] = result
+                self.document['deputiesBySubtopics'].append(subdoc)
 
-        for element in dictscopy:
-            pipeline = [{'$match': {'dicts.tipi':element['name'],'is.tipi': True}}, {'$unwind': '$autor_grupo'},
-                        {'$group': {'_id': '$autor_grupo', 'count': {'$sum': 1}}}]
-            dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas", pipeline=pipeline)
-            if len(dataset)>0:
-                subdoc=dict()
-                subdoc['_id']= element['name']
-                subdoc['groups']=sorted(dataset, key=itemgetter('count'), reverse=True)[:3]
-                self.dictforinsert['bygroups'].append(subdoc)
+    def parliamentarygroupsBySubtopics(self):
+        self.document['parliamentarygroupsBySubtopics'] = []
+        for element in self.subtopics:
+            pipeline = [{'$match': { 'tags.subtopic': element } }, {'$unwind': '$author_parliamentarygroups'},
+                    {'$group': {'_id': '$author_parliamentarygroups', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}}]
+            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+            if len(result) > 0:
+                subdoc = dict()
+                subdoc['_id']= element
+                subdoc['parliamentarygroups'] = result
+                self.document['parliamentarygroupsBySubtopics'].append(subdoc)
+
+
+
+
+
+
+
+
+    def placesByTopics(self):
+        self.document['placesByTopics'] = []
+        for element in self.topics:
+            pipeline = [{'$match': {'topics': element['name'], 'place': {'$not': {'$eq': ""}}} },
+                    {'$group': {'_id': '$place', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
+                    {'$limit': 5}]
+            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+            if len(result) > 0:
+                subdoc = dict()
+                subdoc['_id'] = element['name']
+                subdoc['places'] = result
+                self.document['placesByTopics'].append(subdoc)
+
+    def placesBySubtopics(self):
+        self.document['placesBySubtopics'] = []
+        for element in self.subtopics:
+            pipeline = [{'$match': { 'tags.subtopic': element, 'place': {'$not': {'$eq': ""}}} }, 
+                    {'$group': {'_id': '$place', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
+                    {'$limit': 5}]
+            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+            if len(result) > 0:
+                subdoc = dict()
+                subdoc['_id'] = element
+                subdoc['places'] = result
+                self.document['placesBySubtopics'].append(subdoc)
+
+
+
+
+
+
+
+
+
+
+
+
 
     def latest(self):
-        self.dictforinsert['latest'] = []
-        pipeline=[ { '$match': {'is.tipi': True} }, { '$sort': {'actualizacion': -1} }, { '$unwind': '$dicts.tipi' },
-                   { '$group': { '_id': '$dicts.tipi' ,
-                                 'items':{'$push':{ 'id': "$_id", 'titulo': "$titulo", 'fecha': "$actualizacion",'lugar': "$lugar",'autor': "$autor_diputado"  }}} } ]
-        dataset = self._dbmanager.getAgregatefrompipeline(collection="iniciativas", pipeline=pipeline)
-        for element in dataset:
-            subdoc=dict()
+        self.document['latest'] = []
+        pipeline = [ { '$match': {'topics': {'$exists': True, '$not': {'$size': 0}}} }, { '$sort': {'updated': -1} }, { '$unwind': '$topics' },
+                   { '$group': { '_id': '$topics' ,
+                                 'initiatives':{'$push':{ 'id': "$_id", 'title': "$title", 'date': "$updated",'place': "$place",'author': "$author_deputies"  }}} } ]
+        result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+        for element in result:
+            subdoc = dict()
             subdoc['_id'] = element['_id']
-            subdoc['items'] = sorted(element['items'], key=itemgetter('fecha'), reverse=True)[:10]
-            self.dictforinsert['latest'].append(subdoc)
+            subdoc['initiatives'] = sorted(element['initiatives'], key=itemgetter('date'), reverse=True)[:20]
+            self.document['latest'].append(subdoc)
 
     def deleteAll(self):
-        self._dbmanager.deletecollection("tipistats")
+        self.dbmanager.deletecollection("statistics")
 
-    def insertstats(self):
-        self._dbmanager.insertstat(dict=self.dictforinsert)
+    def insertStats(self):
+        self.dbmanager.insertStats(self.document)
 
 
 if __name__ == "__main__":
-    a = InsertStats()
+    GenerateStats()

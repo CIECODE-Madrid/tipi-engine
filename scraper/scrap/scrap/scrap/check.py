@@ -1,5 +1,6 @@
 import datetime
 import sys,os
+import re
 import redis
 import pdb
 from pathlib import Path
@@ -25,10 +26,7 @@ class mongoItems(object):
             {"$and": [{'url':url},{"tipotexto":{"$not":re.compile('Enmienda')}}, {"tipotexto":{"$not":re.compile('Respuesta')}},{"tipotexto":{"$not":re.compile('Texto definitivo')}}]}
         ).count()
 
-    def countAll(self,collection="iniciativas"):
-        return self._getCollection(collection).count()
 
-import re
 
 
 class UrlsScraped(object):
@@ -124,8 +122,3 @@ class CheckSystem(object):
         f.write((" %s " % datetime.datetime.now())+"\n")
         logging.error(msg)
         f.write(msg+"\n")
-
-
-
-
-

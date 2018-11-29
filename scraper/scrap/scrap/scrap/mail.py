@@ -8,7 +8,7 @@ class emailScrap(object):
         sp = SparkPost(apikey)
         doc = message
         response = sp.transmissions.send(
-            recipients=["javier.perez@ciecode.es","pablo.martin@iciecode.es"],  # email is a user's email
+            recipients=["javier.perez@ciecode.es","pablo.martin@iciecode.es"],
             html=doc,
             from_email="scrap@tipiciudadano.es",
             subject=title,
