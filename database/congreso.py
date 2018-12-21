@@ -282,8 +282,10 @@ class Congress(object):
             raise
 
     def _insertDeputy(self, item):
-        item['_id'] = generateId(item['name'])
-        self._getCollection('deputies').insert(item)
+        # Security check: sometimes item fields are blank
+        if item['name']:
+            item['_id'] = generateId(item['name'])
+            self._getCollection('deputies').insert(item)
 
     def _updateDeputy(self, item):
         self._getCollection('deputies').update_one({
