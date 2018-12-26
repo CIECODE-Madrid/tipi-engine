@@ -25,10 +25,7 @@ class TBMessage:
 class StaticMessage(TBMessage):
 
     MESSAGES = [
-            u'¿Has leído lo que la prensa ha contado sobre @Tipi_Ciudadano desde su estreno? Hazlo aquí: https://tipiciudadano.es/medios',
-            u'¿Sabes cómo se sitúa la clasificación de los temas más tratados en el @Congreso_es? Descúbrelo aquí: https://tipiciudadano.es/estadisticas',
-            u'Busca con nuestro escáner las últimas novedades en el @Congreso_es de los asuntos que más te interesan aquí: https://tipiciudadano.es/escaner',
-            u'¿Te has dado de alta ya en nuestro sistema de alertas para conocer cómo se tratan tus temas de interés en el @Congreso_es? https://tipiciudadano.es/signup'
+            u'Busca con nuestro escáner las últimas novedades en el @Congreso_es de los asuntos que más te interesan aquí: https://tipiciudadano.es'
             ]
     
     def get_message(self):
@@ -40,7 +37,7 @@ class LatestInitiativesByTopicMessage(TBMessage):
     def get_message(self):
         try:
             topic = self.random_topic()
-            return u"Descubre aquí cuáles son las últimas iniciativas de %s presentadas en el @Congreso_es, y sus diputadas/os y grupos más activos https://tipiciudadano.es/temas/%s" % (topic['name'].upper(), topic['slug'])
+            return u"Descubre aquí cuáles son las últimas iniciativas de %s presentadas en el @Congreso_es, y sus diputadas/os y grupos más activos https://tipiciudadano.es/topics/%s" % (topic['name'].upper(), topic['_id'])
         except:
             pass
 
@@ -56,7 +53,7 @@ class LatestInitiativesByBestDeputyMessage(TBMessage):
                 best_deputy['twitter'] = " ".join(best_deputy_name.split(',').reverse())
             else:
                 best_deputy['twitter'] = "@" + best_deputy['twitter'].split('/')[3]
-            return u"Éstas son las últimas iniciativas de %s que ha presentado %s, una de las personas con más actividad en el @Congreso_es sobre esta temática: https://tipiciudadano.es/escaner?dicts=%s&autor=%s" % (random_topic_name.upper(), best_deputy['twitter'], _str_to_url(random_topic_name), _str_to_url(best_deputy_name))
+            return u"Éstas son las últimas iniciativas de %s que ha presentado %s, una de las personas con más actividad en el @Congreso_es sobre esta temática: https://tipiciudadano.es/results/topics=%s&deputy=%s" % (random_topic_name.upper(), best_deputy['twitter'], _str_to_url(random_topic_name), _str_to_url(best_deputy_name))
         except:
             pass
 
@@ -67,8 +64,11 @@ class LatestInitiativesByGroupMessage(TBMessage):
         try:
             random_topic_name = self.random_topic()['name']
             best_group_name = self.dbmanager.getBestParliamentaryGroupByTopic(random_topic_name)
-            best_group_twitter = TWITTERACCOUNT_BY_GROUP[best_group_name]
-            return u"Éstas son las últimas iniciativas de %s que ha presentado %s, uno de los grupos parlamentarios más activos en esta temática: https://tipiciudadano.es/escaner?dicts=%s&grupootro=%s" % (random_topic_name.upper(), best_group_twitter, _str_to_url(random_topic_name), _str_to_url(best_group_name))
+            try:
+                best_group_twitter = TWITTERACCOUNT_BY_GROUP[best_group_name]
+            except:
+                best_group_twitter = best_group_name
+            return u"Éstas son las últimas iniciativas de %s que ha presentado %s, uno de los grupos parlamentarios más activos en esta temática: https://tipiciudadano.es/results/topics=%s&author=%s" % (random_topic_name.upper(), best_group_twitter, _str_to_url(random_topic_name), _str_to_url(best_group_name))
         except:
             pass
 

@@ -32,18 +32,24 @@ class Congress(object):
 
     def getBestDeputyByTopic(self, topic):
         random.seed(time.time())
-        bydeputies = list(self._getCollection('statistics').find({}, {'bydeputies': 1}))
-        bydeputy = filter(lambda bydeputy: bydeputy['_id'] == topic, bydeputies[0]['bydeputies'])
-        return random.choice(bydeputy[0]['deputies'])['_id']
+        deputiesByTopics = list(self._getCollection('statistics').find({}, {'deputiesByTopics': 1}))
+        deputiesByTopic = filter(
+                lambda deputiesByTopic: deputiesByTopic['_id'] == topic,
+                deputiesByTopics[0]['deputiesByTopics']
+                )
+        return random.choice(deputiesByTopic[0]['deputies'])['_id']
 
     def getParliamentaryGroupByName(self, name):
         return list(self._getCollection('parliamentarygroups').find({'name': name}))[0]
 
     def getBestParliamentaryGroupByTopic(self, topic):
         random.seed(time.time())
-        bygroups = list(self._getCollection('statistics').find({}, {'bygroups': 1}))
-        bygroup = filter(lambda bygroup: bygroup['_id'] == topic, bygroups[0]['bygroups'])
-        return random.choice(bygroup[0]['groups'])['_id']
+        pgByTopics = list(self._getCollection('statistics').find({}, {'parliamentarygroupsByTopics': 1}))
+        pgByTopic = filter(
+                lambda pgByTopic: pgByTopic['_id'] == topic,
+                pgByTopics[0]['parliamentarygroupsByTopics']
+                )
+        return random.choice(pgByTopic[0]['parliamentarygroups'])['_id']
 
     def getTopics(self, simplified=False):
         if simplified:
