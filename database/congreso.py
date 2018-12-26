@@ -304,21 +304,8 @@ class Congress(object):
             }
         })
 
-    def addAlert(self, topic, initiative_id, initiative_title, initiative_date):
-        self._getCollection('alerts').update_one({
-            'topic': topic,
-            }, {
-                '$addToSet': {
-                    'items': {
-                        'id': str(initiative_id),
-                        'title': initiative_title,
-                        'date': initiative_date,
-                        }
-                }
-            }, upsert=True)
-
     def getAllAlerts(self):
-        return self._getCollection('alerts').find({'items':{'$exists':True,'$not':{'$size':0}}})
+        return self._getCollection('alerts').find()
 
     def getUserswithAlert(self):
         return self._getCollection('users').find({"profile.dicts":{'$exists': True}})
@@ -326,12 +313,23 @@ class Congress(object):
     def getAggregatedInitiativesByPipeline(self, pipeline):
         return list(self._getCollection('initiatives').aggregate(pipeline=pipeline))
 
-    def deletecollection(self,collection):
-        #Warning
+    def deleteCollection(self, collection):
         self._getCollection(collection).drop()
 
     def insertStats(self, document={}):
         self._getCollection('statistics').insert(document)
+
+    def deleteAllStats(self):
+        self.deleteCollection('statistics')
+
+    def addInitiativeAlert(self, initiative):
+        self._getCollection('initiatives_alerts').insert(initiative)
+
+    def deleteAllInitiativesAlerts(self):
+        self.deleteCollection('initiatives_alerts')
+
+    def searchInitiativesAlerts(self, search):
+        return self._getCollection('initiatives_alerts').find(search, no_cursor_timeout=True)
 
     def updateInitiativesStatus(self, search, status):
         self._getCollection('initiatives').update_many(

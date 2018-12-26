@@ -29,9 +29,11 @@ class LabelingEngine:
                         for topic in topics:
                             regex_engine.loadTags(topic)
                             regex_engine.matchTags()
+                        initiative['topics'] = regex_engine.getTopicsFound()
+                        initiative['tags'] = regex_engine.getTagsFound()
                         dbmanager.taggingInitiative(initiative['_id'], regex_engine.getTopicsFound(), regex_engine.getTagsFound())
-                        for topic in regex_engine.getTopicsFound():
-                            dbmanager.addAlert(topic, initiative['_id'], initiative['title'], initiative['updated'])
+                        if regex_engine.getTopicsFound():
+                            dbmanager.addInitiativeAlert(initiative)
                 except Exception, e:
                     print e
                     print "Error tagging the initiative " + str(initiative['_id'])

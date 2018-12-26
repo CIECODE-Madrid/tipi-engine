@@ -1,50 +1,45 @@
-from send_email import emailSparkPost
-from settings import TIPIS_URL
+import json
 import sys
 sys.path.append("../")
+
 from database.congreso import Congress
-import pdb
-import copy
+from send_email import emailSparkPost
+from settings import TIPIS_URL
+
+
+# Auxiliar function to transform from JSON unicode to Str
+def byteify(input):
+    if isinstance(input, dict):
+        return {byteify(key): byteify(value)
+                for key, value in input.iteritems()}
+    elif isinstance(input, list):
+        return [byteify(element) for element in input]
+    elif isinstance(input, unicode):
+        return input.encode('utf-8')
+    else:
+        return input
+
 
 class NotifyByEmail(object):
 
-    dbmanager = Congress()
-
     def __init__(self):
-        self.sendAlerttousers()
-        self.deleteAll()
+        self.dbmanager = Congress()
+        self.sendAlerts()
+        '''
+        DESCOMENTAR ESTA LINEA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        self.dbmanager.deleteAllInitiativesAlerts()
+        DESCOMENTAR ESTA LINEA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        '''
 
-    def sendAlerttousers(self):
+    def sendAlerts(self):
         alerts = self.dbmanager.getAllAlerts()
-        userswithalerts = self.dbmanager.getUserswithAlert()
-        for user in userswithalerts:
-            alerttoshow = list()
-            alerts_ = copy.copy(alerts)
-            for alert in alerts_:
-                if alert['topic'] in user['profile']['dicts']:
-                    objects = self.getObjects(alert['items'])
-                    alertsanditems = dict()
-                    alertsanditems[alert['topic']] = objects
-                    alerttoshow.append(alertsanditems)
-            if alerttoshow:
-                try:
-                    emailSparkPost.send_mail(user['emails'][0]['address'],alerttoshow)
-                except Exception as e:
-                    print str(e)+" "+user['emails'][0]['address']+" is not a valid email"
+        for alert in alerts:
+            for search in filter(lambda s: s['validated'], alert['searches']):
+                initiatives = self.dbmanager.searchInitiativesAlerts(
+                        byteify(json.loads(search['dbsearch']))
+                        )
+                print initiatives.count()
 
-
-    def deleteAll(self):
-        self.dbmanager.deletecollection("alerts")
-
-    def getObjects(self,objs):
-        res=[]
-        for obj in objs:
-            newobj = dict()
-            newobj['title'] = obj['title']
-            newobj['url']="{0}{1}".format(TIPIS_URL,str(obj['id']))
-            newobj['date'] = obj["date"]
-            res.append(newobj)
-        return res
 
 if __name__ == "__main__":
     NotifyByEmail()

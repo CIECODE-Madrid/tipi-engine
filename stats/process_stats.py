@@ -18,7 +18,7 @@ class GenerateStats(object):
         self.stats()
 
     def stats(self):
-        self.deleteAll()
+        self.dbmanager.deleteAllStats()
         self.overall()
         self.deputiesByTopics()
         self.deputiesBySubtopics()
@@ -153,9 +153,6 @@ class GenerateStats(object):
             subdoc['_id'] = element['_id']
             subdoc['initiatives'] = sorted(element['initiatives'], key=itemgetter('date'), reverse=True)[:20]
             self.document['latest'].append(subdoc)
-
-    def deleteAll(self):
-        self.dbmanager.deletecollection("statistics")
 
     def insertStats(self):
         self.dbmanager.insertStats(self.document)
