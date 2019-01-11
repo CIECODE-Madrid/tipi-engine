@@ -66,7 +66,7 @@ class RegexEngine:
                                 'tag': tag['tag'],
                                 'subtopic': tag['subtopic'],
                                 'original': tag['original']
-                                });
+                                })
                 else:
                     new_tags.append(tag)
         return new_tags
@@ -80,7 +80,7 @@ class RegexEngine:
                 'tag': tag['original'],
                 'subtopic': tag['subtopic'],
                 'struct': {'tag': tag['tag'], 'subtopic': tag['subtopic'], 'topic': topic['name']}
-                });
+                })
 
     def loadInitiative(self, initiative):
         self.__initiative = initiative
@@ -123,7 +123,7 @@ class RegexEngine:
             for tag in tags:
                 try:
                     if pcre.search(tag['compiletag'], line):
-                        self.addTagsToFounds(tag);
+                        self.addTagsToFounds(tag)
                 except Exception, e:
                     print str(e) + " : " + str(tag['tag']) + " || on initiative " + str(initiative['_id'])
                     break
