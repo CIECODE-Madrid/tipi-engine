@@ -73,8 +73,7 @@ blacklist
 *.db*
 *.log
 
-# Alerts, database and tweetbot
-alerts/settings.py
+# Database and tweetbot
 database/variables.py
 tweetbot/credentials.py
 
@@ -83,3 +82,7 @@ engineenv
 
 # For testing
 quickex.py
+
+# Tipi Alerts
+alerts/settings.py
+local_config.py

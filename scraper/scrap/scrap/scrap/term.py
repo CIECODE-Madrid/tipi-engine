@@ -100,8 +100,8 @@ class Terms(object):
     @staticmethod
     def whatisthis(s):
         if isinstance(s, str):
-            print "ordinary string"
+            print("ordinary string")
         elif isinstance(s, unicode):
-            print "unicode string"
+            print("unicode string")
         else:
-            print "not a string"
+            print("not a string")

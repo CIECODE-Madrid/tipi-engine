@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import re, random, time, datetime
-from conn import MongoDBconn
+from .conn import MongoDBconn
 from utils import generateId
 
 
@@ -94,7 +94,7 @@ class Congress(object):
         elif type is 'update':
             self._updateInitiative(item)
         else:
-            print "Not type accepted"
+            print("Not type accepted")
             raise
 
     def _insertInitiative(self, item):
@@ -128,7 +128,7 @@ class Congress(object):
         elif type is 'update':
             self._updateInitiativecontent(item)
         else:
-            print "Not type accepted"
+            print("Not type accepted")
             raise
 
     def _updateInitiativecontent(self, item):
@@ -244,7 +244,7 @@ class Congress(object):
         elif type is 'update':
             self._updateFinishTextorResponse(item)
         else:
-            print "Not type accepted"
+            print("Not type accepted")
             raise
 
     def _insertFinishsTextorResponse(self, item):
@@ -284,7 +284,7 @@ class Congress(object):
         elif type is 'update':
             self._updateDeputy(item)
         else:
-            print "Not type accepted"
+            print("Not type accepted")
             raise
 
     def _insertDeputy(self, item):
@@ -310,34 +310,26 @@ class Congress(object):
             }
         })
 
-    def addAlert(self, topic, initiative_id, initiative_title, initiative_date):
-        self._getCollection('alerts').update_one({
-            'topic': topic,
-            }, {
-                '$addToSet': {
-                    'items': {
-                        'id': str(initiative_id),
-                        'title': initiative_title,
-                        'date': initiative_date,
-                        }
-                }
-            }, upsert=True)
-
-    def getAllAlerts(self):
-        return self._getCollection('alerts').find({'items':{'$exists':True,'$not':{'$size':0}}})
-
-    def getUserswithAlert(self):
-        return self._getCollection('users').find({"profile.dicts":{'$exists': True}})
-
     def getAggregatedInitiativesByPipeline(self, pipeline):
         return list(self._getCollection('initiatives').aggregate(pipeline=pipeline))
 
-    def deletecollection(self,collection):
-        #Warning
+    def deleteCollection(self, collection):
         self._getCollection(collection).drop()
 
     def insertStats(self, document={}):
         self._getCollection('statistics').insert(document)
+
+    def deleteAllStats(self):
+        self.deleteCollection('statistics')
+
+    def addInitiativeAlert(self, initiative):
+        self._getCollection('initiatives_alerts').insert(initiative)
+
+    def deleteAllInitiativesAlerts(self):
+        self.deleteCollection('initiatives_alerts')
+
+    def searchInitiativesAlerts(self, search):
+        return self._getCollection('initiatives_alerts').find(search, no_cursor_timeout=True)
 
     def updateInitiativesStatus(self, search, status):
         self._getCollection('initiatives').update_many(

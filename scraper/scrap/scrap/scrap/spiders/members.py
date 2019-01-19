@@ -1,6 +1,4 @@
-import urlparse
-
-
+from urllib.parse import urlparse
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from scrapy.selector import HtmlXPathSelector, Selector
@@ -9,7 +7,6 @@ import re
 from dateutil.parser import parse
 
 from database.congreso import Congress
-
 from scrap.items import MemberItem
 
 

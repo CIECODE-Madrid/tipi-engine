@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
-import urlparse
+from urllib.parse import urlparse
 import datetime
 import time
 from scrapy import signals
@@ -16,11 +16,9 @@ from twisted.internet.error import DNSLookupError, TimeoutError
 from scrap.blacklist import Blacklist
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrap.utils import Utils
-from scrap.mail import emailScrap
 from scrap.check import CheckItems, CheckSystem
 from scrap.typeamendment import AmendmentFlow
 from database.congreso import Congress
-from alerts.settings import API_SPARKPOST
 
 
 class StackSpider(Spider):
@@ -44,13 +42,12 @@ class StackSpider(Spider):
 
     def whenFinish(self):
         self.time = datetime.datetime.now() - self.time
-        print("********  %s " % self.time)
+        print("******** {}".format(self.time))
         text = "Ha tardado: "+ (" %s " % self.time) +"\n\n<br>"
         text += '<br>'.join('{}{}{}'.format(key,"\t", val) for key, val in self.crawler.stats.get_stats().items())
         text += "\n\n\n"
         notscrap = CheckItems.checkUrls()
         CheckItems.deleteDb()
-        emailScrap().send_mail(API_SPARKPOST, text, "Scrapy Stats")
 
     def start_requests(self):
         return [scrapy.FormRequest("http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335505_73_1335500_1335500.next_page=/wc/cambioLegislatura",
@@ -93,7 +90,7 @@ class StackSpider(Spider):
                         yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
                                              callback=self.oneinitiative, meta = {'type':type})
             except IndexError as error:
-                print error
+                print(error)
 
     def oneinitiative(self,response):
         type = response.meta['type'] #initiative_type_alt
@@ -662,11 +659,6 @@ class StackSpider(Spider):
 
         if rsponsetext:
 
-            #timeprueba = datetime.datetime.now()
-
-
-            #timeprueba = datetime.datetime.now() - timeprueba
-            #print("********  %s " % timeprueba)
             item['content'] = []
             haspdf =re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+.pdf', rsponsetext)
             if haspdf:

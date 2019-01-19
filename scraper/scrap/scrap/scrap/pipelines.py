@@ -31,7 +31,7 @@ class MongoDBPipeline(object):
                         Blacklist.addElement(item['url'])
 
             except:
-                print ("**** FAILURE *****")
+                print("**** FAILURE *****")
             congress = Congress()
             search = congress.getInitiative(reference=item['reference'], initiative_type_alt=item['initiative_type_alt'], title=item['title'])
 
@@ -45,7 +45,7 @@ class MongoDBPipeline(object):
                 congress.updateorinsertInitiativecontent(item=item, type='insert')
             else:
                         #not DIFF
-                print "es el mismo, no cambia"
+                print("es el mismo, no cambia")
 
 
 
@@ -68,7 +68,7 @@ class MongoDBPipeline(object):
                 congress.updateorinsertFinishtextorResponse(item=item, type='insert')
             else:
                     #not DIFF
-                print "es el mismo, no cambia"
+                print("es el mismo, no cambia")
 
         elif isinstance(item, ResponseItem):
             congress = Congress()
@@ -83,7 +83,7 @@ class MongoDBPipeline(object):
                 congress.updateorinsertFinishtextorResponse(item=item, type='insert')
             else:
                     #not DIFF
-                print "es el mismo, no cambia"
+                print("es el mismo, no cambia")
 
         return item
 

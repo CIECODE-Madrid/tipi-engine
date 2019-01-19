@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pymongo
 
-from settings import MongoConfig
+from .settings import MongoConfig
 import pdb
 
 

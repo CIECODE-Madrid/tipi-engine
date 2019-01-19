@@ -1,8 +1,10 @@
 import luigi
-from transformations.transformations import TransformationsTask
+
 from targets import *
 from utils import FILES
-from motor_pcre import LabelingEngine
+from transformations.transformations import TransformationsTask
+from .motor_pcre import LabelingEngine
+
 
 class LabelingTask(luigi.Task):
     task_namespace = 'labeling'
