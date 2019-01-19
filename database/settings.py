@@ -1,5 +1,5 @@
 import pymongo
-from variables import config
+from .variables import config
 
 
 class Config(object):

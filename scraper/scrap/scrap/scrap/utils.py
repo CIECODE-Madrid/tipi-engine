@@ -1,6 +1,5 @@
 import re
-import urlparse
-import pdb
+from urllib.parse import urlparse, urljoin
 import datetime
 
 
@@ -98,7 +97,7 @@ class Utils(object):
         return list[0]
     @staticmethod
     def createUrl(base,href):
-        url = urlparse.urljoin(base, href)
+        url = urljoin(base, href)
         return url
     @staticmethod
     def checkEnmiendainarray(array, serie):

@@ -1,9 +1,5 @@
-from alerts.search import NotifyByEmail
-import sys
-
-reload(sys)    # to re-enable sys.setdefaultencoding()
-sys.setdefaultencoding('utf-8')
+from alerts.send_alerts import SendAlerts
 
 
 if __name__ == '__main__':
-    NotifyByEmail()
+    SendAlerts()

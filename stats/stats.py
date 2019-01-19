@@ -1,8 +1,9 @@
 import luigi
+
 from alerts.alerts import GenerateAlertsTask
-from process_stats import GenerateStats
 from utils import clean_files, FILES
-import pdb
+from .process_stats import GenerateStats
+
 
 class GenerateStatsTask(luigi.Task):
     task_namespace = 'stats'

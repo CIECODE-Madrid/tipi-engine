@@ -1,5 +1,3 @@
-# Ths Python file uses the following encoding: utf-8
-import sys
 from time import time
 import itertools
 import pcre
@@ -7,14 +5,12 @@ import pymongo
 
 from database.congreso import Congress
 
-reload(sys)    # to re-enable sys.setdefaultencoding()
-sys.setdefaultencoding('utf-8')
-
 
 class LabelingEngine:
 
     def run(self):
         dbmanager = Congress()
+        dbmanager.deleteCollection('initiatives_alerts')
         regex_engine = RegexEngine()
         topics = list(dbmanager.getTopics())
         initiatives = dbmanager.getNotTaggedInitiatives()
@@ -23,8 +19,8 @@ class LabelingEngine:
         if topics:
             for initiative in initiatives:
                 try:
-                    print "Tagging initiative %d of %d:" % (i, total)
-                    if initiative.has_key('title') or initiative.has_key('content'):
+                    print("Tagging initiative %d of %d:" % (i, total))
+                    if 'title' in initiative.keys() or 'content' in initiative.keys():
                         regex_engine.loadInitiative(initiative)
                         for topic in topics:
                             regex_engine.loadTags(topic)
@@ -34,12 +30,11 @@ class LabelingEngine:
                         dbmanager.taggingInitiative(initiative['_id'], regex_engine.getTopicsFound(), regex_engine.getTagsFound())
                         if regex_engine.getTopicsFound():
                             dbmanager.addInitiativeAlert(initiative)
-                except Exception, e:
-                    print e
-                    print "Error tagging the initiative " + str(initiative['_id'])
+                except Exception:
+                    print("Error tagging the initiative " + str(initiative['_id']))
                 regex_engine.cleanTopicsAndTagsFound()
                 i += 1
-            print '============================'
+            print('============================')
 
 
 
@@ -113,8 +108,8 @@ class RegexEngine:
     def matchTags(self):
         tags = self.getTags()
         initiative = self.getinitiative()
-        if initiative.has_key('title'):
-            if not initiative.has_key('content'):
+        if 'title' in initiative.keys():
+            if not 'content' in initiative.keys():
                 initiative['content'] = []
             initiative['content'].append(initiative['title'])
         for line in initiative['content']:
@@ -124,6 +119,6 @@ class RegexEngine:
                 try:
                     if pcre.search(tag['compiletag'], line):
                         self.addTagsToFounds(tag)
-                except Exception, e:
-                    print str(e) + " : " + str(tag['tag']) + " || on initiative " + str(initiative['_id'])
+                except Exception:
+                    print(str(tag['tag']) + " || on initiative " + str(initiative['_id']))
                     break

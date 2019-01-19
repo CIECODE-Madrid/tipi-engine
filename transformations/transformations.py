@@ -5,6 +5,7 @@ from utils import FILES
 from .populate_status import PopulateStatus
 from .convert_urls import ConvertURLs
 
+
 class TransformationsTask(luigi.Task):
     task_namespace = 'transformations'
 

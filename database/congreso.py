@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import re, random, time, datetime
-from conn import MongoDBconn
+from .conn import MongoDBconn
 from utils import generateId
 
 
@@ -88,7 +88,7 @@ class Congress(object):
         elif type is 'update':
             self._updateInitiative(item)
         else:
-            print "Not type accepted"
+            print("Not type accepted")
             raise
 
     def _insertInitiative(self, item):
@@ -122,7 +122,7 @@ class Congress(object):
         elif type is 'update':
             self._updateInitiativecontent(item)
         else:
-            print "Not type accepted"
+            print("Not type accepted")
             raise
 
     def _updateInitiativecontent(self, item):
@@ -238,7 +238,7 @@ class Congress(object):
         elif type is 'update':
             self._updateFinishTextorResponse(item)
         else:
-            print "Not type accepted"
+            print("Not type accepted")
             raise
 
     def _insertFinishsTextorResponse(self, item):
@@ -278,7 +278,7 @@ class Congress(object):
         elif type is 'update':
             self._updateDeputy(item)
         else:
-            print "Not type accepted"
+            print("Not type accepted")
             raise
 
     def _insertDeputy(self, item):
@@ -303,12 +303,6 @@ class Congress(object):
                 'url': item['url']
             }
         })
-
-    def getAllAlerts(self):
-        return self._getCollection('alerts').find()
-
-    def getUserswithAlert(self):
-        return self._getCollection('users').find({"profile.dicts":{'$exists': True}})
 
     def getAggregatedInitiativesByPipeline(self, pipeline):
         return list(self._getCollection('initiatives').aggregate(pipeline=pipeline))

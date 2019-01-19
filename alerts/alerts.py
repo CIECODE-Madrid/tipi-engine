@@ -1,6 +1,6 @@
 import luigi
 
-from search import NotifyByEmail
+from .send_alerts import SendAlerts
 from labeling.labeling import LabelingTask
 from targets import *
 from utils import FILES
@@ -17,5 +17,5 @@ class GenerateAlertsTask(luigi.Task):
 
     def run(self):
         print("{task} says: ready to generate alerts!".format(task=self.__class__.__name__))
-        NotifyByEmail()
+        SendAlerts()
         self.output().open('w').close()

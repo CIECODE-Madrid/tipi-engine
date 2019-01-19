@@ -81,7 +81,7 @@ class CheckItems():
 
     @staticmethod
     def checkUrls():
-        print ("Checking Items ......")
+        print("Checking Items ......")
         import time
         time.sleep(5)
         con = mongoItems()
@@ -92,7 +92,7 @@ class CheckItems():
         for url in iterredis:
             if con.searchbyUrl(url) == 0:
                 res.append(url)
-        print ("Reporting Error ......")
+        print("Reporting Error ......")
         #escribe fichero
         CheckItems.writelogfailed(res)
         return res
@@ -104,10 +104,10 @@ class CheckItems():
         logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
         logging.FileHandler(LOG_FILENAME)
         f = open(LOG_FILENAME, 'w')
-        f.write((" %s " % datetime.datetime.now())+"\n")
+        f.write(" {} ".format(datetime.datetime.now()))
         for url in array:
             logging.error(url)
-            f.write(url+"\n")
+            f.write(str(url))
 
 
 
@@ -119,6 +119,6 @@ class CheckSystem(object):
         logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
         logging.FileHandler(LOG_FILENAME)
         f = open(LOG_FILENAME, 'a')
-        f.write((" %s " % datetime.datetime.now())+"\n")
+        f.write(" {} ".format(datetime.datetime.now()))
         logging.error(msg)
-        f.write(msg+"\n")
+        f.write(msg)

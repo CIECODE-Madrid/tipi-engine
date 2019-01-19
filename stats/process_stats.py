@@ -1,5 +1,3 @@
-import sys
-sys.path.append("../")
 from database.congreso import Congress
 from operator import itemgetter
 
