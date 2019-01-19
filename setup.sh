@@ -11,7 +11,7 @@ sudo apt-get update && sudo apt-get install -y  build-essential autoconf libtool
 
 
 if [ ! -d "engineenv" ]; then
-    virtualenv engineenv
+    virtualenv --python=python3.6 engineenv
 fi
 
 
