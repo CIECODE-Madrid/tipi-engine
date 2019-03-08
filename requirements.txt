@@ -51,7 +51,7 @@ redis
 requests
 requests-oauthlib
 scandir
-Scrapy
+Scrapy==1.5.1
 service-identity
 simplegeneric
 singledispatch
