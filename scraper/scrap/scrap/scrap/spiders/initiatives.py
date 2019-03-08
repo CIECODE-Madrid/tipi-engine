@@ -14,7 +14,7 @@ from scrap.term import Terms
 from scrap.items import InitiativeItem,AmendmentItem, FinishTextItem, ResponseItem
 from twisted.internet.error import DNSLookupError, TimeoutError
 from scrap.blacklist import Blacklist
-from scrapy.contrib.spiders import CrawlSpider, Rule
+from scrapy.spiders import CrawlSpider, Rule
 from scrap.utils import Utils
 from scrap.check import CheckItems, CheckSystem
 from scrap.typeamendment import AmendmentFlow
@@ -24,7 +24,7 @@ from database.congreso import Congress
 class StackSpider(Spider):
     #item = InitiativeItem()
     name = "initiatives"
-    allowed_domains = ["http://www.congreso.es/","www.congreso.es"]
+    allowed_domains = ["www.congreso.es"]
     start_urls = [
         "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas",
     ]
@@ -86,9 +86,13 @@ class StackSpider(Spider):
                     new_url = split[0]+"&DOCS="+str(i)+"-"+str(i)+split[2]
                     initiative_url = Utils.createUrl(response.url,new_url)
                     CheckItems.addElement(initiative_url)
-                    if not Blacklist.getElement(initiative_url):
+                    if Blacklist.getElement(initiative_url):
+                        if not Blacklist.getElement(initiative_url):
+                            yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
+                                callback=self.oneinitiative, meta = {'type':type})
+                    else:
                         yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
-                                             callback=self.oneinitiative, meta = {'type':type})
+                            callback=self.oneinitiative, meta = {'type':type})
             except IndexError as error:
                 print(error)
 
@@ -395,7 +399,7 @@ class StackSpider(Spider):
                         yield scrapy.Request(Utils.createUrl(response.url, moen),
                                                      errback=self.errback_httpbin,
                                                      callback=self.monenmiendas, dont_filter=True,
-                                                     meta={'item': item, 'text': "", 'linksenmiendas': None, 'isfirst': True, 'pag':number,'reference':refmon}
+                                                     meta={'item': item, 'text': "", 'linksenmiendas': None, 'isfirst': True, 'pag':number,'ref':refmon}
                                                      )
                 ##DIARIOS
             if diarios:
