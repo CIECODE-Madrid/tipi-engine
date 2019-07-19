@@ -73,6 +73,9 @@ blacklist
 *.db*
 *.log
 
+# Congreso settings
+scraper/scrap/scrap/scrap/congreso_settings.py
+
 # Database and tweetbot
 database/variables.py
 tweetbot/credentials.py

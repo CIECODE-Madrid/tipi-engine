@@ -15,11 +15,6 @@ SPIDER_MODULES = ['scrap.spiders']
 NEWSPIDER_MODULE = 'scrap.spiders'
 ITEM_PIPELINES = {'scrap.pipelines.MongoDBPipeline':400} #number is the order
 
-MONGODB_SERVER = '192.168.3.34'
-MONGODB_PORT = 27017
-MONGODB_DB = 'prueba'
-MONGODB_COLLECTION = 'test'
-
 RETRY_ENABLED = False
 
 EXTENSIONS = {

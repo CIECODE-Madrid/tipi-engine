@@ -18,7 +18,7 @@ class ScrapTask(luigi.Task):
         #execfile("scraper/scrap/scrap/initiatives.py")
 
         os.chdir("scraper/scrap/scrap")
-        os.system("python members.py")
+        # os.system("python members.py")
         os.system("python initiatives.py")
         os.chdir("../../../")
 

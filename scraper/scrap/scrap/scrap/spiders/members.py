@@ -5,6 +5,7 @@ from scrapy.selector import HtmlXPathSelector, Selector
 from scrapy.item import Item, Field
 import re
 from dateutil.parser import parse
+from scrap.congreso_settings import ID_LEGISLATURA
 
 from database.congreso import Congress
 from scrap.items import MemberItem
@@ -16,19 +17,19 @@ class MemberSpider(CrawlSpider):
     start_urls = [  'http://www.congreso.es/portal/page/portal/Congreso'
                         '/Congreso/Diputados?_piref73_1333056_73_1333049_13'
                         '33049.next_page=/wc/menuAbecedarioInicio&tipoBusqu'
-                        'eda=completo&idLegislatura=12',
+                        'eda=completo&idLegislatura={}'.format(ID_LEGISLATURA),
                     'http://www.congreso.es/portal/page/portal/Congreso/Congreso/Diputados/BajasLegAct']
 
     rules = []
     rules.append(
             Rule(LinkExtractor(
-                allow=['fichaDiputado\?idDiputado=\d+&idLegislatura=12'], unique=True),
+                allow=['fichaDiputado\?idDiputado=\d+&idLegislatura={}'.format(ID_LEGISLATURA)], unique=True),
                        callback='parse_member'))
     rules.append(
             Rule(LinkExtractor(
                 allow=['busquedaAlfabeticaDiputados&paginaActual=\d+&idLeg'
-                       'islatura=12'
-                       '&tipoBusqueda=completo'], unique=True), follow=True))
+                       'islatura={}'
+                       '&tipoBusqueda=completo'.format(ID_LEGISLATURA)], unique=True), follow=True))
     rules.append(
             Rule(LinkExtractor(
                 allow=['diputadosBajaLegActual&paginaActual=\d']

@@ -19,6 +19,7 @@ from scrap.utils import Utils
 from scrap.check import CheckItems, CheckSystem
 from scrap.typeamendment import AmendmentFlow
 from database.congreso import Congress
+from scrap.congreso_settings import ID_LEGISLATURA
 
 
 class StackSpider(Spider):
@@ -51,7 +52,7 @@ class StackSpider(Spider):
 
     def start_requests(self):
         return [scrapy.FormRequest("http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas/Indice%20de%20Iniciativas?_piref73_1335505_73_1335500_1335500.next_page=/wc/cambioLegislatura",
-                                   formdata = {'idLegislatura':'12'} , callback = self.parse)]
+                                   formdata = {'idLegislatura':str(ID_LEGISLATURA)} , callback = self.parse)]
 
     def parse(self, response):
 
@@ -229,6 +230,7 @@ class StackSpider(Spider):
         item['author_parliamentarygroups'] = []
         item['author_others'] = []
         for oneaut in listautors:
+            oneaut = oneaut.replace('\n', ' ')
             typeaut = self.typeAutor(name=oneaut)
             if typeaut is 'deputy':
                 item['author_deputies'].append(oneaut)
@@ -1150,43 +1152,11 @@ class StackSpider(Spider):
 
 
     def getParliamentaryGroup(self, name=None):
-        # sebusca por acronimo
-        acronimo = None
-        if re.search("la izquierda plural", name, re.IGNORECASE) \
-                or re.search("GIP", name, re.IGNORECASE):
-            acronimo = u'GIP'
-        elif re.search("popular", name, re.IGNORECASE) \
-                or re.search("GP", name, re.IGNORECASE):
-            acronimo = u'GP'
-        elif re.search("vasco", name, re.IGNORECASE) \
-                or re.search("EAJ-PNV", name, re.IGNORECASE):
-            acronimo = u'GV (EAJ-PNV)'
-        elif re.search("socialista", name, re.IGNORECASE) \
-                or re.search("GS", name, re.IGNORECASE):
-            acronimo = u'GS'
-        elif re.search("mixto", name, re.IGNORECASE) \
-                or re.search("GMx", name, re.IGNORECASE):
-            acronimo = u'GMx'
-        elif re.search("converg", name, re.IGNORECASE) \
-                or re.search("GC-CiU", name, re.IGNORECASE):
-            acronimo = u'GC-CiU'
-        elif re.search("progreso", name, re.IGNORECASE) \
-                or re.search("GUPyD", name, re.IGNORECASE):
-            acronimo = u'GUPyD'
-        elif re.search("ciudadanos", name, re.IGNORECASE) \
-                 or re.search("GCs", name, re.IGNORECASE):
-            acronimo = u'GCs'
-        elif re.search("republicana", name, re.IGNORECASE) \
-                or re.search("GER", name, re.IGNORECASE):
-            acronimo = u'GER'
-        elif re.search("podemos", name, re.IGNORECASE) \
-                or re.search("GCUP-EC-EM", name, re.IGNORECASE):
-            acronimo = u'GCUP-EC-EM'
-
         for group in self.groups:
-            if acronimo == group['shortname']:
+            if name == group['name'] \
+                or name == group['shortname'] \
+                or fuzz.token_set_ratio(name, group['name']) == 100:
                 return group
-
         return None
 
 
