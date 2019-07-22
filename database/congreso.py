@@ -3,6 +3,8 @@ import re, random, time, datetime
 from .conn import MongoDBconn
 from utils import generateId
 
+from scraper.scrap.scrap.scrap.congreso_settings import ID_LEGISLATURA
+
 
 class Congress(object):
     _conn = None
@@ -342,7 +344,7 @@ class Congress(object):
 
     def updateInitiativeURL(self, _id, reference):
         sref = reference.split("/")
-        new_url = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas?_piref73_2148295_73_1335437_1335437.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW12&FMT=INITXDSS.fmt&DOCS=1-1&DOCORDER=FIFO&OPDEF=ADJ&QUERY=({}%2F{}*.NDOC.)".format(sref[0], sref[1])
+        new_url = "http://www.congreso.es/portal/page/portal/Congreso/Congreso/Iniciativas?_piref73_2148295_73_1335437_1335437.next_page=/wc/servidorCGI&CMD=VERLST&BASE=IW{}&FMT=INITXDSS.fmt&DOCS=1-1&DOCORDER=FIFO&OPDEF=ADJ&QUERY=({}%2F{}*.NDOC.)".format(ID_LEGISLATURA, sref[0], sref[1])
         self._getCollection('initiatives').update_one({
             '_id': _id,
             }, {
