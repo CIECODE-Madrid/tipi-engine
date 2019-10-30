@@ -49,11 +49,11 @@ class RegexEngine:
 
     def __shuffleTags(self, tags):
         new_tags = []
-        delimiter = '.*'
         for tag in tags:
             if tag is not None:
                 tag['original'] = tag['regex']
                 if tag['shuffle']:
+                    delimiter = '.*?' if '.*?' in tag['regex'] else '.*'
                     perms = itertools.permutations(tag['regex'].split(delimiter))
                     for perm in perms:
                         new_tags.append({
