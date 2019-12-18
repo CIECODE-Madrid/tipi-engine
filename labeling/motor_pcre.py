@@ -25,10 +25,12 @@ class LabelingEngine:
                         for topic in topics:
                             regex_engine.loadTags(topic)
                             regex_engine.matchTags()
-                        initiative['topics'] = regex_engine.getTopicsFound()
-                        initiative['tags'] = regex_engine.getTagsFound()
-                        dbmanager.taggingInitiative(initiative['_id'], regex_engine.getTopicsFound(), regex_engine.getTagsFound())
-                        if regex_engine.getTopicsFound():
+                        topics_found = regex_engine.getTopicsFound()
+                        tags_found = regex_engine.getTagsFound()
+                        initiative['topics'] = topics_found
+                        initiative['tags'] = tags_found
+                        dbmanager.taggingInitiative(initiative['_id'], topics_found, tags_found)
+                        if topics_found:
                             dbmanager.addInitiativeAlert(initiative)
                 except Exception:
                     print("Error tagging the initiative " + str(initiative['_id']))
@@ -45,7 +47,7 @@ class RegexEngine:
         self.__tags = []
         self.__initiative = []
         self.__topics_found = []
-        self.__tags_struct_found = []
+        self.__tags_found = []
 
     def __shuffleTags(self, tags):
         new_tags = []
@@ -71,10 +73,9 @@ class RegexEngine:
         for tag in self.__shuffleTags(topic['tags']):
             self.__tags.append({
                 'topic': topic['name'],
-                'compiletag': pcre.compile('(?i)'+tag['regex']),
-                'tag': tag['original'],
                 'subtopic': tag['subtopic'],
-                'struct': {'tag': tag['tag'], 'subtopic': tag['subtopic'], 'topic': topic['name']}
+                'tag': tag['tag'],
+                'compiletag': pcre.compile('(?i)'+tag['regex']),
                 })
 
     def loadInitiative(self, initiative):
@@ -88,22 +89,28 @@ class RegexEngine:
         self.cleanTagsFound()
 
     def getTopicsFound(self):
-        return self.__topics_found
+        return sorted(list(set([tag['topic'] for tag in self.__tags_found])))
 
     def getTagsFound(self):
-        return self.__tags_struct_found
+        return sorted(self.__tags_found, key=lambda t: (t['topic'], t['subtopic'], t['tag']))
+
+    def __appendTagToFounds(self, new_tag):
+        found = False
+        for tag in self.__tags_found:
+            if tag['topic'] == new_tag['topic'] \
+                    and tag['subtopic'] == new_tag['subtopic'] \
+                    and tag['tag'] == new_tag['tag']:
+                        found = True
+                        tag['times'] = tag['times'] + new_tag['times']
+                        break
+        if not found:
+            self.__tags_found.append(new_tag)
 
     def cleanTagsFound(self):
-        self.__tags_struct_found = []
+        self.__tags_found = []
 
     def getinitiative(self):
         return self.__initiative
-
-    def addTagsToFounds(self, tag):
-        if tag['struct'] not in self.__tags_struct_found:
-            self.__tags_struct_found.append(tag['struct'])
-            if tag['topic'] not in self.__topics_found:
-                self.__topics_found.append(tag['topic'])
 
     def matchTags(self):
         tags = self.getTags()
@@ -117,8 +124,13 @@ class RegexEngine:
                 line = line[0]
             for tag in tags:
                 try:
-                    if pcre.search(tag['compiletag'], line):
-                        self.addTagsToFounds(tag)
+                    result = pcre.findall(tag['compiletag'], line)
+                    times = len(result)
+                    if times > 0:
+                        tag_copy = tag.copy()
+                        tag_copy.pop('compiletag')
+                        tag_copy['times'] = times
+                        self.__appendTagToFounds(tag_copy)
                 except Exception:
                     print(str(tag['tag']) + " || on initiative " + str(initiative['_id']))
                     break
