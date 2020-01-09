@@ -353,6 +353,15 @@ class Congress(object):
                 }
             })
     
+    def updateInitiativeContent(self, _id, content):
+        self._getCollection('initiatives').update_one({
+            '_id': _id,
+            }, {
+                '$set': {
+                    'content': content
+                }
+            })
+
     def _generateIdFromInitiative(self, initiative):
         return generateId(
                 initiative['reference'],
