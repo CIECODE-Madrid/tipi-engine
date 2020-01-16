@@ -4,7 +4,6 @@ from targets import *
 from utils import FILES
 from .populate_status import PopulateStatus
 from .convert_urls import ConvertURLs
-from .clean_contents import CleanContents
 
 
 class TransformationsTask(luigi.Task):
@@ -20,5 +19,4 @@ class TransformationsTask(luigi.Task):
         print("{task} says: ready to transform data!".format(task=self.__class__.__name__))
         PopulateStatus().populate()
         ConvertURLs().convert()
-        CleanContents().clean()
         self.output().open('w').close()

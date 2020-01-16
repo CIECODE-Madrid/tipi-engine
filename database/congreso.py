@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re, random, time, datetime
 from .conn import MongoDBconn
+from .utils import clean_content
 from utils import generateId
 
 from scraper.scrap.scrap.scrap.congreso_settings import ID_LEGISLATURA
@@ -102,6 +103,7 @@ class Congress(object):
     def _insertInitiative(self, item):
         initiative = dict(item)
         initiative['_id'] = self._generateIdFromInitiative(initiative)
+        clean_content(initiative)
         self._getCollection('initiatives').insert(initiative)
 
     def _updateInitiative(self, item):
@@ -134,6 +136,7 @@ class Congress(object):
             raise
 
     def _updateInitiativecontent(self, item):
+        clean_content(item)
         self._getCollection('initiatives').update_one({
                  'reference': item['reference'],
                 'initiative_type_alt': item['initiative_type_alt']
@@ -202,6 +205,7 @@ class Congress(object):
             initiative = dict(item)
             initiative['_id'] = self._generateIdFromInitiative(initiative)
             initiative['updated'] = initiative["created"]
+            clean_content(initiative)
             self._getCollection('initiatives').insert(initiative)
         else:
             self._updateAdmendment(item, search)
@@ -209,7 +213,9 @@ class Congress(object):
     def _updateAdmendment(self, item, search):
         parliamentarygroups = item["author_parliamentarygroups"]
         coll = self._getCollection('initiatives')
+        clean_content(item)
         append = item["content"]
+        clean_content(search)
         before = search["content"]
         before_deputies = search["author_deputies"]
         before_others = search["author_others"]
@@ -218,7 +224,8 @@ class Congress(object):
         if item["author_others"]:
             before_others = before_others + item["author_others"]
         if append not in before:
-            before.append(append)
+            for a in append:
+                before.append(a)
             coll.update_one({
                         'reference': item['reference'],
                         'initiative_type_alt': item['initiative_type_alt'],
@@ -253,9 +260,11 @@ class Congress(object):
         initiative = dict(item)
         initiative['_id'] = self._generateIdFromInitiative(initiative)
         initiative["updated"] = initiative['updated']
+        clean_content(initiative)
         self._getCollection('initiatives').insert(initiative)
 
     def _updateFinishTextorResponse(self, item):
+        clean_content(item)
         self._getCollection('initiatives').update_one({
                 'reference': item['reference'],
                 'initiative_type_alt': item['initiative_type_alt'],
@@ -353,15 +362,6 @@ class Congress(object):
                 }
             })
     
-    def updateInitiativeContent(self, _id, content):
-        self._getCollection('initiatives').update_one({
-            '_id': _id,
-            }, {
-                '$set': {
-                    'content': content
-                }
-            })
-
     def _generateIdFromInitiative(self, initiative):
         return generateId(
                 initiative['reference'],
