@@ -4,6 +4,7 @@ import pcre
 import pymongo 
 
 from database.congreso import Congress
+from alerts.settings import USE_ALERTS
 
 
 class LabelingEngine:
@@ -30,7 +31,7 @@ class LabelingEngine:
                         initiative['topics'] = topics_found
                         initiative['tags'] = tags_found
                         dbmanager.taggingInitiative(initiative['_id'], topics_found, tags_found)
-                        if topics_found:
+                        if topics_found and USE_ALERTS:
                             dbmanager.addInitiativeAlert(initiative)
                 except Exception:
                     print("Error tagging the initiative " + str(initiative['_id']))
