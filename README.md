@@ -10,7 +10,7 @@ Install setup and it will install all dependencies and libraries
 ## Configuration
 
 * Setup database configuration in database/variables.py (based on database/variables.py.example)
-* Setup email configuration in alerts/settings.py (based on alerts/settings.py.example)
+* Disable/Enable alerts (cp alerts/settings.py.example alerts/settings.py)
 
 
 Init Luigi
