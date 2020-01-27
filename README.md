@@ -9,8 +9,7 @@ Install setup and it will install all dependencies and libraries
 
 ## Configuration
 
-* Setup database configuration in database/variables.py (based on database/variables.py.example)
-* Disable/Enable alerts (cp alerts/settings.py.example alerts/settings.py)
+All variables are in .env file
 
 
 Init Luigi
