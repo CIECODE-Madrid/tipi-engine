@@ -1,4 +1,5 @@
 #singleton implemented
+from os import environ as env
 import re
 import redis
 
@@ -9,9 +10,9 @@ class ManageRedisBlackList(object):
 
     def __init__(self):
         self._conn = redis.Redis(
-                        host='localhost',
-                        port=6379,
-                        db=0)
+                host=env.get('REDIS_HOST', 'localhost'),
+                port=int(env.get('REDIS_PORT', '6379')),
+                db=int(env.get('REDIS_DB', '0')))
 
     def __new__(cls):
         if cls.__instance == None:
