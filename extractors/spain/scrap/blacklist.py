@@ -1,5 +1,10 @@
 #singleton implemented
 import re
+import sys
+from pathlib import Path
+p = Path(__file__).parents[3]
+sys.path.insert(0,str(p))
+
 import redis
 
 from extractors.config import REDIS_DB, REDIS_HOST, REDIS_PORT
@@ -24,14 +29,6 @@ class ManageRedisBlackList(object):
 
     def addElement(self,key):
         return self._conn.set(key,key)
-
-
-
-
-
-
-
-
 
 
 class Blacklist():
@@ -62,11 +59,3 @@ class Blacklist():
                 control= True
                 break
         return control
-
-
-
-
-
-
-
-
