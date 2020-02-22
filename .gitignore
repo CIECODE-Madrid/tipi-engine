@@ -76,8 +76,5 @@ blacklist
 # For production site
 engineenv
 
-# For testing
-quickex.py
-
 # Tipi Alerts
 local_config.py
