@@ -1,0 +1,27 @@
+#apt-get instapathlibll build-essential autoconf libtool pkg-config python-opengl python-imaging python-pyrex python-pyside.qtopengl idle-python2.7 qt4-dev-tools qt4-designer libqtgui4 libqtcore4 libqt4-xml libqt4-test libqt4-script libqt4-network libqt4-dbus python-qt4 python-qt4-gl libgle3 python-dev
+redis
+jinja2
+sparkpost
+pathlib
+Twisted>=10.0.0
+pyOpenSSL
+cssselect>=0.9
+w3lib>=1.14.2
+queuelib
+six>=1.5.2
+PyDispatcher>=2.0.5
+service_identity
+parsel>=0.9.5
+cython
+unqlite
+pdb
+lxml #apt-get install python-dev libxml2-dev libxslt1-dev zlib1g-dev
+cryptography #apt-get install libssl-dev
+scrapy
+datetime
+python-dateutil
+pymongo
+fuzzywuzzy
+email
+progressbar
+luigi

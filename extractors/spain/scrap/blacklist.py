@@ -1,7 +1,8 @@
 #singleton implemented
-from os import environ as env
 import re
 import redis
+
+from extractors.config import REDIS_DB, REDIS_HOST, REDIS_PORT
 
 
 class ManageRedisBlackList(object):
@@ -9,10 +10,7 @@ class ManageRedisBlackList(object):
     _conn = None
 
     def __init__(self):
-        self._conn = redis.Redis(
-                host=env.get('REDIS_HOST', 'localhost'),
-                port=int(env.get('REDIS_PORT', '6379')),
-                db=int(env.get('REDIS_DB', '0')))
+        self._conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
     def __new__(cls):
         if cls.__instance == None:
