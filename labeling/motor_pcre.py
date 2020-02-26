@@ -1,7 +1,7 @@
 from time import time
 import itertools
 import pcre
-import pymongo 
+import pymongo
 
 from database.congreso import Congress
 from alerts.settings import USE_ALERTS
@@ -40,10 +40,8 @@ class LabelingEngine:
             print('============================')
 
 
-
-
 class RegexEngine:
-    
+
     def __init__(self):
         self.__tags = []
         self.__initiative = []
@@ -81,7 +79,7 @@ class RegexEngine:
 
     def loadInitiative(self, initiative):
         self.__initiative = initiative
-    
+
     def getTags(self):
         return self.__tags
 

@@ -361,7 +361,7 @@ class Congress(object):
                     'url': new_url
                 }
             })
-    
+
     def _generateIdFromInitiative(self, initiative):
         return generateId(
                 initiative['reference'],
