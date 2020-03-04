@@ -1,4 +1,4 @@
-import tipi_alerts
+import tipi_tasks
 
 
 class SendAlerts():
@@ -7,8 +7,8 @@ class SendAlerts():
         Add init() before send_alerts() to ensure it always use the same
         celery instance, despite flask multithrading
         '''
-        tipi_alerts.init()
-        tipi_alerts.alerts.send_alerts.apply_async()
+        tipi_tasks.init()
+        tipi_tasks.alerts.send_alerts.apply_async()
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ sys.path.insert(0,str(p))
 
 import redis
 
-from extractors.config import REDIS_DB, REDIS_HOST, REDIS_PORT
+from extractors.config import REDIS_DB_BLACKLIST, REDIS_HOST, REDIS_PORT
 
 
 class ManageRedisBlackList(object):
@@ -15,7 +15,7 @@ class ManageRedisBlackList(object):
     _conn = None
 
     def __init__(self):
-        self._conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
+        self._conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB_BLACKLIST)
 
     def __new__(cls):
         if cls.__instance == None:

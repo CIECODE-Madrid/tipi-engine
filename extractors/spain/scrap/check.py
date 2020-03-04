@@ -8,7 +8,7 @@ from pathlib import Path
 p = Path(__file__).parents[3]
 sys.path.insert(0,str(p))
 from database.conn import MongoDBconn
-from extractors.config import REDIS_DB, REDIS_HOST, REDIS_PORT
+from extractors.config import REDIS_DB_CHECK, REDIS_HOST, REDIS_PORT
 
 class mongoItems(object):
     _conn = None
@@ -35,7 +35,7 @@ class UrlsScraped(object):
     _conn=None
 
     def __init__(self):
-        self._conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
+        self._conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB_CHECK)
 
     def __new__(cls):
         if cls.__instance == None:
