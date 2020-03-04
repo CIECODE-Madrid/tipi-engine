@@ -1,7 +1,13 @@
 #singleton implemented
-from os import environ as env
 import re
+import sys
+from pathlib import Path
+p = Path(__file__).parents[3]
+sys.path.insert(0,str(p))
+
 import redis
+
+from extractors.config import REDIS_DB_BLACKLIST, REDIS_HOST, REDIS_PORT
 
 
 class ManageRedisBlackList(object):
@@ -9,10 +15,7 @@ class ManageRedisBlackList(object):
     _conn = None
 
     def __init__(self):
-        self._conn = redis.Redis(
-                host=env.get('REDIS_HOST', 'localhost'),
-                port=int(env.get('REDIS_PORT', '6379')),
-                db=int(env.get('REDIS_DB', '0')))
+        self._conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB_BLACKLIST)
 
     def __new__(cls):
         if cls.__instance == None:
@@ -26,14 +29,6 @@ class ManageRedisBlackList(object):
 
     def addElement(self,key):
         return self._conn.set(key,key)
-
-
-
-
-
-
-
-
 
 
 class Blacklist():
@@ -64,11 +59,3 @@ class Blacklist():
                 control= True
                 break
         return control
-
-
-
-
-
-
-
-

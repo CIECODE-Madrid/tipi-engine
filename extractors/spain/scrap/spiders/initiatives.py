@@ -19,7 +19,7 @@ from scrap.utils import Utils
 from scrap.check import CheckItems, CheckSystem
 from scrap.typeamendment import AmendmentFlow
 from database.congreso import Congress
-from scrap.congreso_settings import ID_LEGISLATURA
+from extractors.config import ID_LEGISLATURA
 
 
 class StackSpider(Spider):

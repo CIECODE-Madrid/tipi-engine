@@ -4,7 +4,7 @@ from .conn import MongoDBconn
 from .utils import clean_content
 from utils import generateId
 
-from scraper.scrap.scrap.scrap.congreso_settings import ID_LEGISLATURA
+from extractors.config import ID_LEGISLATURA
 
 
 class Congress(object):

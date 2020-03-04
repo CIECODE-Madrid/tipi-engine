@@ -2,7 +2,7 @@ import luigi
 
 from targets import *
 from utils import FILES
-from transformations.transformations import TransformationsTask
+from data_cleaners.transformations import TransformationsTask
 from .motor_pcre import LabelingEngine
 
 

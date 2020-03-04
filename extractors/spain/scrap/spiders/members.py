@@ -5,9 +5,9 @@ from scrapy.selector import HtmlXPathSelector, Selector
 from scrapy.item import Item, Field
 import re
 from dateutil.parser import parse
-from scrap.congreso_settings import ID_LEGISLATURA
 
 from database.congreso import Congress
+from extractors.config import ID_LEGISLATURA
 from scrap.items import MemberItem
 
 
