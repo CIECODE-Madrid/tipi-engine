@@ -3,7 +3,7 @@ from importlib import import_module as im
 import luigi
 
 from data_cleaners.config import MODULE_DATA_CLEANER as CLEANER
-from extractors.scraper import ScrapTask
+from extractors.extractor import ExtractorTask
 from utils import FILES
 
 
@@ -20,7 +20,7 @@ class TransformationsTask(luigi.Task):
     task_namespace = 'data_cleaners'
 
     def requires(self):
-        return ScrapTask()
+        return ExtractorTask()
 
     def output(self):
         return luigi.LocalTarget(FILES[1])
