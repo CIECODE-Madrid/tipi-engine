@@ -11,8 +11,8 @@ dicc = {
     #NOTA: los textos tengan aprobacion definitivas, se miran en la funcion. No esta en la array
 
 
-     u'Proposición no de Ley ante el Pleno':["D", ["Enmiendas"], "A", ["aprobaci(.+?)n(.*?)por(.*?)el(.*?)pleno"]],
-     u'Proposición no de Ley en Comisión': ["D", ["Enmiendas"],"A", ["aprobaci(.+?)n(.*?)por(.*?)el(.*?)pleno"]],
+     u'Proposición no de Ley ante el Pleno':["D", ["Enmiendas"], "B", ["aprobaci(.+?)n(.*?)por(.*?)el(.*?)pleno"]],
+     u'Proposición no de Ley en Comisión': ["D", ["Enmiendas"],"B", ["aprobaci(.+?)n(.*?)por(.*?)el(.*?)pleno"]],
      u'Iniciativa legislativa popular':["B",["dice de enmiendas"],"B", ["aprobaci(.+?)n"]],
      u'Proposición de ley de Grupos Parlamentarios del Congreso':["B",["Enmiendas"],"B",["aprobaci(.+?)n"]],
      u'Proposición de ley de Diputados':["B",["Enmiendas"],"B",["aprobaci(.+?)n"]],
