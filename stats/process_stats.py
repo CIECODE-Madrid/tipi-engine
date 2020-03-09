@@ -24,7 +24,6 @@ class GenerateStats(object):
         self.parliamentarygroupsBySubtopics()
         self.placesByTopics()
         self.placesBySubtopics()
-        self.latest()
         self.insertStats()
 
     def overall(self):
@@ -134,23 +133,6 @@ class GenerateStats(object):
 
 
 
-
-
-
-
-
-
-    def latest(self):
-        self.document['latest'] = []
-        pipeline = [ { '$match': {'topics': {'$exists': True, '$not': {'$size': 0}}} }, { '$sort': {'updated': -1} }, { '$unwind': '$topics' },
-                   { '$group': { '_id': '$topics' ,
-                                 'initiatives':{'$push':{ 'id': "$_id", 'title': "$title", 'date': "$updated",'place': "$place",'author': "$author_deputies"  }}} } ]
-        result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
-        for element in result:
-            subdoc = dict()
-            subdoc['_id'] = element['_id']
-            subdoc['initiatives'] = sorted(element['initiatives'], key=itemgetter('date'), reverse=True)[:20]
-            self.document['latest'].append(subdoc)
 
     def insertStats(self):
         self.dbmanager.insertStats(self.document)
