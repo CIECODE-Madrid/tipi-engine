@@ -51,7 +51,7 @@ STATUS_MAP = [
                 {'processing': {'$regex': "Solicitud de amparo", '$options': 'gi'}},
                 {'processing': {'$regex': "Respuesta.*Gobierno", '$options': 'gi'}},
                 {'processing': {'$regex': "Senado desde", '$options': 'gi'}},
-                {'processing': {'$regex': "Junta Electoral Central desde", '$options': 'gi'}}
+                {'processing': {'$regex': "Junta Electoral Central desde", '$options': 'gi'}},
                 {'processing': {'$regex': 'Administración del Estado Contestación', '$options': 'gi'}},
                 {'processing': {'$regex': 'Entidad Pública Contestación', '$options': 'gi'}},
                 {'processing': {'$regex': 'Pleno Contestación', '$options': 'gi'}},
