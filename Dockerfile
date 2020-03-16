@@ -10,4 +10,4 @@ COPY . /app
 
 RUN touch /var/log/cron.log
 
-CMD tail -f /var/log/cron.log
+CMD crontab /etc/cron.d/engine-cron && tail -f /var/log/cron.log
