@@ -18,14 +18,6 @@ STATUS_MAP = [
             'status': 'Aprobada'
         },
         {
-            'search': {'processing': {'$regex': 'Entidad Pública Contestación', '$options': 'gi'}},
-            'status': 'Respondida'
-        },
-        {
-            'search': {'processing': {'$regex': 'Pleno Contestación', '$options': 'gi'}},
-            'status': 'Respondida'
-        },
-        {
             'search': {'processing': {'$regex': 'Tramitado por completo sin', '$options': 'gi'}, 'initiative_type': {'$in': ["171", "180", "181", "184"]}},
             'status': 'Respondida'
         },
@@ -60,6 +52,9 @@ STATUS_MAP = [
                 {'processing': {'$regex': "Respuesta.*Gobierno", '$options': 'gi'}},
                 {'processing': {'$regex': "Senado desde", '$options': 'gi'}},
                 {'processing': {'$regex': "Junta Electoral Central desde", '$options': 'gi'}}
+                {'processing': {'$regex': 'Administración del Estado Contestación', '$options': 'gi'}},
+                {'processing': {'$regex': 'Entidad Pública Contestación', '$options': 'gi'}},
+                {'processing': {'$regex': 'Pleno Contestación', '$options': 'gi'}},
                 ]},
             'status': 'En tramitación'
         },
