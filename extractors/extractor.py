@@ -18,8 +18,8 @@ class ExtractorTask(luigi.Task):
         print("{task}(says: ready to scrap!".format(task=self.__class__.__name__))
         if MODULE_EXTRACTOR == 'spain':
             os.chdir('extractors/spain'.format(MODULE_EXTRACTOR))
-            os.system("python members.py")
-            os.system("python initiatives.py")
+            os.system("/usr/local/bin/python members.py")
+            os.system("/usr/local/bin/python initiatives.py")
             os.chdir("../../../")
         else:
             members = im('extractors.{}.members'.format(MODULE_EXTRACTOR))
