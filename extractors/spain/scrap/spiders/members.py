@@ -78,7 +78,7 @@ class MemberSpider(CrawlSpider):
 
                 if group:
                     # url is in list, extract it
-                    item['parliamentarygroup'] = re.search('\((.*?)\)', group.extract()[0]).group(1).strip()
+                    item['parliamentarygroup'] = re.search('\( (.*?) \)', group.extract()[0]).group(1).strip()
                     #item['party_logo'] = 'http://www.congreso.es' +Selector(response).xpath('//div[@id="datos_diputado"]/p[@cl'
                     #                       'ass="logo_grupo"]/a/img/@src').\
                     #                       extract()[0] #logo de partido
