@@ -1,6 +1,6 @@
 from time import time
 import itertools
-import pymongo 
+import pymongo
 
 from .status_map import STATUS_MAP
 from database.congreso import Congress
