@@ -1,8 +1,9 @@
 import sys
 
-from alerts.send_alerts import SendAlerts
+from extractors.extractor import ExtractorTask
 from data_cleaners.transformations import run_cleaner
 from labeling.motor_pcre import LabelingEngine
+from alerts.send_alerts import SendAlerts
 from stats.process_stats import GenerateStats
 
 
@@ -23,6 +24,8 @@ if len(args) == 2:
         GenerateStats()
     elif args[1] == 'cleaner':
         run_cleaner()
+    elif args[1] == 'extractor':
+        ExtractorTask().run()
     else:
         print('quickex: invalid TASK')
         print_help()
