@@ -24,8 +24,8 @@ class ExtractorTask(luigi.Task):
         else:
             members = im('extractors.{}.members'.format(MODULE_EXTRACTOR))
             initiatives = im('extractors.{}.initiatives'.format(MODULE_EXTRACTOR))
-            members.extract()
-            initiatives.extract()
+            members.MembersExtractor().extract()
+            initiatives.InitiativesExtractor().extract()
 
 
         self.output().open('w').close()
