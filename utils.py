@@ -4,9 +4,9 @@ import os
 import hashlib
 
 FILES = [
-    'scrap.tmp',
-    'transformations.tmp',
-    'labeling.tmp',
+    'extractor.tmp',
+    'data_cleaner.tmp',
+    'tagger.tmp',
     'alerts.tmp',
     ]
 

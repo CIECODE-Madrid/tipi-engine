@@ -2,7 +2,7 @@ import luigi
 
 from .send_alerts import SendAlerts
 from .settings import USE_ALERTS
-from labeling.labeling import LabelingTask
+from tagger.tagger import TaggerTask
 from targets import *
 from utils import FILES
 
@@ -11,7 +11,7 @@ class GenerateAlertsTask(luigi.Task):
     task_namespace = 'alerts'
 
     def requires(self):
-        return LabelingTask()
+        return TaggerTask()
 
     def output(self):
         return luigi.LocalTarget(FILES[3])

@@ -3,11 +3,11 @@ import luigi
 from targets import *
 from utils import FILES
 from data_cleaners.transformations import TransformationsTask
-from .motor_pcre import LabelingEngine
+from .tag_initiatives import TagInitiatives
 
 
-class LabelingTask(luigi.Task):
-    task_namespace = 'labeling'
+class TaggerTask(luigi.Task):
+    task_namespace = 'tagger'
 
     def requires(self):
         return TransformationsTask()
@@ -16,7 +16,6 @@ class LabelingTask(luigi.Task):
         return luigi.LocalTarget(FILES[2])
 
     def run(self):
-        print("{task} says: ready to search and assign labels!".format(task=self.__class__.__name__))
-        labeling_engine = LabelingEngine()
-        labeling_engine.run()
+        print("{task} says: ready to tag initiatives!".format(task=self.__class__.__name__))
+        TagInitiatives().run()
         self.output().open('w').close()
