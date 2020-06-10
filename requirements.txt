@@ -10,3 +10,5 @@ python-pcre==0.7
 sentry-sdk==0.14.1
 tweepy==3.8.0
 requests-futures==1.0.0
+textract==1.6.3
+six==1.12.0
