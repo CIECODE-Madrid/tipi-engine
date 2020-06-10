@@ -1,10 +1,13 @@
+import re
+
+
 def clean_content(initiative):
 
     def delete_commission_if_appears_on_pnl(text, initiative_type):
         if initiative_type != '161':
             return text
         try:
-            phrases = text.split('.')
+            phrases = re.split(r'\.(?!\d)', text)
             if len(phrases) == 1:
                 return text
             if phrases[len(phrases)-1].find('  Comisión') == -1:
@@ -24,7 +27,7 @@ def clean_content(initiative):
                     new_paragraph,
                     initiative['initiative_type']
                     )
-            for phrase in paragraph_mod.split('.'):
+            for phrase in re.split(r'\.(?!\d)', paragraph_mod):
                 new_content.append(phrase)
     except:
         pass
