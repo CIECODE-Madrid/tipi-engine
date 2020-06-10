@@ -15,7 +15,7 @@ class ExtractorTask(luigi.Task):
         return luigi.LocalTarget(FILES[0])
 
     def run(self):
-        print("{task}(says: ready to scrap!".format(task=self.__class__.__name__))
+        print("{task}(says: ready to extract data!".format(task=self.__class__.__name__))
         if MODULE_EXTRACTOR == 'spain':
             os.chdir('extractors/spain'.format(MODULE_EXTRACTOR))
             os.system("/usr/local/bin/python members.py")
@@ -23,8 +23,8 @@ class ExtractorTask(luigi.Task):
             os.chdir("../../../")
         else:
             members = im('extractors.{}.members'.format(MODULE_EXTRACTOR))
-            initiatives = im('extractors.{}.initiatives'.format(MODULE_EXTRACTOR))
             members.MembersExtractor().extract()
+            initiatives = im('extractors.{}.initiatives'.format(MODULE_EXTRACTOR))
             initiatives.InitiativesExtractor().extract()
 
 
