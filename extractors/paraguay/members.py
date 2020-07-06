@@ -61,6 +61,7 @@ class MembersExtractor:
 
     def __refresh_parliamentarygroups(self):
         groups = Deputy.objects.distinct('parliamentarygroup')
+        groups.remove('')
         for group in groups:
             pg = ParliamentaryGroup(
                     id=generate_id(group),
