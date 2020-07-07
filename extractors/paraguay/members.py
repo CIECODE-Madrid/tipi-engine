@@ -1,4 +1,3 @@
-import logging
 import re
 
 import requests
@@ -6,11 +5,12 @@ from tipi_data.models.deputy import Deputy
 from tipi_data.models.parliamentarygroup import ParliamentaryGroup
 from tipi_data.utils import generate_id
 
+from logger import get_logger
 from .api import ENDPOINT
 from .legislative_period import LegislativePeriod
 
 
-log = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 
 class MembersExtractor:
