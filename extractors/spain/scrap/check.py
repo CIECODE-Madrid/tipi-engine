@@ -1,81 +1,81 @@
 import datetime
-import sys,os
+import sys
 import re
 import redis
-import pdb
 from pathlib import Path
 
-p = Path(__file__).parents[3]
-sys.path.insert(0,str(p))
 from database.conn import MongoDBconn
 from extractors.config import REDIS_DB_CHECK, REDIS_HOST, REDIS_PORT
 
+
+p = Path(__file__).parents[3]
+sys.path.insert(0, str(p))
+
+
 class mongoItems(object):
+
     _conn = None
     _cursor = None
+
     def __init__(self):
         self._conn = MongoDBconn()
         self._cursor = self._getCollection()
 
-    def _getCollection(self,collection="iniciativas"):
+    def _getCollection(self, collection="iniciativas"):
         return self._conn.getDB()[collection]
 
+    def searchbyUrl(self, url):
 
-    def searchbyUrl(self,url):
-
-        return self._getCollection("iniciativas").find(
-            {"$and": [{'url':url},{"tipotexto":{"$not":re.compile('Enmienda')}}, {"tipotexto":{"$not":re.compile('Respuesta')}},{"tipotexto":{"$not":re.compile('Texto definitivo')}}]}
-        ).count()
-
-
+        return self._getCollection("initiatives").find(
+                {"$and": [
+                    {'url': url},
+                    {"initiative_type_alt": {"$not": re.compile('Enmienda')}},
+                    {"initiative_type_alt": {"$not": re.compile('Respuesta')}},
+                    {"initiative_type_alt": {"$not": re.compile('Texto definitivo')}}
+                    ]}
+                ).count()
 
 
 class UrlsScraped(object):
+
     __instance = None
-    _conn=None
+    _conn = None
 
     def __init__(self):
         self._conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB_CHECK)
 
     def __new__(cls):
-        if cls.__instance == None:
+        if cls.__instance is None:
             cls.__instance = object.__new__(cls)
             cls.__instance.name = "Reading..."
         return cls.__instance
 
-    def getElement(self,key):
+    def getElement(self, key):
         return self._conn.get(key)
 
     def getScan(self):
         return self._conn.scan_iter()
 
-    def addElement(self,key):
-        return self._conn.set(key,key)
+    def addElement(self, key):
+        return self._conn.set(key, key)
 
     def deletedb(self):
         return self._conn.flushdb()
 
 
-
-
 class CheckItems():
+
     @staticmethod
     def getElement(key):
-        file = UrlsScraped()
-
-        return file.getElement(key)
+        return UrlsScraped().getElement(key)
 
     @staticmethod
     def addElement(key):
-        file = UrlsScraped()
-
-        return file.addElement(key)
+        return UrlsScraped().addElement(key)
 
     @staticmethod
     def deleteDb():
-        file = UrlsScraped()
-
-        return file.deletedb()
+        return UrlsScraped().deletedb()
 
     @staticmethod
     def checkUrls():
@@ -83,15 +83,13 @@ class CheckItems():
         import time
         time.sleep(5)
         con = mongoItems()
-        ob = UrlsScraped()
-        iterredis = ob.getScan()
-        res=[]
-
+        iterredis = UrlsScraped().getScan()
+        res = []
         for url in iterredis:
             if con.searchbyUrl(url) == 0:
                 res.append(url)
         print("Reporting Error ......")
-        #escribe fichero
+        # Writing file
         CheckItems.writelogfailed(res)
         return res
 
@@ -108,8 +106,8 @@ class CheckItems():
             f.write(str(url))
 
 
-
 class CheckSystem(object):
+
     @staticmethod
     def systemlog(msg):
         import logging
