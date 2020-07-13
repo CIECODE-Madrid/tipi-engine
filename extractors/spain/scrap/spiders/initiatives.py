@@ -1,24 +1,26 @@
 # -*- coding: utf-8 -*-
 import re
-from urllib.parse import urlparse
 import datetime
 import time
+from urllib.parse import urlparse
+
+import scrapy
 from scrapy import signals
 from scrapy.xlib.pydispatch import dispatcher
-from fuzzywuzzy import fuzz
-import scrapy
 from scrapy import Spider
 from scrapy.selector import Selector
+from scrapy.spiders import CrawlSpider, Rule
 from scrapy.spidermiddlewares.httperror import HttpError
+from twisted.internet.error import DNSLookupError, TimeoutError
+from fuzzywuzzy import fuzz
+
 from scrap.term import Terms
 from scrap.items import InitiativeItem,AmendmentItem, FinishTextItem, ResponseItem
-from twisted.internet.error import DNSLookupError, TimeoutError
-from scrap.blacklist import Blacklist
-from scrapy.spiders import CrawlSpider, Rule
 from scrap.utils import Utils
 from scrap.check import CheckItems, CheckSystem
 from scrap.typeamendment import AmendmentFlow
 from database.congreso import Congress
+from extractors.blacklist import Blacklist
 from extractors.config import ID_LEGISLATURA
 
 

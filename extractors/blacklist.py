@@ -1,18 +1,14 @@
-# singleton implemented
 import re
-import sys
-from pathlib import Path
+from importlib import import_module as im
 
 import redis
 
+from extractors.config import MODULE_EXTRACTOR
 from extractors.config import REDIS_DB_BLACKLIST, REDIS_HOST, REDIS_PORT
 
 
-p = Path(__file__).parents[3]
-sys.path.insert(0, str(p))
-
-
-class ManageRedisBlackList(object):
+# Singleton
+class RedisBlacklistManager:
     __instance = None
     _conn = None
 
@@ -35,24 +31,21 @@ class ManageRedisBlackList(object):
         return self._conn.set(key, key)
 
 
-class Blacklist():
+class Blacklist:
 
     @staticmethod
     def getElement(key):
-        return ManageRedisBlackList().getElement(key)
+        return RedisBlacklistManager().getElement(key)
 
     @staticmethod
     def addElement(key):
-        return ManageRedisBlackList().addElement(key)
+        return RedisBlacklistManager().addElement(key)
 
     @staticmethod
     def isFinalState(line):
-        regex_list = ["caducad(a|o)", "rechazad(a|o)", "aprobad(a|o)",
-                "subsumid(o|a)", "inadmitid(o|a)", "concluid(o|a)",
-                "retirad(o|a)"]
-
+        initiatives_status = im('extractors.{}.initiatives_status'.format(MODULE_EXTRACTOR))
         control = False
-        for regex in regex_list:
+        for regex in initiatives_status.FINAL_STATES_REGEX:
             if re.search(regex, line, re.IGNORECASE):
                 control = True
                 break
