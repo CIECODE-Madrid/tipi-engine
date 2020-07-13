@@ -1,8 +1,6 @@
 import os
 import luigi
 from importlib import import_module as im
-from scrapy.utils.project import get_project_settings
-from scrapy.crawler import CrawlerProcess, Crawler
 
 from extractors.config import MODULE_EXTRACTOR
 from utils import FILES
@@ -26,6 +24,5 @@ class ExtractorTask(luigi.Task):
             members.MembersExtractor().extract()
             initiatives = im('extractors.{}.initiatives'.format(MODULE_EXTRACTOR))
             initiatives.InitiativesExtractor().extract()
-
 
         self.output().open('w').close()
