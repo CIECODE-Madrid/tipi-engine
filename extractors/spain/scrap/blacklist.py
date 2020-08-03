@@ -3,7 +3,6 @@ from importlib import import_module as im
 
 import redis
 
-from extractors.config import MODULE_EXTRACTOR
 from extractors.config import REDIS_DB_BLACKLIST, REDIS_HOST, REDIS_PORT
 
 
@@ -43,9 +42,17 @@ class Blacklist:
 
     @staticmethod
     def isFinalState(line):
-        initiatives_status = im('extractors.{}.initiatives_status'.format(MODULE_EXTRACTOR))
+        FINAL_STATES_REGEX = [
+                "caducad(a|o)",
+                "rechazad(a|o)",
+                "aprobad(a|o)",
+                "subsumid(o|a)",
+                "inadmitid(o|a)",
+                "concluid(o|a)",
+                "retirad(o|a)"
+                ]
         control = False
-        for regex in initiatives_status.FINAL_STATES_REGEX:
+        for regex in FINAL_STATES_REGEX:
             if re.search(regex, line, re.IGNORECASE):
                 control = True
                 break

@@ -5,7 +5,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-from extractors.blacklist import Blacklist
+from scrap.blacklist import Blacklist
 from scrap.items import InitiativeItem,\
                         FinishTextItem,\
                         AmendmentItem,\
