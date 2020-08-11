@@ -16,7 +16,7 @@ from fuzzywuzzy import fuzz
 
 from scrap.term import Terms
 from scrap.items import InitiativeItem,AmendmentItem, FinishTextItem, ResponseItem
-from scrap.blacklist import Blacklist
+from scrap.denylist import Denylist
 from scrap.utils import Utils
 from scrap.check import CheckItems, CheckSystem
 from scrap.typeamendment import AmendmentFlow
@@ -89,8 +89,8 @@ class StackSpider(Spider):
                     new_url = split[0]+"&DOCS="+str(i)+"-"+str(i)+split[2]
                     initiative_url = Utils.createUrl(response.url,new_url)
                     CheckItems.addElement(initiative_url)
-                    if Blacklist.getElement(initiative_url):
-                        if not Blacklist.getElement(initiative_url):
+                    if Denylist.getElement(initiative_url):
+                        if not Denylist.getElement(initiative_url):
                             yield scrapy.Request(initiative_url,errback=self.errback_httpbin,
                                 callback=self.oneinitiative, meta = {'type':type})
                     else:

@@ -3,11 +3,11 @@ from importlib import import_module as im
 
 import redis
 
-from extractors.config import REDIS_DB_BLACKLIST, REDIS_HOST, REDIS_PORT
+from extractors.config import REDIS_DB_DENYLIST, REDIS_HOST, REDIS_PORT
 
 
 # Singleton
-class RedisBlacklistManager:
+class RedisDenylistManager:
     __instance = None
     _conn = None
 
@@ -15,7 +15,7 @@ class RedisBlacklistManager:
         self._conn = redis.Redis(
                 host=REDIS_HOST,
                 port=REDIS_PORT,
-                db=REDIS_DB_BLACKLIST)
+                db=REDIS_DB_DENYLIST)
 
     def __new__(cls):
         if cls.__instance is None:
@@ -30,15 +30,15 @@ class RedisBlacklistManager:
         return self._conn.set(key, key)
 
 
-class Blacklist:
+class Denylist:
 
     @staticmethod
     def getElement(key):
-        return RedisBlacklistManager().getElement(key)
+        return RedisDenylistManager().getElement(key)
 
     @staticmethod
     def addElement(key):
-        return RedisBlacklistManager().addElement(key)
+        return RedisDenylistManager().addElement(key)
 
     @staticmethod
     def isFinalState(line):

@@ -29,7 +29,7 @@ Add to Crontab /etc/crontab
 0 2	*/3 * * root	bash /path/to/cron.sh
 ```
 
-Reset blacklist
+Reset Denylist
 =======
 Access to redis-cli and flush:
 ```

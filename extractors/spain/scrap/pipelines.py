@@ -5,7 +5,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-from scrap.blacklist import Blacklist
+from scrap.denylist import Denylist
 from scrap.items import InitiativeItem,\
                         FinishTextItem,\
                         AmendmentItem,\
@@ -21,8 +21,8 @@ class MongoDBPipeline(object):
         if isinstance(item, InitiativeItem):
 
             try:
-                if Blacklist.isFinalState(item['processing']):
-                    Blacklist.addElement(item['url'])
+                if Denylist.isFinalState(item['processing']):
+                    Denylist.addElement(item['url'])
 
             except Exception as e:
                 print("**** FAILURE: {} *****".format(e))
