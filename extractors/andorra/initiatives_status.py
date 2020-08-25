@@ -1,1 +1,0 @@
-FINAL_STATES_REGEX = []
