@@ -10,7 +10,7 @@ from textract import process
 from tipi_data.models.initiative import Initiative
 
 from logger import get_logger
-from extractors.blacklist import Blacklist
+from .initiatives_status import has_finished
 from .api import ENDPOINT
 from .legislative_period import LegislativePeriod
 from .initiatives_attachments import MIMETYPE_FILE_EXTENSIONS, \
@@ -44,37 +44,35 @@ class InitiativesExtractor:
             for future in as_completed(futures):
                 response = future.result()
                 for initiative in response.json():
-                    if not Blacklist.getElement(initiative['idProyecto']):
-                        self.__create_or_update(initiative)
+                    if not has_finished(initiative):
+                        try:
+                            self.__create_or_update(initiative)
+                        except Exception as e:
+                            log.warning("Expediente: {} - {}".format(str(initiative['idProyecto']), e))
 
     def __create_or_update(self, remote_initiative):
-        initiative = Initiative(
-                id=str(remote_initiative['idProyecto']),
-                reference=str(remote_initiative['expedienteCamara']),
-                title=remote_initiative['acapite'],
-                initiative_type=remote_initiative['tipoProyecto'],
-                processing="{} ({})".format(
-                    remote_initiative['descripcionEtapa'],
-                    remote_initiative['descripcionSubEtapa']
-                    ),
-                status=remote_initiative['estadoProyecto'],
-                place=remote_initiative['origenProyecto'],
-                topics=[],
-                tags=[],
-                tagged=False,
-                url=remote_initiative['appURL'],
-                created=self.__parse_date(remote_initiative['fechaIngresoExpediente']),
-                updated=self.__parse_date(remote_initiative['fechaIngresoExpediente'])
-                )
-        initiative['extra'] = dict()
-        initiative['extra']['proponente'] = remote_initiative['iniciativa']
+        try:
+            initiative = Initiative.all.get(id=str(remote_initiative['idProyecto']))
+        except Exception:
+            initiative = Initiative()
+        initiative['id'] = str(remote_initiative['idProyecto'])
+        initiative['reference'] = str(remote_initiative['expedienteCamara'])
+        initiative['title'] = remote_initiative['acapite']
+        initiative['initiative_type'] = remote_initiative['tipoProyecto']
+        initiative['processing'] = "{} ({})".format(
+            remote_initiative['descripcionEtapa'],
+            remote_initiative['descripcionSubEtapa']
+            )
+        initiative['status'] = remote_initiative['estadoProyecto']
+        initiative['place'] = remote_initiative['origenProyecto']
+        initiative['url'] = remote_initiative['appURL']
+        initiative['created'] = self.__parse_date(remote_initiative['fechaIngresoExpediente'])
+        initiative['updated'] = self.__parse_date(remote_initiative['fechaIngresoExpediente'])
+        if 'extra' not in initiative:
+            initiative['extra'] = dict()
+            initiative['extra']['proponente'] = remote_initiative['iniciativa']
         self.__load_more_data(initiative)
         initiative.save()
-        try:
-            if Blacklist.isFinalState(initiative['status']):
-                Blacklist.addElement(initiative['id'])
-        except Exception as e:
-            log.warning("Error adding an expedient to Blacklist: {}".format(e))
         log.info("Iniciativa {} procesada".format(str(remote_initiative['idProyecto'])))
 
     def __load_more_data(self, initiative):
@@ -113,7 +111,8 @@ class InitiativesExtractor:
                             [attachment for attachment in attachments
                                 if attachment['infoAdjunto'] == phase],
                             phase)
-        if 'content' not in initiative:
+        if not self.__has_content(initiative):
+            self.__untag(initiative)
             initiative['content'] = ['']
 
     def __process_attachments_by_phase(self, initiative, attachments, phase):
@@ -140,9 +139,23 @@ class InitiativesExtractor:
                 content = ['']
             full_content = full_content + content
         if correct_counter:
+            self.__untag(initiative)
             initiative['content'] = full_content
             initiative['extra']['content_reference'] = phase
-            initiative['extra']['content_counter'] = len(attachments)
+            initiative['extra']['content_counter'] = correct_counter
+
+
+    def __has_content(self, initiative):
+        try:
+            saved_initiative = Initiative.all.get(id=initiative.id)
+        except Exception:
+            saved_initiative = dict()
+        return 'content' in saved_initiative or 'content' in initiative
+
+    def __untag(self, initiative):
+        initiative['topics'] = []
+        initiative['tags'] = []
+        initiative['tagged'] = False
 
     def __parse_date(self, str_date):
         split_date = str_date.split('/')

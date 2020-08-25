@@ -22,7 +22,7 @@ ATTACHMENTS_WORKFLOW = [
 
 def get_current_phase(initiative_id):
     try:
-        initiative = Initiative.objects.get(id=initiative_id)
+        initiative = Initiative.all.get(id=initiative_id)
         return initiative['extra']['content_reference'], initiative['extra']['content_counter']
     except Exception:
         return '', 0
