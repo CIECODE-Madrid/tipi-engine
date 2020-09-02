@@ -71,7 +71,7 @@ class InitiativesExtractor:
         initiative['url'] = remote_initiative['appURL']
         initiative['created'] = self.__parse_date(remote_initiative['fechaIngresoExpediente'])
         initiative['updated'] = self.__parse_date(remote_initiative['fechaIngresoExpediente'])
-        if initiative.extra == {}:
+        if 'extra' not in initiative or initiative.extra == {}:
             initiative['extra'] = dict()
             initiative['extra']['proponente'] = remote_initiative['iniciativa']
             initiative['extra']['ignored_attachments'] = list()
