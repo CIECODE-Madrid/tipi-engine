@@ -10,6 +10,7 @@ from textract import process
 from tipi_data.models.initiative import Initiative
 
 from logger import get_logger
+from extractors.config import LIMIT_DATE_TO_SYNC
 from .initiatives_status import has_finished
 from .api import ENDPOINT
 from .legislative_period import LegislativePeriod
@@ -53,6 +54,8 @@ class InitiativesExtractor:
     def __create_or_update(self, remote_initiative):
         try:
             initiative = Initiative.all.get(id=str(remote_initiative['idProyecto']))
+            if self.__too_old_to_process(initiative):
+                return
         except Exception:
             initiative = Initiative()
         initiative['id'] = str(remote_initiative['idProyecto'])
@@ -68,9 +71,10 @@ class InitiativesExtractor:
         initiative['url'] = remote_initiative['appURL']
         initiative['created'] = self.__parse_date(remote_initiative['fechaIngresoExpediente'])
         initiative['updated'] = self.__parse_date(remote_initiative['fechaIngresoExpediente'])
-        if 'extra' not in initiative:
+        if initiative.extra == {}:
             initiative['extra'] = dict()
             initiative['extra']['proponente'] = remote_initiative['iniciativa']
+            initiative['extra']['ignored_attachments'] = list()
         self.__load_more_data(initiative)
         initiative.save()
         log.info("Iniciativa {} procesada".format(str(remote_initiative['idProyecto'])))
@@ -119,6 +123,8 @@ class InitiativesExtractor:
         correct_counter = 0
         full_content = []
         for attachment in attachments:
+            if attachment['idAdjunto'] in initiative['extra']['ignored_attachments']:
+                continue
             response = requests.get(attachment['appURL'])
             if not response.ok:
                 continue
@@ -133,10 +139,12 @@ class InitiativesExtractor:
                             correct_counter = correct_counter + 1
                     except Exception:
                         content = ['']
+                        initiative.extra['ignored_attachments'].append(attachment['idAdjunto'])
                     f.close()
             except KeyError:
                 pass  # Mimetype not found in our list
                 content = ['']
+                initiative.extra['ignored_attachments'].append(attachment['idAdjunto'])
             full_content = full_content + content
         if correct_counter:
             self.__untag(initiative)
@@ -144,6 +152,12 @@ class InitiativesExtractor:
             initiative['extra']['content_reference'] = phase
             initiative['extra']['content_counter'] = correct_counter
 
+
+    def __too_old_to_process(self, initiative):
+        def frmt(dt):
+            date_format = '%Y-%m-%d'
+            return datetime.strptime(dt, date_format)
+        return frmt(str(initiative['updated']).split(' ')[0]) < frmt(LIMIT_DATE_TO_SYNC)
 
     def __has_content(self, initiative):
         try:
