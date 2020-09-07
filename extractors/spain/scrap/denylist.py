@@ -1,5 +1,9 @@
 import re
-from importlib import import_module as im
+import sys
+from pathlib import Path
+
+p = Path(__file__).parents[3]
+sys.path.insert(0,str(p))
 
 import redis
 
