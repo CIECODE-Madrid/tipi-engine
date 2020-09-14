@@ -145,13 +145,6 @@ class StackSpider(Spider):
         restr1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
             and contains(.,"ultado de la tramitac") ]/following-sibling::\
            p[@class="texto"]')
-        #para ponentes por si los hubiere
-        pon = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
-         and contains(.,"Ponentes:") ]/following-sibling::\
-        p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"Ponentes:")]]')
-        pon1 = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
-            and contains(.,"Ponentes:") ]/following-sibling::\
-           p[@class="texto"]')
         com = Selector(response).xpath('//div[@class="ficha_iniciativa"]/p[@class="apartado_iniciativa"\
          and contains(.,"n competente:") ]/following-sibling::\
         p[@class="apartado_iniciativa"][1]/preceding-sibling::p[preceding-sibling::p[contains(.,"n competente:")]]')
@@ -163,7 +156,6 @@ class StackSpider(Spider):
         diarios = None
         tramitacion = None
         restramitacion= None
-        ponentes = None
         comision = None
         autors=None
 
@@ -192,10 +184,6 @@ class StackSpider(Spider):
         elif not restr:
             restramitacion = restr1
 
-        if pon:
-            ponentes = pon
-        elif not pon:
-            ponentes = pon1
         if com:
             comision = com
         elif not bol:
@@ -210,19 +198,7 @@ class StackSpider(Spider):
             else:
                 add= add[0]
             listautors.append(re.sub('(([\(|\{].*?.$)|(y otr(os|as))|^(Don|Do(.+?)a))', '' , add).strip()) #quita () si lo hubiere
-        if ponentes:
-            for ponente in ponentes:
-                add = ponente.xpath("a/b/text()").extract()
-                if not add:
-                    try:
-                        add = ponente.xpath("./text()").extract()[0]
-                        listautors.append(add)
-                    except:
-                        pass
-                else:
-                    if add:
-                        add= add[0]
-                        listautors.append(add)
+
         item = InitiativeItem()
         item['reference'] = expt
         item['title'] = Utils.clearTitle(title)
