@@ -317,7 +317,16 @@ class Congress(object):
                 'twitter': item['twitter'],
                 'start_date': item['start_date'],
                 'end_date': item['end_date'],
-                'url': item['url']
+                'url': item['url'],
+                'facebook' : item['facebook'],
+                'constituency' : item['constituency'],
+                'activity_resource' : item['activity_resource'],
+                'assets_resource' : item['assets_resource'],
+                'public_charges' : item['public_charges'],
+                'birthday' : item['birthday'],
+                'legislatures' : item['legislatures'],
+                'personal_information' : item['personal_information'],
+                'party_logo' : item['party_logo']
             }
         })
 
