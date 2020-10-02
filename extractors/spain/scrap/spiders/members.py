@@ -35,8 +35,11 @@ class MemberSpider(CrawlSpider):
                 allow=['diputadosBajaLegActual&paginaActual=\d']
                     , unique=True), follow=True))
 
-
-
+    def text_cleaner(self,text):
+        regex = re.compile(r'[\n\r\t]')
+        res = regex.sub(" ",text)
+        res = res.replace("<li>","").replace("</li>","").replace("  ","").replace(u'\xa0', u' ').strip()
+        return res
 
 
 
@@ -53,13 +56,13 @@ class MemberSpider(CrawlSpider):
         extra_data = Selector(response).xpath('//div[@class="webperso_dip"]/div/a/@href')
         avatar = Selector(response).xpath('//div[@id="datos_diputado"]/p[@class="logo_g'
                           'rupo"]/img[@name="foto"]/@src').extract()
-        constituency = Selector(response).xpath('//div[@class="texto_dip"]/ul/li[1]/div[1][@class="dip_rojo"]').css('::text').extract()[0].strip().split()[2][:-1]
+        constituency = Selector(response).xpath('//div[@class="texto_dip"]/ul/li[1]/div[1][@class="dip_rojo"]').css('::text').extract()[0].strip().split()[2]
         resources = Selector(response).xpath("//ul/li[@class='regact_dip']").css('a::attr(href)').extract()
         congress_position = Selector(response).xpath("//p[@class='pos_hemiciclo']/img").css('::attr(src)').extract()
         public_charges = Selector(response).xpath('(//div[@class = "listado_1"])[1]/ul/li').extract()
         birthday = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[1]').extract()
         legislatures = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[2]').extract()
-        personal_information = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[3]').extract()
+        bio = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[3]').extract()
         social_networks = Selector(response).xpath('//div[@class="webperso_dip"]/div[@class="webperso_dip_imagen"]/a/@href')
         party_logo = Selector(response).xpath('(//p[@class = "logo_grupo"])[2]/a/img/@src').extract()
         item = MemberItem()
@@ -77,13 +80,18 @@ class MemberSpider(CrawlSpider):
         #item['instagram'] = ""
         item['active'] = True
         item['constituency'] = ""
-        item['activity_resource'] = ""
-        item['assets_resource'] = ""
+        #item['activity_resource'] = ""
+        #item['assets_resource'] = ""
         item['public_charges'] = []
         item['birthday'] = ""
-        item['legislatures'] = ""
-        item['personal_information']=[]
-        item['party_logo']=""
+        #item['legislatures'] = ""
+        item['bio']=[]
+        #item['party_logo']=""
+        item['extra']={}
+        item['extra']['activity_resource']=""
+        item['extra']['assets_resource']=""
+        item['extra']['legislatures']=""
+        item['extra']['party_logo']=""
         
 
         if names:
@@ -92,17 +100,15 @@ class MemberSpider(CrawlSpider):
             if constituency:
                 item['constituency'] = constituency
             if len(resources)>0:
-                item['activity_resource'] = 'http://www.congreso.es' + resources[0]
+                item['extra']['activity_resource'] = 'http://www.congreso.es' + resources[0]
             if len(resources)>1:
-                item['assets_resource'] = 'http://www.congreso.es' + resources[1]
+                item['extra']['assets_resource'] = 'http://www.congreso.es' + resources[1]
             if avatar:
                 item['image'] = 'http://www.congreso.es' + avatar[0]
             if public_charges: 
                 resu = []
                 for s in public_charges:
-                    regex = re.compile(r'[\n\r\t]')
-                    res = regex.sub(" ",s)
-                    res = res.replace("<li>","").replace("</li>","").replace("  ","").strip()
+                    res = self.text_cleaner(s)
                     ini = res[:res.find('<a')] 
                     fin = res[res.find('class')+9:res.find('</a')]
                     string = ini + fin
@@ -111,27 +117,21 @@ class MemberSpider(CrawlSpider):
             if birthday:
                 resu = []
                 for s in birthday:
-                    regex = re.compile(r'[\n\r\t]')
-                    res = regex.sub(" ",s)
-                    res = res.replace("<li>","").replace("</li>","").replace("  ","").replace(u'\xa0', u' ').strip()
+                    res = self.text_cleaner(s)
                     resu.append(res)
                 item['birthday'] = resu[0]
             if legislatures:
                 resu = []
                 for s in legislatures:
-                    regex = re.compile(r'[\n\r\t]')
-                    res = regex.sub(" ",s)
-                    res = res.replace("<li>","").replace("</li>"," ").replace(u'\xa0', u' ').replace("   ","").strip()
+                    res = self.text_cleaner(s)
                     resu.append(res)
-                item['legislatures']= resu[0]
-            if personal_information:
+                item['extra']['legislatures']= resu[0]
+            if bio:
                 resu = []
-                for s in personal_information:
-                    regex = re.compile(r'[\n\r\t]')
-                    res = regex.sub(" ",s)
-                    res = res.replace("<li>","").replace("</li>"," ").replace("\\xa0"," ").replace("   ","").strip()
+                for s in bio:
+                    res = self.text_cleaner(s)
                     resu = res.split('<br>')
-                item['personal_information'] = resu
+                item['bio'] = resu
             if len(social_networks)>0:
                 for net in social_networks:
                     twitter = net.re('[http|https]*://(?:twitter.com)/[\w]*')
@@ -144,7 +144,7 @@ class MemberSpider(CrawlSpider):
                     #if instagram:
                      #   item['instagram'] = instagram[0]
             if party_logo:
-                item['party_logo'] = "http://congreso.es" + party_logo[0]
+                item['extra']['party_logo'] = "http://congreso.es" + party_logo[0]
 
             if curriculum:
 
