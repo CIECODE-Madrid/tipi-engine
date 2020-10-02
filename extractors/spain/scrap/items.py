@@ -55,7 +55,7 @@ class MemberItem(Item):
     constituency = Field()
     #activity_resource = Field()
     #assets_resource = Field()
-    public_charges = Field()
+    public_position = Field()
     birthday = Field()
     #legislatures = Field()
     bio = Field()

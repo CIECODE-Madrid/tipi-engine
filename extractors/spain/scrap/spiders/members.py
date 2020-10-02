@@ -59,7 +59,7 @@ class MemberSpider(CrawlSpider):
         constituency = Selector(response).xpath('//div[@class="texto_dip"]/ul/li[1]/div[1][@class="dip_rojo"]').css('::text').extract()[0].strip().split()[2]
         resources = Selector(response).xpath("//ul/li[@class='regact_dip']").css('a::attr(href)').extract()
         congress_position = Selector(response).xpath("//p[@class='pos_hemiciclo']/img").css('::attr(src)').extract()
-        public_charges = Selector(response).xpath('(//div[@class = "listado_1"])[1]/ul/li').extract()
+        public_position = Selector(response).xpath('(//div[@class = "listado_1"])[1]/ul/li').extract()
         birthday = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[1]').extract()
         legislatures = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[2]').extract()
         bio = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[3]').extract()
@@ -82,7 +82,7 @@ class MemberSpider(CrawlSpider):
         item['constituency'] = ""
         #item['activity_resource'] = ""
         #item['assets_resource'] = ""
-        item['public_charges'] = []
+        item['public_position'] = []
         item['birthday'] = ""
         #item['legislatures'] = ""
         item['bio']=[]
@@ -105,15 +105,15 @@ class MemberSpider(CrawlSpider):
                 item['extra']['assets_resource'] = 'http://www.congreso.es' + resources[1]
             if avatar:
                 item['image'] = 'http://www.congreso.es' + avatar[0]
-            if public_charges: 
+            if public_position: 
                 resu = []
-                for s in public_charges:
+                for s in public_position:
                     res = self.text_cleaner(s)
                     ini = res[:res.find('<a')] 
                     fin = res[res.find('class')+9:res.find('</a')]
                     string = ini + fin
                     resu.append(string)
-                item['public_charges'] = resu
+                item['public_position'] = resu
             if birthday:
                 resu = []
                 for s in birthday:

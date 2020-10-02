@@ -322,7 +322,7 @@ class Congress(object):
                 'constituency': item['constituency'],
                 'activity_resource': item['extra']['activity_resource'],
                 'assets_resource': item['extra']['assets_resource'],
-                'public_charges': item['public_charges'],
+                'public_position': item['public_position'],
                 'birthday': item['birthday'],
                 'legislatures': item['extra']['legislatures'],
                 'bio': item['bio'],
