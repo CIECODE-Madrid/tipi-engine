@@ -98,7 +98,7 @@ class MemberSpider(CrawlSpider):
             second_name, name = names[0].split(',')
             item['name'] = second_name.strip()+", "+name.strip()
             if constituency:
-                item['constituency'] = constituency
+                item['constituency'] = constituency.replace(".","")
             if len(resources)>0:
                 item['extra']['activity_resource'] = 'http://www.congreso.es' + resources[0]
             if len(resources)>1:
