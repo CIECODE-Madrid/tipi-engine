@@ -320,13 +320,10 @@ class Congress(object):
                 'url': item['url'],
                 'facebook': item['facebook'],
                 'constituency': item['constituency'],
-                'activity_resource': item['extra']['activity_resource'],
-                'assets_resource': item['extra']['assets_resource'],
                 'public_position': item['public_position'],
                 'birthday': item['birthday'],
-                'legislatures': item['extra']['legislatures'],
                 'bio': item['bio'],
-                'party_logo': item['extra']['party_logo']
+                'extra': item['extra']
             }
         })
 
