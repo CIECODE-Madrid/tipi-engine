@@ -39,6 +39,17 @@ class MemberSpider(CrawlSpider):
         regex = re.compile(r'[\n\r\t]')
         res = regex.sub(" ",text)
         res = res.replace("<li>","").replace("</li>","").replace("  ","").replace(u'\xa0', u' ').strip()
+        string = res.split(" ")
+        res = ""
+        for s in string:
+            res += s + " "
+        res = res.strip()
+        return res 
+    def leg_cleaner(self,text):
+        regex = re.compile(r'[\n\r\t]')
+        text = text.replace("Diputado","").replace("Diputada","").replace("de la","").replace("legislatura.","").replace("legislaturas.","").replace("y",",")
+        res = regex.sub(" ",text)
+        res = res.replace("<li>","").replace("</li>","").replace("  ","").replace(u'\xa0', u' ').strip()
         return res
 
 
@@ -83,14 +94,14 @@ class MemberSpider(CrawlSpider):
         #item['activity_resource'] = ""
         #item['assets_resource'] = ""
         item['public_position'] = []
-        item['birthday'] = ""
+        #item['birthday'] = ""
         #item['legislatures'] = ""
         item['bio']=[]
         #item['party_logo']=""
         item['extra']={}
         item['extra']['activity_resource']=""
         item['extra']['assets_resource']=""
-        item['extra']['legislatures']=""
+        #item['extra']['legislatures']=""
         item['extra']['party_logo']=""
         
 
@@ -114,23 +125,20 @@ class MemberSpider(CrawlSpider):
                     string = ini + fin
                     resu.append(string)
                 item['public_position'] = resu
-            if birthday:
-                resu = []
-                for s in birthday:
-                    res = self.text_cleaner(s)
-                    resu.append(res)
-                item['birthday'] = resu[0]
-            if legislatures:
-                resu = []
-                for s in legislatures:
-                    res = self.text_cleaner(s)
-                    resu.append(res)
-                item['extra']['legislatures']= resu[0]
             if bio:
                 resu = []
                 for s in bio:
                     res = self.text_cleaner(s)
                     resu = res.split('<br>')
+                if birthday:
+                    for s in birthday:
+                        res = self.text_cleaner(s)
+                        resu.insert(0,res)
+                if legislatures:
+                    for s in legislatures:
+                        res = self.leg_cleaner(s)
+                        res = "Legislatura/s: " + res
+                        resu.insert(1,res)
                 item['bio'] = resu
             if len(social_networks)>0:
                 for net in social_networks:

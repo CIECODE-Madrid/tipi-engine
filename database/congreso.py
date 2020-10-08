@@ -321,7 +321,6 @@ class Congress(object):
                 'facebook': item['facebook'],
                 'constituency': item['constituency'],
                 'public_position': item['public_position'],
-                'birthday': item['birthday'],
                 'bio': item['bio'],
                 'extra': item['extra']
             }

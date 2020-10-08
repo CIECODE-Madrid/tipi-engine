@@ -17,7 +17,7 @@ class ExtractorTask(luigi.Task):
         if MODULE_EXTRACTOR == 'spain':
             os.chdir('extractors/spain')
             os.system("/usr/local/bin/python members.py")
-            os.system("/usr/local/bin/python initiatives.py")
+            #os.system("/usr/local/bin/python initiatives.py")
             os.chdir("../../../")
         else:
             members = im('extractors.{}.members'.format(MODULE_EXTRACTOR))
