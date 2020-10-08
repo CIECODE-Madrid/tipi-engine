@@ -44,13 +44,13 @@ class MemberSpider(CrawlSpider):
         for s in string:
             res += s + " "
         res = res.strip()
-        return res 
+        return res
     def leg_cleaner(self,text):
         regex = re.compile(r'[\n\r\t]')
         text = text.replace("Diputado","").replace("Diputada","").replace("de la","").replace("legislatura.","").replace("legislaturas.","").replace("y",",")
         res = regex.sub(" ",text)
         res = res.replace("<li>","").replace("</li>","").replace("  ","").replace(u'\xa0', u' ').strip()
-        res = res.split(",")
+        res = res.replace(' ', '').split(",")
         return res
     def birthdate_extract(self,text):
         res = []
@@ -107,7 +107,7 @@ class MemberSpider(CrawlSpider):
         social_networks = Selector(response).xpath('//div[@class="webperso_dip"]/div[@class="webperso_dip_imagen"]/a/@href')
         party_logo = Selector(response).xpath('(//p[@class = "logo_grupo"])[2]/a/img/@src').extract()
         item = MemberItem()
-        
+
         item['url'] = response.url
         item['name'] = ""
         item['image'] = ""
@@ -131,7 +131,7 @@ class MemberSpider(CrawlSpider):
         item['extra']={}
         item['extra']['activity_resource']=""
         item['extra']['assets_resource']=""
-        
+
 
         if names:
             second_name, name = names[0].split(',')
@@ -152,11 +152,11 @@ class MemberSpider(CrawlSpider):
             if start_date:
                 result = self.date_extractor(start_date)
                 item['start_date'] = result
-            if public_position: 
+            if public_position:
                 resu = []
                 for s in public_position:
                     res = self.text_cleaner(s)
-                    ini = res[:res.find('<a')] 
+                    ini = res[:res.find('<a')]
                     fin = res[res.find('class')+9:res.find('</a')]
                     string = ini + fin
                     resu.append(string)
