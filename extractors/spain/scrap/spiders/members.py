@@ -5,7 +5,7 @@ from scrapy.selector import HtmlXPathSelector, Selector
 from scrapy.item import Item, Field
 import re
 from dateutil.parser import parse
-
+from datetime import datetime
 from database.congreso import Congress
 from extractors.config import ID_LEGISLATURA
 from scrap.items import MemberItem
@@ -39,7 +39,48 @@ class MemberSpider(CrawlSpider):
         regex = re.compile(r'[\n\r\t]')
         res = regex.sub(" ",text)
         res = res.replace("<li>","").replace("</li>","").replace("  ","").replace(u'\xa0', u' ').strip()
+        string = res.split(" ")
+        res = ""
+        for s in string:
+            res += s + " "
+        res = res.strip()
         return res
+    def leg_cleaner(self,text):
+        regex = re.compile(r'[\n\r\t]')
+        text = text.replace("Diputado","").replace("Diputada","").replace("de la","").replace("legislatura.","").replace("legislaturas.","").replace("y",",")
+        res = regex.sub(" ",text)
+        res = res.replace("<li>","").replace("</li>","").replace("  ","").replace(u'\xa0', u' ').strip()
+        res = res.replace(' ', '').split(",")
+        return res
+    def birthdate_extract(self,text):
+        res = []
+        day = int(re.findall('\s+([0-9]{1,2})\s',text)[0])
+        month = self.month_parser(re.findall('(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)',text)[0])
+        year = int(re.findall('([0-9]{4})',text)[0])
+        date = datetime(year,month,day)
+        return date
+    def date_extractor(self,datetext):
+        date = re.findall(r"[\d]{1,2}/[\d]{1,2}/[\d]{4}", datetext)[0]
+        date = datetime.strptime(date,'%d/%m/%Y')
+        return date
+
+    def month_parser(self,month):
+        switcher = {
+            "enero": 1,
+            "febrero": 2,
+            "marzo": 3,
+            "abril": 4,
+            "mayo": 5,
+            "junio": 6,
+            "julio": 7,
+            "agosto": 8,
+            "septiembre": 9,
+            "octubre": 10,
+            "noviembre": 11,
+            "diciembre": 12
+        }
+        return switcher[month]
+
 
 
 
@@ -51,7 +92,7 @@ class MemberSpider(CrawlSpider):
         # extra text like member's state
         curriculum = Selector(response).xpath('//div[@class="texto_dip"]/ul/li/div[@class="dip'
                               '_rojo"]')
-
+        start_date = Selector(response).xpath('(//div[@class="texto_dip"]/ul/li/div[@class="dip_rojo"])[3]').extract()[0]
         # email, twitter ....
         extra_data = Selector(response).xpath('//div[@class="webperso_dip"]/div/a/@href')
         avatar = Selector(response).xpath('//div[@id="datos_diputado"]/p[@class="logo_g'
@@ -60,13 +101,13 @@ class MemberSpider(CrawlSpider):
         resources = Selector(response).xpath("//ul/li[@class='regact_dip']").css('a::attr(href)').extract()
         congress_position = Selector(response).xpath("//p[@class='pos_hemiciclo']/img").css('::attr(src)').extract()
         public_position = Selector(response).xpath('(//div[@class = "listado_1"])[1]/ul/li').extract()
-        birthday = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[1]').extract()
+        birthdate = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[1]').extract()
         legislatures = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[2]').extract()
         bio = Selector(response).xpath('((//div[@class="texto_dip"])[2]/ul/li)[3]').extract()
         social_networks = Selector(response).xpath('//div[@class="webperso_dip"]/div[@class="webperso_dip_imagen"]/a/@href')
         party_logo = Selector(response).xpath('(//p[@class = "logo_grupo"])[2]/a/img/@src').extract()
         item = MemberItem()
-        
+
         item['url'] = response.url
         item['name'] = ""
         item['image'] = ""
@@ -83,16 +124,14 @@ class MemberSpider(CrawlSpider):
         #item['activity_resource'] = ""
         #item['assets_resource'] = ""
         item['public_position'] = []
-        item['birthday'] = ""
-        #item['legislatures'] = ""
+        item['birthdate'] = ""
+        item['legislatures'] = ""
         item['bio']=[]
-        #item['party_logo']=""
+        item['party_logo']=""
         item['extra']={}
         item['extra']['activity_resource']=""
         item['extra']['assets_resource']=""
-        item['extra']['legislatures']=""
-        item['extra']['party_logo']=""
-        
+
 
         if names:
             second_name, name = names[0].split(',')
@@ -105,27 +144,27 @@ class MemberSpider(CrawlSpider):
                 item['extra']['assets_resource'] = 'http://www.congreso.es' + resources[1]
             if avatar:
                 item['image'] = 'http://www.congreso.es' + avatar[0]
-            if public_position: 
+            if birthdate:
+                for s in birthdate:
+                    res = self.text_cleaner(s)
+                    birthdate_data = self.birthdate_extract(res)
+                item['birthdate'] = birthdate_data
+            if start_date:
+                result = self.date_extractor(start_date)
+                item['start_date'] = result
+            if public_position:
                 resu = []
                 for s in public_position:
                     res = self.text_cleaner(s)
-                    ini = res[:res.find('<a')] 
+                    ini = res[:res.find('<a')]
                     fin = res[res.find('class')+9:res.find('</a')]
                     string = ini + fin
                     resu.append(string)
                 item['public_position'] = resu
-            if birthday:
-                resu = []
-                for s in birthday:
-                    res = self.text_cleaner(s)
-                    resu.append(res)
-                item['birthday'] = resu[0]
             if legislatures:
-                resu = []
                 for s in legislatures:
-                    res = self.text_cleaner(s)
-                    resu.append(res)
-                item['extra']['legislatures']= resu[0]
+                    res = self.leg_cleaner(s)
+                item['legislatures']=res
             if bio:
                 resu = []
                 for s in bio:
@@ -144,8 +183,7 @@ class MemberSpider(CrawlSpider):
                     #if instagram:
                      #   item['instagram'] = instagram[0]
             if party_logo:
-                item['extra']['party_logo'] = "http://congreso.es" + party_logo[0]
-
+                item['party_logo'] = "http://congreso.es" + party_logo[0]
             if curriculum:
 
                 group = curriculum.xpath('a/text()')
@@ -162,8 +200,8 @@ class MemberSpider(CrawlSpider):
 
                     # add dates of inscription and termination
                     ins_date = curriculum.re('(?i)(?<=fecha alta:)[\s]*[\d\/]*')
-                    if ins_date:
-                        item['start_date'] = parse(ins_date[0], dayfirst=True)
+                    #if ins_date:
+                      #  item['start_date'] = parse(ins_date[0], dayfirst=True)
 
                     term_date = curriculum.re('(?i)(?<=baja el)[\s]*[\d\/]*')
                     if term_date:

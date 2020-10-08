@@ -319,9 +319,11 @@ class Congress(object):
                 'end_date': item['end_date'],
                 'url': item['url'],
                 'facebook': item['facebook'],
+                'birthdate':item['birthdate'],
                 'constituency': item['constituency'],
+                'legislatures': item['legislatures'],
+                'party_logo': item['party_logo'],
                 'public_position': item['public_position'],
-                'birthday': item['birthday'],
                 'bio': item['bio'],
                 'extra': item['extra']
             }
