@@ -50,7 +50,7 @@ class MemberSpider(CrawlSpider):
         text = text.replace("Diputado","").replace("Diputada","").replace("de la","").replace("legislatura.","").replace("legislaturas.","").replace("y",",")
         res = regex.sub(" ",text)
         res = res.replace("<li>","").replace("</li>","").replace("  ","").replace(u'\xa0', u' ').strip()
-        res = res.split(",")
+        res = res.replace(" ","").split(",")
         return res
     def birthdate_extract(self,text):
         res = []
@@ -170,7 +170,11 @@ class MemberSpider(CrawlSpider):
                 for s in bio:
                     res = self.text_cleaner(s)
                     resu = res.split('<br>')
-                item['bio'] = resu
+                fin = []
+                for s in resu:
+                    s = s.strip()
+                    fin.append(s)
+                item['bio'] = fin
             if len(social_networks)>0:
                 for net in social_networks:
                     twitter = net.re('[http|https]*://(?:twitter.com)/[\w]*')
