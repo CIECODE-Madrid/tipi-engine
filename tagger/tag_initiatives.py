@@ -29,6 +29,8 @@ class TagInitiatives:
                 result = tipi_tasks.tagger.extract_tags_from_text(text, tags)
                 if 'result' in result.keys():
                     result = result['result']
+                    initiative['topics'] = result['topics']
+                    initiative['tags'] = result['tags']
                     dbmanager.taggingInitiative(
                             initiative['_id'],
                             result['topics'],
