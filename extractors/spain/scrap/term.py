@@ -2,8 +2,8 @@
 import re
 
 
+# We must indicate Z for those whom don't have any related document
 dicc = {
-        #Z para los que no tengan
         u'Autorización de Convenios Internacionales': ["C"],
         u'Comisión permanente':["D"],
         u'Comisión de Investigación':["D"],
