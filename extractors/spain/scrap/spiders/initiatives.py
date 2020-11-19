@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 import scrapy
 from scrapy import signals
-from scrapy.xlib.pydispatch import dispatcher
+from pydispatch import dispatcher
 from scrapy import Spider
 from scrapy.selector import Selector
 from scrapy.spiders import CrawlSpider, Rule
@@ -25,7 +25,6 @@ from extractors.config import ID_LEGISLATURA
 
 
 class StackSpider(Spider):
-    #item = InitiativeItem()
     name = "initiatives"
     allowed_domains = ["www.congreso.es"]
     start_urls = [
