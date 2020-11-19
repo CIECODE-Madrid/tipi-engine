@@ -15,6 +15,9 @@ SPIDER_MODULES = ['scrap.spiders']
 NEWSPIDER_MODULE = 'scrap.spiders'
 ITEM_PIPELINES = {'scrap.pipelines.MongoDBPipeline':400} #number is the order
 
+LOG_ENABLED=True
+LOG_LEVEL='ERROR'
+
 RETRY_ENABLED = False
 
 EXTENSIONS = {
