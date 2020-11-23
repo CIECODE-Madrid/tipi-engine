@@ -43,7 +43,7 @@ class MongoDBPipeline(object):
                 # It is the same initiative
                 print("It is the same, nothing change")
 
-
+        '''
         elif isinstance(item, AmendmentItem):
             congress = Congress()
             search = congress.getAdmendment(
@@ -87,6 +87,7 @@ class MongoDBPipeline(object):
             else:
                 # It is the same initiative
                 print("It is the same, nothing change")
+        '''
 
         return item
 

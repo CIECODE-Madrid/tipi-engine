@@ -73,7 +73,7 @@ class StackSpider(Spider):
         yield scrapy.Request(urlsa, errback=self.errback_httpbin, callback=self.oneinitiative,
                              meta={'type': u"Proposición no de Ley en Comisión"})
         """
-        
+
 
 
     def initiatives(self, response):
@@ -234,7 +234,7 @@ class StackSpider(Spider):
         item['processing'] = ""
         item['created'] = ""
         item['updated'] = ""
-        
+
         try:
             if presentado:
                 #se obtiene la fecha
@@ -737,7 +737,8 @@ class StackSpider(Spider):
                         break
                 autors = []
 
-                autors.append(splitenmienda[index + 1])
+                if index:
+                    autors.append(splitenmienda[index + 1])
 
                 autor = self.autorsAmendment(autors)
                 typeaut = self.typeAutor(name=autor)
@@ -758,7 +759,9 @@ class StackSpider(Spider):
                     admendmentitem['author_parliamentarygroups'].append(self.getParliamentaryGroup(name=autor)['name'])
                 elif typeaut is 'other':
                     admendmentitem['author_others'].append(autor)
-                admendmentitem['content'].append(Utils.removeHTMLtags(Utils.concatlist(splitenmienda[index+2:])))
+
+                if index:
+                    admendmentitem['content'].append(Utils.removeHTMLtags(Utils.concatlist(splitenmienda[index+2:])))
 
                 yield admendmentitem
 
@@ -881,7 +884,7 @@ class StackSpider(Spider):
 
     def autorsAmendment(self,autors):
         #formatea si es un diputado de forma que se pueda buscar en la bd
-        strip=autors[0].strip()
+        strip = autors[0].strip() if len(autors) > 0 else ""
         typeaut = self.typeAutor(name=strip)
         if typeaut is not 'parliamentarygroup':
             max = 0
@@ -891,7 +894,7 @@ class StackSpider(Spider):
                 if ratio > max:
                     member = memb
                     max = ratio
-            return member['name']
+            return member['name'] if member else ""
 
         else:
             return strip
