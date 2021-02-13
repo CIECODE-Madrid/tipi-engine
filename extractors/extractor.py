@@ -14,15 +14,9 @@ class ExtractorTask(luigi.Task):
 
     def run(self):
         print("{task}(says: ready to extract data!".format(task=self.__class__.__name__))
-        if MODULE_EXTRACTOR == 'spain':
-            os.chdir('extractors/spain')
-            os.system("/usr/local/bin/python members.py")
-            os.system("/usr/local/bin/python initiatives.py")
-            os.chdir("../../../")
-        else:
-            members = im('extractors.{}.members'.format(MODULE_EXTRACTOR))
-            members.MembersExtractor().extract()
-            initiatives = im('extractors.{}.initiatives'.format(MODULE_EXTRACTOR))
-            initiatives.InitiativesExtractor().extract()
+        members = im('extractors.{}.members'.format(MODULE_EXTRACTOR))
+        members.MembersExtractor().extract()
+        initiatives = im('extractors.{}.initiatives'.format(MODULE_EXTRACTOR))
+        initiatives.InitiativesExtractor().extract()
 
         self.output().open('w').close()
