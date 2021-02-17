@@ -1,15 +1,12 @@
 import json
 import time
 from math import ceil
-from datetime import datetime
 from logger import get_logger
 
 import requests
 from bs4 import BeautifulSoup
 from requests_futures.sessions import FuturesSession
 from concurrent.futures import as_completed
-
-from tipi_data.models.initiative import Initiative
 
 from extractors.config import ID_LEGISLATURA
 from .initiative import InitiativeExtractor
@@ -55,7 +52,7 @@ class InitiativesExtractor:
         self.sync_totals()
         futures_requests = list()
         session = FuturesSession()
-        for initiative_type in [self.INITIATIVE_TYPES[19]]:
+        for initiative_type in self.INITIATIVE_TYPES:
             try:
                 END = ceil(self.totals_by_type[initiative_type['type']]/self.INITIATIVES_PER_PAGE)
             except Exception:
@@ -93,7 +90,7 @@ class InitiativesExtractor:
 
         log.warning(f"Getting {len(self.all_references)} initiatives")
         log.warning("--- %s seconds getting references---" % (time.time() - start_time))
-        log.warning(f"Processing initiatives...")
+        log.warning("Processing initiatives...")
         start_time = time.time()
         self.extract_initiatives()
         log.warning("--- %s seconds getting initiatives ---" % (time.time() - start_time))
@@ -118,13 +115,3 @@ class InitiativesExtractor:
             response = future.result()
             if response.ok:
                 InitiativeExtractor(response).extract()
-
-    def __create_or_update(self, remote_initiative):
-        try:
-            initiative = Initiative.all.get(id=str(remote_initiative['idProyecto']))
-            if self.__too_old_to_process(initiative):
-                return
-        except Exception:
-            initiative = Initiative()
-        initiative.save()
-        log.info("Iniciativa {} procesada".format(str(remote_initiative['idProyecto'])))
