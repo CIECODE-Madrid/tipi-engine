@@ -33,7 +33,7 @@ class InitiativeExtractor:
             self.initiative['reference'] = re.search(self.reference_regex, full_title).group().strip().strip('()')
             self.initiative['initiative_type'] = self.initiative['reference'].split('/')[0]
             self.initiative['initiative_type_alt'] = self.soup.select('.titular-seccion')[1].text[:-1]
-            # TODO extract place from initiative_type_alt or page or sessions diary
+            # TODO extract place from initiative_type_alt or page or sessions diary > comisionesCompetentes (how to do with Pleno)
             self.initiative['place'] = None
             # TODO get source initiative
             self.populate_authors()
@@ -41,8 +41,12 @@ class InitiativeExtractor:
                 self.date_regex,
                 self.soup.select_one('.f-present').text.split(',')[0].strip()).group())
             self.initiative['updated'] = self.get_last_date()
-            self.initiative['processing'] = self.get_processing()
-            self.initiative['status'] = None
+            self.initiative['history'] = self.get_history()
+            if 'extra' not in self.initiative or self.initiative.extra == {}:
+                self.initiative['extra'] = dict()
+            self.initiative['extra']['latest_history_item'] = self.initiative['history'][-1] \
+                if len(self.initiative['history']) \
+                else ''
             self.initiative['url'] = self.url
             self.initiative['id'] = generate_id(
                     self.initiative['reference'],
@@ -94,14 +98,18 @@ class InitiativeExtractor:
                         else re.sub(self.parliamentarygroup_sufix, '', item.text)
                     self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
 
-    def get_processing(self):
-        current_processing = self.soup.select_one('.situacionActual')
-        if current_processing:
-            return current_processing.text
-        final_processing = self.soup.select_one('.resultadoTramitacion')
-        if final_processing:
-            return final_processing.text
-        return ''
+    def get_history(self):
+        try:
+            history = self.soup.select_one('.iniciativaTramitacion')
+            if history:
+                TAG_RE = re.compile(r'<[^>]+>')
+                return list(map(
+                    lambda x: TAG_RE.sub('', x).strip(),
+                    str(history).split('<br/>')
+                    ))
+            return []
+        except:
+            return []
 
     def __is_deputy(self, name):
         for deputy in self.deputies:
@@ -109,7 +117,7 @@ class InitiativeExtractor:
                 return True
         return False
 
-    def __is_parliamentarygroup(selg, name):
+    def __is_parliamentarygroup(self, name):
         for parliamentarygroup in self.parliamentarygroups:
             if parliamentarygroup.name == name:
                 return True
