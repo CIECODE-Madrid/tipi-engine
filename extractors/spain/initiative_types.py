@@ -20,6 +20,16 @@ INITIATIVE_TYPES = [
             "group": "Confianza parlamentaria"
             },
         {
+            "type": "Proyecto de reforma Constitucional",
+            "code": 102,
+            "group": "Reforma constitucional"
+            },
+        {
+            "type": "Proposición de reforma Constitucional de Grupos Parlamentarios",
+            "code": 100,
+            "group": "Reforma constitucional"
+            },
+        {
             "type": "Proposición de reforma constitucional de Comunidades Autónomas",
             "code": 101,
             "group": "Reforma constitucional"
@@ -40,15 +50,15 @@ INITIATIVE_TYPES = [
             "group": "Convenios Internacionales"
             },
         {
-            "type": "Proyecto de ley",
-            "code": 121,
-            "group": "Función legislativa"
-            },
+                "type": "Proyecto de ley",
+                "code": 121,
+                "group": "Función legislativa"
+                },
         {
-            "type": "Proposición de ley de Grupos Parlamentarios del Congreso",
-            "code": 122,
-            "group": "Función legislativa"
-            },
+                "type": "Proposición de ley de Grupos Parlamentarios del Congreso",
+                "code": 122,
+                "group": "Función legislativa"
+                },
         {
                 "type": "Proposición de ley de Diputados",
                 "code": 123,
@@ -85,8 +95,18 @@ INITIATIVE_TYPES = [
                 "group": "Función legislativa"
                 },
         {
+                "type": "Real Decreto legislativo en desarrollo de Ley de Bases",
+                "code": 131,
+                "group": "Función legislativa"
+                },
+        {
                 "type": "Interpelación urgente",
                 "code": 172,
+                "group": "Función de control"
+                },
+        {
+                "type": "Interpelación ordinaria",
+                "code": 170,
                 "group": "Función de control"
                 },
         {
@@ -100,13 +120,13 @@ INITIATIVE_TYPES = [
                 "group": "Función de control"
                 },
         {
-                "type": "Pregunta oral a la Corporación RTVE",
-                "code": 178,
+                "type": "Pregunta al Gobierno con respuesta escrita",
+                "code": 184,
                 "group": "Función de control"
                 },
         {
-                "type": "Pregunta al Gobierno con respuesta escrita",
-                "code": 184,
+                "type": "Pregunta oral a la Corporación RTVE",
+                "code": 178,
                 "group": "Función de control"
                 },
         {
@@ -191,7 +211,7 @@ INITIATIVE_TYPES = [
                 },
         {
                 "type": "Solicitud de informe a Entidad Local (art. 44)",
-                "code": "195?",
+                "code": 195,
                 "group": "Función de control"
                 },
         {
@@ -221,7 +241,7 @@ INITIATIVE_TYPES = [
                 },
         {
                 "type": "Operaciones de las Fuerzas Armadas en el exterior",
-                "code": "???",
+                "code": "095",
                 "group": "Función de control"
                 },
         {
@@ -235,13 +255,28 @@ INITIATIVE_TYPES = [
                 "group": "Función de orientación política"
                 },
         {
+                "type": "Moción consecuencia de interpelación ordinaria",
+                "code": 171,
+                "group": "Función de orientación política"
+                },
+        {
                 "type": "Moción consecuencia de interpelación urgente",
                 "code": 173,
                 "group": "Función de orientación política"
                 },
         {
                 "type": "Planes y programas",
-                "code": "???",
+                "code": 201,
+                "group": "Función de orientación política"
+                },
+        {
+                "type": "Comunicación del Gobierno",
+                "code": 200,
+                "group": "Función de orientación política"
+                },
+        {
+                "type": "Propuesta de resolución relativa al art 11 de la Ley Orgánica 6/2002 de Partidos Políticos",
+                "code": "",
                 "group": "Función de orientación política"
                 },
         {
@@ -260,23 +295,13 @@ INITIATIVE_TYPES = [
                 "group": "Comisiones, subcomisiones y ponencias"
                 },
         {
-                "type": "Comisión de Investigación (art. 52)",
-                "code": 152,
-                "group": "Comisiones, subcomisiones y ponencias"
-                },
-        {
-                "type": "Otras Comisiones no permanentes (art. 53)",
-                "code": 153,
-                "group": "Comisiones, subcomisiones y ponencias"
-                },
-        {
-                "type": "Subcomisiones y Ponencias",
-                "code": 154,
-                "group": "Comisiones, subcomisiones y ponencias"
-                },
-        {
                 "type": "Solicitud de creación de Comisión permanente (art. 50)",
                 "code": 155,
+                "group": "Comisiones, subcomisiones y ponencias"
+                },
+        {
+                "type": "Comisión de Investigación (art. 52)",
+                "code": 152,
                 "group": "Comisiones, subcomisiones y ponencias"
                 },
         {
@@ -285,8 +310,13 @@ INITIATIVE_TYPES = [
                 "group": "Comisiones, subcomisiones y ponencias"
                 },
         {
-                "type": "Solicitud de creación de otras Comisiones no permanentes (art. 53)",
-                "code": 157,
+                "type": "Grupo de trabajo",
+                "code": 159,
+                "group": "Comisiones, subcomisiones y ponencias"
+                },
+        {
+                "type": "Subcomisiones y Ponencias",
+                "code": 154,
                 "group": "Comisiones, subcomisiones y ponencias"
                 },
         {
@@ -295,8 +325,13 @@ INITIATIVE_TYPES = [
                 "group": "Comisiones, subcomisiones y ponencias"
                 },
         {
-                "type": "Grupo de trabajo",
-                "code": 159,
+                "type": "Otras Comisiones no permanentes (art. 53)",
+                "code": 153,
+                "group": "Comisiones, subcomisiones y ponencias"
+                },
+        {
+                "type": "Solicitud de creación de otras Comisiones no permanentes (art. 53)",
+                "code": 157,
                 "group": "Comisiones, subcomisiones y ponencias"
                 },
         {
@@ -340,7 +375,7 @@ INITIATIVE_TYPES = [
                 "group": "Reglamento del Congreso"
                 },
         {
-                "type": "Conflicto de competencua ante el Tribunal Constitucional",
+                "type": "Conflicto de competencia ante el Tribunal Constitucional",
                 "code": "???",
                 "group": "Relaciones con órganos e instituciones públicas"
                 },
@@ -484,4 +519,4 @@ INITIATIVE_TYPES = [
                 "code": 299,
                 "group": "Secretaría general"
                 }
-        ]
+]
