@@ -107,8 +107,13 @@ class InitiativeExtractor:
                     lambda x: TAG_RE.sub('', x).strip(),
                     str(history).split('<br/>')
                     ))
-            return []
-        except:
+            else:
+                final_status = self.soup.select_one('.resultadoTramitacion')
+                if final_status:
+                    return [final_status.text]
+                else:
+                    return []
+        except Exception:
             return []
 
     def __is_deputy(self, name):
