@@ -11,6 +11,7 @@ from concurrent.futures import as_completed
 from extractors.config import ID_LEGISLATURA
 from .initiative import InitiativeExtractor
 from .initiative_types import INITIATIVE_TYPES
+from .initiative_status import has_finished
 from .utils import int_to_roman
 
 
@@ -80,7 +81,10 @@ class InitiativesExtractor:
             response = future.result()
             try:
                 initiatives = response.json()['lista_iniciativas']
-                self.all_references += [initiatives[key]['id_iniciativa'] for key in initiatives.keys()]
+                self.all_references += [
+                        initiatives[key]['id_iniciativa']
+                        for key in initiatives.keys()
+                        if not has_finished(initiatives[key]['id_iniciativa'])]
             except json.decoder.JSONDecodeError:
                 log.error(f"Error decoding JSON response on {response.url}")
                 continue
