@@ -100,5 +100,9 @@ STATUS_MAP = [
         {
             'search': {'extra.latest_history_item': {'$regex': 'Desconocida', '$options': 'gi'}},
             'status': 'Desconocida'
+        },
+        {
+            'search': {'extra.latest_history_item': ''},
+            'status': 'Desconocida'
         }
     ]
