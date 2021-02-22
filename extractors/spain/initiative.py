@@ -28,6 +28,7 @@ class InitiativeExtractor:
 
     def extract(self):
         try:
+            # TODO get source initiative
             full_title = self.soup.select_one('.entradilla-iniciativa').text
             self.initiative['title'] = re.sub(self.reference_regex, '', full_title).strip()
             self.initiative['reference'] = re.search(self.reference_regex, full_title).group().strip().strip('()')
@@ -35,7 +36,6 @@ class InitiativeExtractor:
             self.initiative['initiative_type_alt'] = self.soup.select('.titular-seccion')[1].text[:-1]
             # TODO extract place from initiative_type_alt or page or sessions diary > comisionesCompetentes (how to do with Pleno)
             self.initiative['place'] = None
-            # TODO get source initiative
             self.populate_authors()
             self.initiative['created'] = self.__parse_date(re.search(
                 self.date_regex,
@@ -56,16 +56,21 @@ class InitiativeExtractor:
             self.initiative.save()
             log.warning(f"Iniciativa {self.initiative['reference']} procesada")
         except AttributeError:
+            log.error(f"Error processing some attributes for initiative {self.url}")
+        except Exception:
             log.error(f"Error processing initiative {self.url}")
 
     def get_last_date(self):
-        all_dates = re.findall(self.date_regex, self.soup.select_one('#portlet_iniciativas').text.strip())
-        all_dates.sort(key=lambda d: time.mktime(time.strptime(d, "%d/%m/%Y")), reverse=True)
-        return self.__parse_date([
-            d
-            for d in all_dates
-            if time.mktime(time.strptime(d, "%d/%m/%Y")) < time.time()
-            ][0])
+        try:
+            all_dates = re.findall(self.date_regex, self.soup.select_one('#portlet_iniciativas').text.strip())
+            all_dates.sort(key=lambda d: time.mktime(time.strptime(d, "%d/%m/%Y")), reverse=True)
+            return self.__parse_date([
+                d
+                for d in all_dates
+                if time.mktime(time.strptime(d, "%d/%m/%Y")) < time.time()
+                ][0])
+        except Exception:
+            return None
 
     def populate_authors(self):
         self.initiative['author_deputies'] = []
