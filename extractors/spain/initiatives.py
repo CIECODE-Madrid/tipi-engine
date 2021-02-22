@@ -8,6 +8,10 @@ from bs4 import BeautifulSoup
 from requests_futures.sessions import FuturesSession
 from concurrent.futures import as_completed
 
+from tipi_data.models.deputy import Deputy
+from tipi_data.models.parliamentarygroup import ParliamentaryGroup
+from tipi_data.models.place import Place
+
 from extractors.config import ID_LEGISLATURA
 from .initiative import InitiativeExtractor
 from .initiative_types import INITIATIVE_TYPES
@@ -19,6 +23,7 @@ log = get_logger(__name__)
 
 
 class InitiativesExtractor:
+
     def __init__(self):
         self.LEGISLATURE = ID_LEGISLATURA
         self.INITIATIVES_PER_PAGE = 25
@@ -26,6 +31,9 @@ class InitiativesExtractor:
         self.INITIATIVE_TYPES = INITIATIVE_TYPES
         self.totals_by_type = dict()
         self.all_references = list()
+        self.deputies = Deputy.objects()
+        self.parliamentarygroups = ParliamentaryGroup.objects()
+        self.places = Place.objects()
 
     def sync_totals(self):
         query_params = {
@@ -118,4 +126,9 @@ class InitiativesExtractor:
         for future in as_completed(futures_requests):
             response = future.result()
             if response.ok:
-                InitiativeExtractor(response).extract()
+                InitiativeExtractor(
+                        response,
+                        self.deputies,
+                        self.parliamentarygroups,
+                        self.places
+                        ).extract()

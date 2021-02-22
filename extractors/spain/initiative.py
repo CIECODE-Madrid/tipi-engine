@@ -5,8 +5,6 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 from tipi_data.models.initiative import Initiative
-from tipi_data.models.deputy import Deputy
-from tipi_data.models.parliamentarygroup import ParliamentaryGroup
 from tipi_data.utils import generate_id
 
 from logger import get_logger
@@ -16,15 +14,17 @@ from .initiative_status import has_finished
 log = get_logger(__name__)
 
 class InitiativeExtractor:
-    def __init__(self, response):
+
+    def __init__(self, response, deputies, parliamentarygroups, places):
         self.initiative = Initiative()
+        self.deputies = deputies
+        self.parliamentarygroups = parliamentarygroups
+        self.places = places
         self.url = response.url
         self.soup = BeautifulSoup(response.text, 'lxml')
         self.reference_regex = r'\([0-9]{3}/[0-9]{6}\)'
         self.date_regex = r'[0-9]{2}/[0-9]{2}/[0-9]{4}'
         self.parliamentarygroup_sufix = r' en el Congreso'
-        self.deputies = Deputy.objects()
-        self.parliamentarygroups = ParliamentaryGroup.objects()
 
     def extract(self):
         try:
@@ -34,8 +34,7 @@ class InitiativeExtractor:
             self.initiative['reference'] = re.search(self.reference_regex, full_title).group().strip().strip('()')
             self.initiative['initiative_type'] = self.initiative['reference'].split('/')[0]
             self.initiative['initiative_type_alt'] = self.soup.select('.titular-seccion')[1].text[:-1]
-            # TODO extract place from initiative_type_alt or page or sessions diary > comisionesCompetentes (how to do with Pleno)
-            self.initiative['place'] = None
+            self.initiative['place'] = self.get_place()
             self.populate_authors()
             self.initiative['created'] = self.__parse_date(re.search(
                 self.date_regex,
@@ -102,6 +101,28 @@ class InitiativeExtractor:
                         if self.parliamentarygroup_sufix not in item.text \
                         else re.sub(self.parliamentarygroup_sufix, '', item.text)
                     self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
+
+    def get_place(self):
+        place = ''
+        try:
+            place_wrapper = self.soup.select_one('.comisionesCompetentes')
+            if place_wrapper:
+                place = place_wrapper.text.strip()
+            else:
+                history = self.get_history()
+                for place in self.places:
+                    for history_item in history:
+                        if place['name'] in history_item:
+                            place = history_item
+                            break
+                if place == '':
+                    for history_item in history:
+                        if 'Pleno' in history_item:
+                            place = 'Pleno'
+                            break
+        except Exception:
+            pass
+        return place
 
     def get_history(self):
         history = list()
