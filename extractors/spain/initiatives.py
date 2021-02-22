@@ -92,7 +92,7 @@ class InitiativesExtractor:
                 log.error(f"Error getting 'lista_iniciativas' on {response.url}")
                 continue
 
-        log.warning(f"Getting {len(self.all_references)} initiatives")
+        log.warning(f"Getting {len(self.all_references)} initiatives references")
         log.warning("--- %s seconds getting references---" % (time.time() - start_time))
         log.warning("Processing initiatives...")
         start_time = time.time()
