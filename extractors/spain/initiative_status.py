@@ -17,6 +17,4 @@ def has_finished(reference):
             'En tramitación',
             UNKNOWN
             ]
-    if get_current_status(reference) in NOT_FINAL_STATUS:
-        return False
-    return True
+    return get_current_status(reference) not in NOT_FINAL_STATUS
