@@ -99,22 +99,21 @@ class InitiativeExtractor:
                     self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
 
     def get_history(self):
+        history = list()
         try:
-            history = self.soup.select_one('.iniciativaTramitacion')
-            if history:
+            history_wrapper = self.soup.select_one('.iniciativaTramitacion')
+            if history_wrapper:
                 TAG_RE = re.compile(r'<[^>]+>')
-                return list(map(
+                history = list(map(
                     lambda x: TAG_RE.sub('', x).strip(),
-                    str(history).split('<br/>')
+                    str(history_wrapper).split('<br/>')
                     ))
-            else:
-                final_status = self.soup.select_one('.resultadoTramitacion')
-                if final_status:
-                    return [final_status.text]
-                else:
-                    return []
+                final_status_wrapper = self.soup.select_one('.resultadoTramitacion')
+                if final_status_wrapper:
+                    history.append(final_status_wrapper.text)
         except Exception:
-            return []
+            pass
+        return history
 
     def __is_deputy(self, name):
         for deputy in self.deputies:
