@@ -54,7 +54,7 @@ class InitiativeExtractor:
                     u''.join(self.initiative['author_parliamentarygroups']),
                     u''.join(self.initiative['author_others']))
             self.initiative.save()
-            log.warning(f"Iniciativa {self.initiative['reference']} procesada")
+            log.info(f"Iniciativa {self.initiative['reference']} procesada")
         except AttributeError:
             log.error(f"Error processing some attributes for initiative {self.url}")
         except Exception:

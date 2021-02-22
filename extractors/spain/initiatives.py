@@ -57,7 +57,7 @@ class InitiativesExtractor:
             try:
                 END = ceil(self.totals_by_type[initiative_type['type']]/self.INITIATIVES_PER_PAGE)
             except Exception:
-                log.error(f"Unrecognized initiative type: {initiative_type['type']}")
+                log.warning(f"Unrecognized initiative type: {initiative_type['type']}")
                 continue
             query_params = {
                     'p_p_id': 'iniciativas',
@@ -92,12 +92,12 @@ class InitiativesExtractor:
                 log.error(f"Error getting 'lista_iniciativas' on {response.url}")
                 continue
 
-        log.warning(f"Getting {len(self.all_references)} initiatives references")
-        log.warning("--- %s seconds getting references---" % (time.time() - start_time))
-        log.warning("Processing initiatives...")
+        log.info(f"Getting {len(self.all_references)} initiatives references")
+        log.debug("--- %s seconds getting references---" % (time.time() - start_time))
+        log.info("Processing initiatives...")
         start_time = time.time()
         self.extract_initiatives()
-        log.warning("--- %s seconds getting initiatives ---" % (time.time() - start_time))
+        log.debug("--- %s seconds getting initiatives ---" % (time.time() - start_time))
 
     def extract_initiatives(self):
         session = FuturesSession()
