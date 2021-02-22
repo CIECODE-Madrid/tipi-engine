@@ -1,21 +1,21 @@
-import re
-
 from tipi_data.models.initiative import Initiative
 
 
+UNKNOWN = 'Desconocida'
+
 def get_current_status(reference):
     try:
-        initiative = Initiative.all.get(reference=reference)
-        if not initiative:
-            return ''
+        initiative = Initiative.all.filter(reference=reference).first()
+        if initiative['status'] is None:
+            return UNKNOWN
         return initiative['status']
     except Exception:
-        return ''
+        return UNKNOWN
 
 def has_finished(reference):
     NOT_FINAL_STATUS = [
             'En tramitación',
-            'Desconocida'
+            UNKNOWN
             ]
     if get_current_status(reference) in NOT_FINAL_STATUS:
         return False

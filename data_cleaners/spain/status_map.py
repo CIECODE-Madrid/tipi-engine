@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+UNKNOWN = 'Desconocida'
 
 STATUS_MAP = [
         {
@@ -98,11 +98,11 @@ STATUS_MAP = [
             'status': 'Caducada'
         },
         {
-            'search': {'extra.latest_history_item': {'$regex': 'Desconocida', '$options': 'gi'}},
-            'status': 'Desconocida'
+            'search': {'extra.latest_history_item': UNKNOWN},
+            'status': UNKNOWN
         },
         {
             'search': {'extra.latest_history_item': ''},
-            'status': 'Desconocida'
+            'status': UNKNOWN
         }
     ]
