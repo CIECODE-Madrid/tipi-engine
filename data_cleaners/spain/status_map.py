@@ -46,7 +46,7 @@ STATUS_MAP = [
             'status': 'Aprobada'
         },
         {
-            'search': {'extra.latest_history_item': {'$regex': 'Tramitado por completo sin', '$options': 'gi'}, 'initiative_type': {'$not': {'$in': ["170", "172", "180", "181", "184", "212", "213", "214", "219"]}}},
+            'search': {'extra.latest_history_item': {'$regex': 'Tramitado por completo sin', '$options': 'gi'}, 'initiative_type': {'$not': {'$in': ["080", "170", "172", "180", "181", "184", "212", "213", "214", "219"]}}},
             'status': 'Aprobada'
         },
         {
@@ -75,6 +75,10 @@ STATUS_MAP = [
         },
         {
             'search': {'extra.latest_history_item': {'$regex': 'Rechazado', '$options': 'gi'}},
+            'status': 'Rechazada'
+        },
+        {
+            'search': {'extra.latest_history_item': {'$regex': "Tramitado por completo sin", '$options': 'gi'}, 'initiative_type': "080"},
             'status': 'Rechazada'
         },
         {
