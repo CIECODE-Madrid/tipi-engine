@@ -13,8 +13,8 @@ from .initiative_status import has_finished
 
 log = get_logger(__name__)
 
-class InitiativeExtractor:
 
+class InitiativeExtractor:
     def __init__(self, response, deputies, parliamentarygroups, places):
         self.initiative = Initiative()
         self.deputies = deputies

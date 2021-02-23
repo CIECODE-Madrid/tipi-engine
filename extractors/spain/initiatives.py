@@ -13,9 +13,9 @@ from tipi_data.models.parliamentarygroup import ParliamentaryGroup
 from tipi_data.models.place import Place
 
 from extractors.config import ID_LEGISLATURA
-from .initiative import InitiativeExtractor
 from .initiative_types import INITIATIVE_TYPES
-from .initiative_status import has_finished
+from .initiative_extractor_factory import InitiativeExtractorFactory
+from .initiative_extractors.initiative_status import has_finished
 from .utils import int_to_roman
 
 
@@ -126,7 +126,7 @@ class InitiativesExtractor:
         for future in as_completed(futures_requests):
             response = future.result()
             if response.ok:
-                InitiativeExtractor(
+                InitiativeExtractorFactory.create(
                         response,
                         self.deputies,
                         self.parliamentarygroups,
