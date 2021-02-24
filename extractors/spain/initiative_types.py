@@ -1,3 +1,5 @@
+from .initiative_extractors.question_extractor import QuestionExtractor
+
 INITIATIVE_TYPES = [
         {
             "type": "Competencias en relación con la Corona",
@@ -122,7 +124,8 @@ INITIATIVE_TYPES = [
         {
                 "type": "Pregunta al Gobierno con respuesta escrita",
                 "code": 184,
-                "group": "Función de control"
+                "group": "Función de control",
+                "class": QuestionExtractor
                 },
         {
                 "type": "Pregunta oral a la Corporación RTVE",
