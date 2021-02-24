@@ -8,6 +8,8 @@ class PDFParser():
 
     def extract(self):
         content = process(self.file.name)
+        content = content.decode('utf-8').strip()
+        content = content.replace('\f', ' ').replace('\t', '').split('\n')
         return content
 
 class PDFImageParser():
@@ -22,4 +24,4 @@ class PDFImageParser():
             text = image_to_string(images[i], lang = 'spa')
             texts.append(text)
 
-        return ' '.join(texts)
+        return texts

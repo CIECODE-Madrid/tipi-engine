@@ -23,7 +23,7 @@ class QuestionExtractor(InitiativeExtractor):
             return
         answer_initiative = deepcopy(self.initiative)
         answer_initiative['content'] = answer
-        answer_initiative['initiative_type_all'] = 'Respuesta'
+        answer_initiative['initiative_type_alt'] = 'Respuesta'
         answer_initiative['author_others'] = ['Gobierno']
         answer_initiative['id'] = self.generate_id(answer_initiative)
         answer_initiative.save()
@@ -68,8 +68,6 @@ class QuestionExtractor(InitiativeExtractor):
         try:
             content = parser.extract()
 
-            content = content.decode('utf-8').strip()
-            content = content.replace('\f', ' ').replace('\t', '').split('\n')
         except Exception as e:
             print(e)
             pass
