@@ -27,6 +27,14 @@ class InitiativeExtractor:
         self.parliamentarygroup_sufix = r' en el Congreso'
 
     def extract(self):
+        self.extract_commons()
+        self.extract_content()
+        self.initiative.save()
+
+    def extract_content(self):
+        self.initiative['content'] = []
+
+    def extract_commons(self):
         try:
             # TODO get source initiative
             full_title = self.soup.select_one('.entradilla-iniciativa').text
@@ -47,17 +55,19 @@ class InitiativeExtractor:
                 if len(self.initiative['history']) \
                 else ''
             self.initiative['url'] = self.url
-            self.initiative['id'] = generate_id(
-                    self.initiative['reference'],
-                    u''.join(self.initiative['author_deputies']),
-                    u''.join(self.initiative['author_parliamentarygroups']),
-                    u''.join(self.initiative['author_others']))
-            self.initiative.save()
+            self.initiative['id'] = self.generate_id(self.initiative)
             log.info(f"Iniciativa {self.initiative['reference']} procesada")
         except AttributeError:
             log.error(f"Error processing some attributes for initiative {self.url}")
         except Exception:
             log.error(f"Error processing initiative {self.url}")
+
+    def generate_id(self, initiative):
+        return generate_id(
+                    initiative['reference'],
+                    u''.join(initiative['author_deputies']),
+                    u''.join(initiative['author_parliamentarygroups']),
+                    u''.join(initiative['author_others']))
 
     def get_last_date(self):
         try:
