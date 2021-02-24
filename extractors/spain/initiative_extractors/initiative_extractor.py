@@ -16,6 +16,7 @@ log = get_logger(__name__)
 
 class InitiativeExtractor:
     def __init__(self, response, deputies, parliamentarygroups, places):
+        self.response = response
         self.initiative = Initiative()
         self.deputies = deputies
         self.parliamentarygroups = parliamentarygroups
@@ -29,6 +30,7 @@ class InitiativeExtractor:
     def extract(self):
         self.extract_commons()
         self.extract_content()
+        print(self.initiative['place'])
         self.initiative.save()
 
     def extract_content(self):
@@ -130,7 +132,7 @@ class InitiativeExtractor:
                         if 'Pleno' in history_item:
                             place = 'Pleno'
                             break
-        except Exception:
+        except Exception as e:
             pass
         return place
 

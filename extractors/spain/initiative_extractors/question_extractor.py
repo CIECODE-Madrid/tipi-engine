@@ -1,8 +1,11 @@
 from .initiative_extractor import InitiativeExtractor
 from .utils.pdf_parsers import PDFParser, PDFImageParser
 from lxml.html import document_fromstring
+from copy import deepcopy
+import requests
+import tempfile
 
-def QuestionExtractor(InitiativeExtractor):
+class QuestionExtractor(InitiativeExtractor):
 
     QUESTION = 'Pregunta'
     ANSWER = 'Contestación'
@@ -12,8 +15,18 @@ def QuestionExtractor(InitiativeExtractor):
 
     def extract_content(self):
         self.node_tree = document_fromstring(self.response.text)
-        # self.initiative['content'] = self.retrieve_question()
-        self.initiative['content'] = []
+        self.initiative['content'] = self.retrieve_question()
+        self.create_answer_initative(self.retrieve_answer())
+
+    def create_answer_initative(self, answer):
+        if answer == '':
+            return
+        answer_initiative = deepcopy(self.initiative)
+        answer_initiative['content'] = answer
+        answer_initiative['initiative_type_all'] = 'Respuesta'
+        answer_initiative['author_others'] = ['Gobierno']
+        answer_initiative['id'] = self.generate_id(answer_initiative)
+        answer_initiative.save()
 
     def retrieve_question(self):
         return self.retrieve_content(self.QUESTION, True)
@@ -22,7 +35,11 @@ def QuestionExtractor(InitiativeExtractor):
         return self.retrieve_content(self.ANSWER)
 
     def retrieve_content(self, content, is_img = False):
-        url = self.BASE_URL + self.find_url(content)
+        try:
+            url = self.BASE_URL + self.find_url(content)
+        except Exception:
+            # URL not found, do not download the PDF.
+            return ''
         content = self.download_pdf(url, is_img)
         return content
 
@@ -43,21 +60,23 @@ def QuestionExtractor(InitiativeExtractor):
 
     def extract_pdf(self, pdf, is_img = False):
         content = ''
-        if (is_img):
-            pdf_parser = PDFImageParser(pdf)
+        if is_img:
+            parser = PDFImageParser(pdf)
         else:
-            pdf_parser = PDFParser(pdf)
+            parser = PDFParser(pdf)
 
         try:
-            content = pdf_parser.extract()
+            content = parser.extract()
 
             content = content.decode('utf-8').strip()
-            content = content.replace('\n', ' ').replace('\f', ' ').replace('\t', '')
+            content = content.replace('\f', ' ').replace('\t', '').split('\n')
         except Exception as e:
             print(e)
             pass
         return content
 
     def find_url(self, content):
-        items = self.node_tree.xpath(f"//a[contains(., '{content}')]")
+        items = self.node_tree.xpath(f"//a[normalize-space(text()) = '{content}']")
+        if len(items) < 0:
+            raise Exception('Link not found')
         return items[0].get(self.HREF)

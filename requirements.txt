@@ -14,3 +14,5 @@ textract==1.6.3
 six==1.12.0
 python-Levenshtein==0.12.0
 beautifulsoup4==4.9.3
+pdf2image==1.14.0
+pytesseract==0.3.7

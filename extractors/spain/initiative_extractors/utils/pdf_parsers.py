@@ -19,7 +19,7 @@ class PDFImageParser():
         texts = []
 
         for i in range(len(images)):
-            text = image_to_string(images[i], lang = 'eng')
+            text = image_to_string(images[i], lang = 'spa')
             texts.append(text)
 
-    return ' '.join(texts)
+        return ' '.join(texts)

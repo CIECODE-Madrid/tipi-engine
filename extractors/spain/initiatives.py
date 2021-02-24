@@ -61,12 +61,14 @@ class InitiativesExtractor:
         self.sync_totals()
         futures_requests = list()
         session = FuturesSession()
-        for initiative_type in self.INITIATIVE_TYPES:
+        # for initiative_type in self.INITIATIVE_TYPES:
+        initiative_type = { "type": "Pregunta al Gobierno con respuesta escrita", "code": 184 }
+        if initiative_type:
             try:
                 END = ceil(self.totals_by_type[initiative_type['type']]/self.INITIATIVES_PER_PAGE)
             except Exception:
                 log.warning(f"Unrecognized initiative type: {initiative_type['type']}")
-                continue
+                # continue
             query_params = {
                     'p_p_id': 'iniciativas',
                     'p_p_lifecycle': 2,
@@ -75,7 +77,7 @@ class InitiativesExtractor:
                     'p_p_resource_id': 'filtrarListado',
                     '_iniciativas_mode': 'verListadoIndice'
                     }
-            for page in range(1, END+1):
+            for page in range(1430, END+1):
                 form_data = {
                         '_iniciativas_legislatura': self.LEGISLATURE,
                         '_iniciativas_tipo': initiative_type['code'],
