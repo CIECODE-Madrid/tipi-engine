@@ -1,5 +1,6 @@
 from .initiative_extractor import InitiativeExtractor
 from .utils.pdf_parsers import PDFParser, PDFImageParser
+from lxml.html import document_fromstring
 
 def QuestionExtractor(InitiativeExtractor):
 
@@ -9,8 +10,10 @@ def QuestionExtractor(InitiativeExtractor):
     A = 'a'
     BASE_URL = 'https://www.congreso.es'
 
-    def extract(self):
-        super().extract()
+    def extract_content(self):
+        self.node_tree = document_fromstring(self.response.text)
+        # self.initiative['content'] = self.retrieve_question()
+        self.initiative['content'] = []
 
     def retrieve_question(self):
         return self.retrieve_content(self.QUESTION, True)
@@ -56,5 +59,5 @@ def QuestionExtractor(InitiativeExtractor):
         return content
 
     def find_url(self, content):
-        items = self.node_tree.xpath("//a[contains(., '" + content + "')]")
+        items = self.node_tree.xpath(f"//a[contains(., '{content}')]")
         return items[0].get(self.HREF)
