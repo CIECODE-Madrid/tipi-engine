@@ -30,7 +30,6 @@ class InitiativeExtractor:
     def extract(self):
         self.extract_commons()
         self.extract_content()
-        print(self.initiative['place'])
         self.initiative.save()
 
     def extract_content(self):
@@ -125,12 +124,7 @@ class InitiativeExtractor:
                 for place in self.places:
                     for history_item in history:
                         if place['name'] in history_item:
-                            place = history_item
-                            break
-                if place == '':
-                    for history_item in history:
-                        if 'Pleno' in history_item:
-                            place = 'Pleno'
+                            place = place['name']
                             break
         except Exception as e:
             pass
