@@ -1,4 +1,5 @@
 import re
+from lxml.html import document_fromstring
 
 import requests
 
@@ -41,13 +42,28 @@ class OneBulletinExtractor(InitiativeExtractor):
                 bulletin_content[0].itertext()
                 )) if line != '']
         except IndexError:
-            log.error("Index error on getting bulletin on initiative {self.response.url}")
+            log.error(f"Index error on getting bulletin on initiative {self.url}")
             return EMPTY
         except Exception:
-            log.error("Error getting content bulletin on initiative {self.response.url}")
+            log.error(f"Error getting content bulletin on initiative {self.url}")
             return EMPTY
+
+
+class OneABulletinExtractor(OneBulletinExtractor):
+    def get_letter(self):
+        return 'A'
+
+
+class OneBBulletinExtractor(OneBulletinExtractor):
+    def get_letter(self):
+        return 'B'
 
 
 class OneDBulletinExtractor(OneBulletinExtractor):
     def get_letter(self):
         return 'D'
+
+
+class OneEBulletinExtractor(OneBulletinExtractor):
+    def get_letter(self):
+        return 'E'
