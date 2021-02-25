@@ -9,7 +9,6 @@ from tipi_data.models.initiative import Initiative
 from tipi_data.utils import generate_id
 
 from logger import get_logger
-from .initiative_status import has_finished
 
 
 log = get_logger(__name__)
