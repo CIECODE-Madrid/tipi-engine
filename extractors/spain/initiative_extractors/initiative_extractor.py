@@ -89,28 +89,22 @@ class InitiativeExtractor:
         self.initiative['author_deputies'] = []
         self.initiative['author_parliamentarygroups'] = []
         self.initiative['author_others'] = []
-        authors_base_selector = """#portlet_iniciativas > div >
-                div.portlet-content-container > div > div > div > div >
-                div > ul"""
-
-        authors_container = self.soup.select_one(authors_base_selector + ":nth-child(5)")
-        if authors_container['class'] == ['documentos']:
-            authors_container = self.soup.select_one(authors_base_selector + ":nth-child(7)")
-
-        authors_list = authors_container.select('li')
+        xpath = "//section[@id='portlet_iniciativas']//div[@class=' portlet-content-container']//h3[contains(text(),'Autor')]/following-sibling::ul[1]/li"
+        authors_list = self.node_tree.xpath(xpath)
 
         for item in authors_list:
-            if item.select_one('a') is None:
-                self.initiative['author_others'].append(item.text)
+            a_tags = item.cssselect('a')
+            if len(a_tags) == 0:
+                self.initiative['author_others'].append(item.text_content())
             else:
                 regex_short_parliamentarygroup = r' \(.+\)'
                 regex_more_deputies = r' y [0-9]+ Diputados'
-                has_short_parliamentarygroup = re.search(regex_short_parliamentarygroup, item.text)
+                has_short_parliamentarygroup = re.search(regex_short_parliamentarygroup, item.text_content())
                 if has_short_parliamentarygroup:
-                    deputy_name = re.sub(regex_short_parliamentarygroup, '', item.text)
+                    deputy_name = re.sub(regex_short_parliamentarygroup, '', item.text_content())
                     if re.search(regex_more_deputies, deputy_name):
                         deputy_name = re.sub(regex_more_deputies, '', deputy_name)
-                        self.initiative['author_others'].append(item.text)
+                        self.initiative['author_others'].append(item.text_content())
                     if self.__is_deputy(deputy_name):
                         self.initiative['author_deputies'].append(deputy_name)
                         parliamentarygroup_name = self.__get_parliamentarygroup_name(
@@ -118,9 +112,9 @@ class InitiativeExtractor:
                         if parliamentarygroup_name:
                             self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
                 else:
-                    parliamentarygroup_name = item.text \
-                        if self.parliamentarygroup_sufix not in item.text \
-                        else re.sub(self.parliamentarygroup_sufix, '', item.text)
+                    parliamentarygroup_name = item.text_content() \
+                        if self.parliamentarygroup_sufix not in item.text_content() \
+                        else re.sub(self.parliamentarygroup_sufix, '', item.text_content())
                     self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
 
     def get_place(self):
