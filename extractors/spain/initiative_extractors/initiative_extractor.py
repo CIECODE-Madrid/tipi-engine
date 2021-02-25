@@ -29,9 +29,13 @@ class InitiativeExtractor:
         self.parliamentarygroup_sufix = r' en el Congreso'
 
     def extract(self):
-        self.extract_commons()
-        self.extract_content()
-        self.initiative.save()
+        try:
+            self.extract_commons()
+            self.extract_content()
+            self.initiative.save()
+        except Exception as e:
+            log.error(f"Error processing initiative {self.url}")
+            log.error(str(e))
 
     def extract_content(self):
         self.initiative['content'] = []
