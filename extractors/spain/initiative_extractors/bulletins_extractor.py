@@ -9,61 +9,84 @@ from .initiative_extractor import InitiativeExtractor
 
 log = get_logger(__name__)
 
-
-class OneBulletinExtractor(InitiativeExtractor):
-
-    TAG_RE = re.compile(r'<[^>]+>')
-    BASE_URL = 'https://www.congreso.es'
+class BulletinsExtractor(InitiativeExtractor):
+    LETTER = 'Z'
+    TAG_RE = re.compile(r'<[^>]+>') # TODO Move to utils
 
     def extract_content(self):
         self.initiative['content'] = self.retrieve_bulletin()
 
-    def get_letter(self):
-        pass
-
     def retrieve_bulletin(self):
-        EMPTY = list()
+        content = list()
         try:
-            bulletins = [
-                    li
-                    for li in self.node_tree.cssselect('ul.boletines > li')
-                    if f'{self.get_letter()}-' in li.text_content()]
-            if len(bulletins) == 0:
-                return EMPTY
-            bulletin_url = f"{self.BASE_URL}{bulletins[0].xpath('div[2]/a[1]/@href')[0]}"
-            if not bulletin_url:
-                return EMPTY
-            bulletin_tree = document_fromstring(requests.get(bulletin_url).text)
-            bulletin_content = bulletin_tree.cssselect('.textoIntegro')
-            if not bulletin_content:
-                return EMPTY
-            return [line for line in list(map(
-                lambda x: self.TAG_RE.sub('', x).strip(),
-                bulletin_content[0].itertext()
-                )) if line != '']
+            for url in self.find_urls():
+                bulletin_tree = document_fromstring(requests.get(
+                    f"{self.BASE_URL}{url}"
+                    ).text)
+                bulletin_content = bulletin_tree.cssselect('.textoIntegro')
+                if bulletin_content:
+                    content += [line for line in list(map(
+                        lambda x: self.TAG_RE.sub('', x).strip(),
+                        bulletin_content[0].itertext()
+                        )) if line != '']
+            return content
         except IndexError:
-            log.error(f"Index error on getting bulletin on initiative {self.url}")
-            return EMPTY
-        except Exception:
-            log.error(f"Error getting content bulletin on initiative {self.url}")
-            return EMPTY
+            # log.error(f"Index error on getting bulletin on initiative {self.url}")
+            return list()
+        except Exception as e:
+            # log.error(f"Error getting content bulletin on initiative {self.url}")
+            log.error(e)
+            return list()
+
+    def find_urls(self):
+        return self.node_tree.xpath(self.get_xpath())
+
+    def get_xpath(self):
+        return f"//ul[@class='boletines']/li/div[contains(text(),'{self.LETTER}-')]/following-sibling::div/a[1]/@href"
 
 
-class OneABulletinExtractor(OneBulletinExtractor):
-    def get_letter(self):
-        return 'A'
+class ABulletinsExtractor(BulletinsExtractor):
+    LETTER = 'A'
 
 
-class OneBBulletinExtractor(OneBulletinExtractor):
-    def get_letter(self):
-        return 'B'
+class BBulletinsExtractor(BulletinsExtractor):
+    LETTER = 'B'
 
 
-class OneDBulletinExtractor(OneBulletinExtractor):
-    def get_letter(self):
-        return 'D'
+class CBulletinsExtractor(BulletinsExtractor):
+    LETTER = 'C'
 
 
-class OneEBulletinExtractor(OneBulletinExtractor):
-    def get_letter(self):
-        return 'E'
+class DBulletinsExtractor(BulletinsExtractor):
+    LETTER = 'D'
+
+
+class EBulletinsExtractor(BulletinsExtractor):
+    LETTER = 'E'
+
+
+class FirstBulletinExtractor(BulletinsExtractor):
+    LETTER = 'Z'
+
+    def get_xpath(self):
+        return f"//ul[@class='boletines']/li/div[contains(text(),'{self.LETTER}-')]/following-sibling::div[1]/a[1]/@href"
+
+
+class FirstABulletinExtractor(FirstBulletinExtractor):
+    LETTER = 'A'
+
+
+class FirstBBulletinExtractor(FirstBulletinExtractor):
+    LETTER = 'B'
+
+
+class FirstCBulletinExtractor(FirstBulletinExtractor):
+    LETTER = 'C'
+
+
+class FirstDBulletinExtractor(FirstBulletinExtractor):
+    LETTER = 'D'
+
+
+class FirstEBulletinExtractor(FirstBulletinExtractor):
+    LETTER = 'E'

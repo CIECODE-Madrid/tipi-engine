@@ -1,8 +1,14 @@
-from .initiative_extractors.one_bulletin_extractor import \
-        OneABulletinExtractor, \
-        OneBBulletinExtractor, \
-        OneDBulletinExtractor, \
-        OneEBulletinExtractor
+from .initiative_extractors.bulletins_extractor import \
+        ABulletinsExtractor, \
+        BBulletinsExtractor, \
+        CBulletinsExtractor, \
+        DBulletinsExtractor, \
+        EBulletinsExtractor, \
+        FirstABulletinExtractor, \
+        FirstBBulletinExtractor, \
+        FirstCBulletinExtractor, \
+        FirstDBulletinExtractor, \
+        FirstEBulletinExtractor
 
 from .initiative_extractors.question_extractor import QuestionExtractor
 from .initiative_extractors.boe_extractor import BoeExtractor, FirstBoeExtractor
@@ -18,7 +24,7 @@ INITIATIVE_TYPES = [
             "type": "Propuesta de candidato a la Presidencia del Gobierno",
             "code": "080",
             "group": "Confianza parlamentaria",
-            "class": OneDBulletinExtractor
+            "class": FirstDBulletinExtractor
             },
         {
             "type": "Moción de censura",
@@ -34,25 +40,25 @@ INITIATIVE_TYPES = [
             "type": "Proyecto de reforma Constitucional",
             "code": "102",
             "group": "Reforma constitucional",
-            "class": OneABulletinExtractor
+            "class": FirstABulletinExtractor
             },
         {
             "type": "Proposición de reforma Constitucional de Grupos Parlamentarios",
             "code": "100",
             "group": "Reforma constitucional",
-            "class": OneBBulletinExtractor
+            "class": FirstBBulletinExtractor
             },
         {
             "type": "Proposición de reforma constitucional de Comunidades Autónomas",
             "code": "101",
             "group": "Reforma constitucional",
-            "class": OneBBulletinExtractor
+            "class": FirstBBulletinExtractor
             },
         {
             "type": "Autorización de Convenios Internacionales",
             "code": "110",
             "group": "Convenios Internacionales",
-            "class": OneABulletinExtractor
+            "class": FirstABulletinExtractor
             },
         {
             "type": "Información sobre Convenios Internacionales (art. 94.2 Const.)",
@@ -69,43 +75,43 @@ INITIATIVE_TYPES = [
                 "type": "Proyecto de ley",
                 "code": "121",
                 "group": "Función legislativa",
-                "class": OneABulletinExtractor
+                "class": FirstABulletinExtractor
                 },
         {
                 "type": "Proposición de ley de Grupos Parlamentarios del Congreso",
                 "code": "122",
                 "group": "Función legislativa",
-                "class": OneBBulletinExtractor
+                "class": FirstBBulletinExtractor
                 },
         {
                 "type": "Proposición de ley de Diputados",
                 "code": "123",
                 "group": "Función legislativa",
-                "class": OneBBulletinExtractor
+                "class": FirstBBulletinExtractor
                 },
         {
                 "type": "Proposición de ley del Senado",
                 "code": "124",
                 "group": "Función legislativa",
-                "class": OneBBulletinExtractor
+                "class": FirstBBulletinExtractor
                 },
         {
                 "type": "Proposición de ley de Comunidades y Ciudades Autónomas",
                 "code": "125",
                 "group": "Función legislativa",
-                "class": OneBBulletinExtractor
+                "class": FirstBBulletinExtractor
                 },
         {
                 "type": "Propuesta de reforma de Estatuto de Autonomía",
                 "code": "127",
                 "group": "Función legislativa",
-                "class": OneBBulletinExtractor
+                "class": FirstBBulletinExtractor
                 },
         {
                 "type": "Iniciativa legislativa popular",
                 "code": "120",
                 "group": "Función legislativa",
-                "class": OneBBulletinExtractor # TODO Retrieves all Bs?
+                "class": BBulletinsExtractor
                 },
         {
                 "type": "Real Decreto-Ley",
@@ -128,7 +134,7 @@ INITIATIVE_TYPES = [
                 "type": "Real Decreto legislativo en desarrollo de Ley de Bases",
                 "code": "131",
                 "group": "Función legislativa",
-                "class": OneEBulletinExtractor
+                "class": FirstEBulletinExtractor
                 },
         {
                 "type": "Interpelación urgente",
@@ -385,7 +391,7 @@ INITIATIVE_TYPES = [
                 "type": "Proposición de reforma del Reglamento del Congreso",
                 "code": "410",
                 "group": "Reglamento del Congreso",
-                "class": OneBBulletinExtractor
+                "class": FirstBBulletinExtractor
                 },
         {
                 "type": "Resolución de la Presidencia del Congreso",
@@ -401,13 +407,13 @@ INITIATIVE_TYPES = [
                 "type": "Resoluciones normativas de las Cortes Generales",
                 "code": "413",
                 "group": "Reglamento del Congreso",
-                "class": OneABulletinExtractor
+                "class": FirstABulletinExtractor
                 },
         {
                 "type": "Resoluciones normativas del Congreso",
                 "code": "414",
                 "group": "Reglamento del Congreso",
-                "class": OneABulletinExtractor
+                "class": FirstABulletinExtractor
                 },
         {
                 "type": "Funciones de la Mesa de la Cámara",
@@ -467,7 +473,8 @@ INITIATIVE_TYPES = [
         {
                 "type": "Cuenta General del Estado",
                 "code": "250",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": ABulletinsExtractor
                 },
         {
                 "type": "Informe del Tribunal de Cuentas",
