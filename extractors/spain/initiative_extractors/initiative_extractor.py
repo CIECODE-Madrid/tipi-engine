@@ -60,8 +60,10 @@ class InitiativeExtractor:
             log.info(f"Iniciativa {self.initiative['reference']} procesada")
         except AttributeError:
             log.error(f"Error processing some attributes for initiative {self.url}")
-        except Exception:
+            log.error(str(e))
+        except Exception as e:
             log.error(f"Error processing initiative {self.url}")
+            log.error(str(e))
 
     def generate_id(self, initiative):
         return generate_id(
@@ -86,9 +88,16 @@ class InitiativeExtractor:
         self.initiative['author_deputies'] = []
         self.initiative['author_parliamentarygroups'] = []
         self.initiative['author_others'] = []
-        authors_list = self.soup.select_one("""#portlet_iniciativas > div >
+        authors_base_selector = """#portlet_iniciativas > div >
                 div.portlet-content-container > div > div > div > div >
-                div > ul:nth-child(5)""").select('li')
+                div > ul"""
+
+        authors_container = self.soup.select_one(authors_base_selector + ":nth-child(5)")
+        if authors_container['class'] == ['documentos']:
+            authors_container = self.soup.select_one(authors_base_selector + ":nth-child(7)")
+
+        authors_list = authors_container.select('li')
+
         for item in authors_list:
             if item.select_one('a') is None:
                 self.initiative['author_others'].append(item.text)
