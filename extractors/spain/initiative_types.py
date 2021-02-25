@@ -1,4 +1,6 @@
+from .initiative_extractors.one_bulletin_extractor import OneDBulletinExtractor
 from .initiative_extractors.question_extractor import QuestionExtractor
+
 
 INITIATIVE_TYPES = [
         {
@@ -9,7 +11,8 @@ INITIATIVE_TYPES = [
         {
             "type": "Propuesta de candidato a la Presidencia del Gobierno",
             "code": "080",
-            "group": "Confianza parlamentaria"
+            "group": "Confianza parlamentaria",
+            "class": OneDBulletinExtractor
             },
         {
             "type": "Moción de censura",
