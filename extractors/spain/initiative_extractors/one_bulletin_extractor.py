@@ -1,6 +1,5 @@
 import re
 from lxml.html import document_fromstring
-from lxml.cssselect import CSSSelector
 
 import requests
 
