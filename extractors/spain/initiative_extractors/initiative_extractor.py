@@ -118,21 +118,18 @@ class InitiativeExtractor:
                     self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
 
     def get_place(self):
-        place = ''
         try:
             place_wrapper = self.soup.select_one('.comisionesCompetentes')
             if place_wrapper:
-                place = place_wrapper.text.strip()
+                return place_wrapper.text.strip()
             else:
                 history = self.get_history()
                 for place in self.places:
                     for history_item in history:
                         if place['name'] in history_item:
-                            place = place['name']
-                            break
+                            return place['name']
         except Exception as e:
-            pass
-        return place
+            return ''
 
     def get_history(self):
         history = list()
