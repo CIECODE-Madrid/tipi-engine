@@ -22,6 +22,7 @@ class InitiativeExtractor:
         self.parliamentarygroups = parliamentarygroups
         self.places = places
         self.url = response.url
+        self.BASE_URL = 'https://www.congreso.es'
         self.soup = BeautifulSoup(response.text, 'lxml')
         self.reference_regex = r'\([0-9]{3}/[0-9]{6}\)'
         self.date_regex = r'[0-9]{2}/[0-9]{2}/[0-9]{4}'
