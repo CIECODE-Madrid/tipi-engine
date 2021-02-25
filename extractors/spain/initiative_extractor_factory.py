@@ -14,7 +14,7 @@ class InitiativeExtractorFactory:
         initiative_code = InitiativeExtractorFactory.get_type(response)
 
         for initiative_type in INITIATIVE_TYPES:
-            if int(initiative_code) == int(initiative_type.get('code')) and "class" in initiative_type:
+            if initiative_code == initiative_type.get('code') and "class" in initiative_type:
                 return initiative_type.get("class")
 
         return InitiativeExtractor
