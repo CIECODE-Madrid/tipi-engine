@@ -5,6 +5,7 @@ from .initiative_extractors.one_bulletin_extractor import \
         OneEBulletinExtractor
 
 from .initiative_extractors.question_extractor import QuestionExtractor
+from .initiative_extractors.boe_extractor import BoeExtractor, FirstBoeExtractor
 
 
 INITIATIVE_TYPES = [
@@ -56,7 +57,8 @@ INITIATIVE_TYPES = [
         {
             "type": "Información sobre Convenios Internacionales (art. 94.2 Const.)",
             "code": "111",
-            "group": "Convenios Internacionales"
+            "group": "Convenios Internacionales",
+            "class": FirstBoeExtractor
             },
         {
             "type": "Otros asuntos relativos a Convenios Internacionales",
@@ -113,7 +115,14 @@ INITIATIVE_TYPES = [
         {
                 "type": "Real Decreto legislativo que aprueba texto refundido",
                 "code": "132",
-                "group": "Función legislativa"
+                "group": "Función legislativa",
+                "class": FirstBoeExtractor
+                },
+        {
+                "type": "Real Decreto legislativo que aprueba texto refundido",
+                "code": 132,
+                "group": "Función legislativa",
+                "class": FirstBoeExtractor
                 },
         {
                 "type": "Real Decreto legislativo en desarrollo de Ley de Bases",
@@ -488,7 +497,8 @@ INITIATIVE_TYPES = [
         {
                 "type": "Nombramientos del Defensor del Pueblo y Adjuntos",
                 "code": "262",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": BoeExtractor
                 },
         {
                 "type": "Informe anual del Consejo de Seguridad Nuclear",
