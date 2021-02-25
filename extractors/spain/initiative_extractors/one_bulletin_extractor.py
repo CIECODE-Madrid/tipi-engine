@@ -1,5 +1,4 @@
 import re
-from lxml.html import document_fromstring
 
 import requests
 
@@ -16,7 +15,6 @@ class OneBulletinExtractor(InitiativeExtractor):
     BASE_URL = 'https://www.congreso.es'
 
     def extract_content(self):
-        self.node_tree = document_fromstring(self.response.text)
         self.initiative['content'] = self.retrieve_bulletin()
 
     def get_letter(self):

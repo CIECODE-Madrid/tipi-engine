@@ -1,6 +1,7 @@
 import re
 import time
 from datetime import datetime
+from lxml.html import document_fromstring
 
 from bs4 import BeautifulSoup
 
@@ -16,7 +17,7 @@ log = get_logger(__name__)
 
 class InitiativeExtractor:
     def __init__(self, response, deputies, parliamentarygroups, places):
-        self.response = response
+        self.node_tree = document_fromstring(response.text)
         self.initiative = Initiative()
         self.deputies = deputies
         self.parliamentarygroups = parliamentarygroups

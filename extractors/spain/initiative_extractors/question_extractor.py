@@ -1,12 +1,10 @@
 from .initiative_extractor import InitiativeExtractor
 from .utils.pdf_parsers import PDFParser, PDFImageParser
-from lxml.html import document_fromstring
 from copy import deepcopy
 import requests
 import tempfile
 
 class QuestionExtractor(InitiativeExtractor):
-
     QUESTION = 'Pregunta'
     ANSWER = 'Contestación'
     HREF = 'href'
@@ -14,7 +12,6 @@ class QuestionExtractor(InitiativeExtractor):
     BASE_URL = 'https://www.congreso.es'
 
     def extract_content(self):
-        self.node_tree = document_fromstring(self.response.text)
         self.initiative['content'] = self.retrieve_question()
         self.create_answer_initative(self.retrieve_answer())
 
