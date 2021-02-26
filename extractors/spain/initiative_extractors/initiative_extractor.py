@@ -63,7 +63,7 @@ class InitiativeExtractor:
             self.initiative['url'] = self.url
             self.initiative['id'] = self.generate_id(self.initiative)
             log.info(f"Iniciativa {self.initiative['reference']} procesada")
-        except AttributeError:
+        except AttributeError as e:
             log.error(f"Error processing some attributes for initiative {self.url}")
             log.error(str(e))
         except Exception as e:
