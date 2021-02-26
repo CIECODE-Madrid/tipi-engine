@@ -35,7 +35,7 @@ class QuestionExtractor(InitiativeExtractor):
             url = self.find_url(content)
         except Exception:
             # URL not found, do not download the PDF.
-            return ''
+            return ['']
         extractor = PDFExtractor(url, is_img)
         return extractor.retrieve()
 
