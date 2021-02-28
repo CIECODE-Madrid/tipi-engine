@@ -23,8 +23,10 @@ class TagInitiatives:
         for index, initiative in enumerate(initiatives):
             try:
                 print("\rTagging initiative %d of %d\n" % ((index+1), total), end="")
-                initiative['content'].append(initiative['title'])
-                text = '.'.join(initiative['content'])
+                content = [initiative['title']]
+                if 'content' in initiative.keys():
+                    content += initiative['content']
+                text = '.'.join(content)
                 tipi_tasks.init()
                 result = tipi_tasks.tagger.extract_tags_from_text(text, tags)
                 if 'result' in result.keys():
