@@ -32,6 +32,8 @@ class InitiativeExtractor:
         try:
             self.extract_commons()
             self.extract_content()
+            # TODO Controls if the initiative has to be untagged
+            self.untag()
             self.initiative.save()
         except Exception as e:
             log.error(f"Error processing initiative {self.url}")
@@ -176,7 +178,7 @@ class InitiativeExtractor:
             return None
         return datetime(int(split_date[2]), int(split_date[1]), int(split_date[0]))
 
-    # def __untag(self, initiative):
-    #     initiative['topics'] = []
-    #     initiative['tags'] = []
-    #     initiative['tagged'] = False
+    def untag(self):
+        self.initiative['topics'] = list()
+        self.initiative['tags'] = list()
+        self.initiative['tagged'] = False
