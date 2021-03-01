@@ -122,6 +122,7 @@ class InitiativeExtractor:
                         if self.parliamentarygroup_sufix not in item.text_content() \
                         else re.sub(self.parliamentarygroup_sufix, '', item.text_content())
                     self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
+        self.initiative['author_parliamentarygroups'] = list(set(self.initiative['author_parliamentarygroups']))
 
     def get_place(self):
         try:
