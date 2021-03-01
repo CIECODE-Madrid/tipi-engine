@@ -104,7 +104,7 @@ class GenerateStats(object):
     def placesByTopics(self):
         self.document['placesByTopics'] = []
         for element in self.topics:
-            pipeline = [{'$match': {'topics': element['name'], 'place': {'$not': {'$eq': ""}}} },
+            pipeline = [{'$match': {'topics': element['name'], 'place': {'$not': {'$eq': ""}, '$exists': True}}},
                     {'$group': {'_id': '$place', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
                     {'$limit': 5}]
             result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
@@ -117,7 +117,7 @@ class GenerateStats(object):
     def placesBySubtopics(self):
         self.document['placesBySubtopics'] = []
         for element in self.subtopics:
-            pipeline = [{'$match': { 'tags.subtopic': element, 'place': {'$not': {'$eq': ""}}} }, 
+            pipeline = [{'$match': { 'tags.subtopic': element, 'place': {'$not': {'$eq': ""}, '$exists': True}}},
                     {'$group': {'_id': '$place', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
                     {'$limit': 5}]
             result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
