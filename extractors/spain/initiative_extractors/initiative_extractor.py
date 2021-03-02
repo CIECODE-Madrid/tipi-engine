@@ -2,6 +2,7 @@ import re
 import time
 from datetime import datetime
 from lxml.html import document_fromstring
+from urllib.parse import urlparse, parse_qs
 
 from bs4 import BeautifulSoup
 
@@ -46,8 +47,13 @@ class InitiativeExtractor:
         try:
             # TODO get source initiative
             full_title = self.soup.select_one('.entradilla-iniciativa').text
-            self.initiative['title'] = re.sub(self.reference_regex, '', full_title).strip()
-            self.initiative['reference'] = re.search(self.reference_regex, full_title).group().strip().strip('()')
+            url = urlparse(self.url)
+            query = parse_qs(url[4])
+            reference = query['_iniciativas_id']
+            title = full_title[:-15]
+
+            self.initiative['title'] = title
+            self.initiative['reference'] = reference[0].replace('%2F', '/')
             self.initiative['initiative_type'] = self.initiative['reference'].split('/')[0]
             self.initiative['initiative_type_alt'] = self.soup.select('.titular-seccion')[1].text[:-1]
             self.initiative['place'] = self.get_place()
