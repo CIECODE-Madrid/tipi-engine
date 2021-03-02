@@ -9,6 +9,7 @@ from tipi_data.models.initiative import Initiative
 from tipi_data.utils import generate_id
 
 from logger import get_logger
+from .initiative_status import get_status
 
 
 log = get_logger(__name__)
@@ -57,11 +58,7 @@ class InitiativeExtractor:
                 self.soup.select_one('.f-present').text.split(',')[0].strip()).group())
             self.initiative['updated'] = self.get_last_date()
             self.initiative['history'] = self.get_history()
-            if 'extra' not in self.initiative or self.initiative.extra == {}:
-                self.initiative['extra'] = dict()
-            self.initiative['extra']['latest_history_item'] = self.initiative['history'][-1] \
-                if len(self.initiative['history']) \
-                else ''
+            self.initiative['status'] = self.get_status()
             self.initiative['url'] = self.url
             self.initiative['id'] = self.generate_id(self.initiative)
             log.info(f"Iniciativa {self.initiative['reference']} procesada")
@@ -154,6 +151,9 @@ class InitiativeExtractor:
         except Exception:
             pass
         return history
+
+    def get_status(self):
+        return get_status(self.initiative['history'], self.initiative['initiative_type'])
 
     def __is_deputy(self, name):
         for deputy in self.deputies:
