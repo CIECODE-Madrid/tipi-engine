@@ -67,6 +67,7 @@ class InitiativesExtractor:
                 END = ceil(self.totals_by_type[initiative_type['type']]/self.INITIATIVES_PER_PAGE)
             except Exception:
                 log.warning(f"Unrecognized initiative type: {initiative_type['type']}")
+                END = 0
                 continue
             query_params = {
                     'p_p_id': 'iniciativas',

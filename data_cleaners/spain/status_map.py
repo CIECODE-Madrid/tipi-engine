@@ -7,6 +7,7 @@ STATUS_MAP = [
                 {'extra.latest_history_item': {'$regex': "Comisión.*desde", '$options': 'gi'}},
                 {'extra.latest_history_item': {'$regex': "Gobierno Contestación", '$options': 'gi'}},
                 {'extra.latest_history_item': {'$regex': "Gobierno Reclamación", '$options': 'gi'}},
+                {'extra.latest_history_item': {'$regex': "Corporación RTVE Contestación", '$options': 'gi'}},
                 {'extra.latest_history_item': {'$regex': "Junta de Portavoces", '$options': 'gi'}},
                 {'extra.latest_history_item': {'$regex': "Mesa del Congreso Acuerdo", '$options': 'gi'}},
                 {'extra.latest_history_item': {'$regex': "Mesa del Congreso Requerimiento", '$options': 'gi'}},
