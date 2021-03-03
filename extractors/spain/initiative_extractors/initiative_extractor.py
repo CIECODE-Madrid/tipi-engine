@@ -48,9 +48,7 @@ class InitiativeExtractor:
         try:
             # TODO get source initiative
             full_title = self.soup.select_one('.entradilla-iniciativa').text
-            url = urlparse(self.url)
-            query = parse_qs(url[4])
-            reference = query['_iniciativas_id'][0].replace('%2F', '/')
+            reference = self.get_reference()
             position = (len(reference) - reference.find('(', -15) + 2) * -1
             title = full_title[:position]
 
@@ -82,6 +80,11 @@ class InitiativeExtractor:
                     u''.join(initiative['author_deputies']),
                     u''.join(initiative['author_parliamentarygroups']),
                     u''.join(initiative['author_others']))
+
+    def get_reference(self):
+        url = urlparse(self.url)
+        query = parse_qs(url[4])
+        return query['_iniciativas_id'][0].replace('%2F', '/')
 
     def get_last_date(self):
         try:
