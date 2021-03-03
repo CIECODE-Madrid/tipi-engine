@@ -50,11 +50,12 @@ class InitiativeExtractor:
             full_title = self.soup.select_one('.entradilla-iniciativa').text
             url = urlparse(self.url)
             query = parse_qs(url[4])
-            reference = query['_iniciativas_id']
-            title = full_title[:-15]
+            reference = query['_iniciativas_id'][0].replace('%2F', '/')
+            position = (len(reference) - reference.find('(', -15) + 2) * -1
+            title = full_title[:position]
 
             self.initiative['title'] = title
-            self.initiative['reference'] = reference[0].replace('%2F', '/')
+            self.initiative['reference'] = reference
             self.initiative['initiative_type'] = self.initiative['reference'].split('/')[0]
             self.initiative['initiative_type_alt'] = self.soup.select('.titular-seccion')[1].text[:-1]
             self.initiative['place'] = self.get_place()
