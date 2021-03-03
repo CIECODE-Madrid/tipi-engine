@@ -1,5 +1,6 @@
 import re
 import time
+from copy import deepcopy
 from datetime import datetime
 from lxml.html import document_fromstring
 from urllib.parse import urlparse, parse_qs
@@ -7,42 +8,64 @@ from urllib.parse import urlparse, parse_qs
 from bs4 import BeautifulSoup
 
 from tipi_data.models.initiative import Initiative
+from tipi_data.models.alert import create_alert
 from tipi_data.utils import generate_id
 
 from logger import get_logger
-from .initiative_status import get_status
+from .initiative_status import get_status, is_final_status
 
 
 log = get_logger(__name__)
 
 
 class InitiativeExtractor:
+
     def __init__(self, response, deputies, parliamentarygroups, places):
+        self.url = response.url
+        self.BASE_URL = 'https://www.congreso.es'
         self.node_tree = document_fromstring(response.text)
+        self.soup = BeautifulSoup(response.text, 'lxml')
+        self.date_regex = r'[0-9]{2}/[0-9]{2}/[0-9]{4}'
         self.initiative = Initiative()
+        try:
+            self.db_initiative = Initiative.all.get(
+                    reference=self.get_reference(),
+                    initiative_type_alt__ne='Respuesta'
+                    )
+        except Exception:
+            self.db_initiative = None
         self.deputies = deputies
         self.parliamentarygroups = parliamentarygroups
         self.places = places
-        self.url = response.url
-        self.BASE_URL = 'https://www.congreso.es'
-        self.soup = BeautifulSoup(response.text, 'lxml')
-        self.reference_regex = r'\([0-9]{3}/[0-9]{6}\)'
-        self.date_regex = r'[0-9]{2}/[0-9]{2}/[0-9]{4}'
         self.parliamentarygroup_sufix = r' en el Congreso'
 
     def extract(self):
         try:
             self.extract_commons()
             self.extract_content()
-            # TODO Controls if the initiative has to be untagged
-            self.untag()
+            if not self.has_same_content():
+                self.untag()
+            else:
+                if is_final_status(self.initiative['status']) and self.has_topics():
+                    create_alert(self.initiative)
             self.initiative.save()
+            log.info(f"Iniciativa {self.initiative['reference']} procesada")
         except Exception as e:
             log.error(f"Error processing initiative {self.url}")
             log.error(str(e))
 
     def extract_content(self):
         self.initiative['content'] = []
+
+    def has_same_content(self):
+        if not self.db_initiative:
+            return False
+        return self.initiative['content'] == self.db_initiative['content']
+
+    def has_topics(self):
+        if not self.db_initiative:
+            return False
+        return len(self.db_initiative['topics']) > 0
 
     def extract_commons(self):
         try:
@@ -66,12 +89,11 @@ class InitiativeExtractor:
             self.initiative['status'] = self.get_status()
             self.initiative['url'] = self.url
             self.initiative['id'] = self.generate_id(self.initiative)
-            log.info(f"Iniciativa {self.initiative['reference']} procesada")
+            self.copy_tags_from_db()
         except AttributeError as e:
             log.error(f"Error processing some attributes for initiative {self.url}")
             log.error(str(e))
         except Exception as e:
-            log.error(f"Error processing initiative {self.url}")
             log.error(str(e))
 
     def generate_id(self, initiative):
@@ -188,6 +210,17 @@ class InitiativeExtractor:
         if len(split_date) != 3:
             return None
         return datetime(int(split_date[2]), int(split_date[1]), int(split_date[0]))
+
+    def copy_tags_from_db(self):
+        if self.db_initiative:
+            self.initiative['topics'] = self.db_initiative['topics']
+            self.initiative['tags'] = self.db_initiative['tags']
+            self.initiative['tagged'] = self.db_initiative['tagged']
+        else:
+            self.initiatize_tags()
+
+    def initiatize_tags(self):
+        self.untag()
 
     def untag(self):
         self.initiative['topics'] = list()

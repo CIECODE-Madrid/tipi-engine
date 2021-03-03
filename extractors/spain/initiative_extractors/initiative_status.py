@@ -6,6 +6,10 @@ from .status_map import STATUS_MAP
 
 
 UNKNOWN = 'Desconocida'
+NOT_FINAL_STATUS = [
+        'En tramitación',
+        UNKNOWN
+        ]
 
 def __any_match(regex_list, string):
     for regex in regex_list:
@@ -38,8 +42,7 @@ def __get_current_status(reference):
         return UNKNOWN
 
 def has_finished(reference):
-    NOT_FINAL_STATUS = [
-            'En tramitación',
-            UNKNOWN
-            ]
     return __get_current_status(reference) not in NOT_FINAL_STATUS
+
+def is_final_status(status):
+    return status not in NOT_FINAL_STATUS
