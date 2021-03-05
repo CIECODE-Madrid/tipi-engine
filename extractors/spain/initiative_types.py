@@ -314,7 +314,7 @@ INITIATIVE_TYPES = [
                 },
         {
                 "type": "Propuesta de resolución relativa al art 11 de la Ley Orgánica 6/2002 de Partidos Políticos",
-                "code": "",
+                "code": "225",
                 "group": "Función de orientación política"
                 },
         {
@@ -427,7 +427,7 @@ INITIATIVE_TYPES = [
                 },
         {
                 "type": "Recurso previo contra Convenios Internacionales",
-                "code": "",
+                "code": "231",
                 "group": "Relaciones con órganos e instituciones públicas"
                 },
         {
