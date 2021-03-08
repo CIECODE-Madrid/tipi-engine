@@ -55,6 +55,7 @@ STATUS_MAP = [
         {
                 'latest_history_items': [
                     r'Tramitado por completo sin',
+                    r'Concluido',
                     ],
                 'initiative_type': {
                     'includes': ['170', '172', '180', '181', '184'],
@@ -65,6 +66,7 @@ STATUS_MAP = [
         {
                 'latest_history_items': [
                     r'Tramitado por completo sin',
+                    r'Concluido',
                     ],
                 'initiative_type': {
                     'includes': ['212', '213', '214', '219'],
