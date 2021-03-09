@@ -16,7 +16,7 @@ class ExtractorTask(luigi.Task):
         print("{task}(says: ready to extract data!".format(task=self.__class__.__name__))
         members = im('extractors.{}.members'.format(MODULE_EXTRACTOR))
         members.MembersExtractor().extract()
-        initiatives = im('extractors.{}.initiatives'.format(MODULE_EXTRACTOR))
-        initiatives.InitiativesExtractor().extract()
+        # initiatives = im('extractors.{}.initiatives'.format(MODULE_EXTRACTOR))
+        # initiatives.InitiativesExtractor().extract()
 
         self.output().open('w').close()

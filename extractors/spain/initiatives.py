@@ -57,11 +57,11 @@ class InitiativesExtractor:
             self.totals_by_type[initiative_type] = count
 
     def extract(self):
+        '''
         start_time = time.time()
         self.sync_totals()
         futures_requests = list()
         session = FuturesSession()
-        # initiative_type = {"type": "", "code": ""}
         for initiative_type in self.INITIATIVE_TYPES:
             try:
                 END = ceil(self.totals_by_type[initiative_type['type']]/self.INITIATIVES_PER_PAGE)
@@ -108,6 +108,11 @@ class InitiativesExtractor:
         start_time = time.time()
         self.extract_initiatives()
         log.debug("--- %s seconds getting initiatives ---" % (time.time() - start_time))
+        '''
+        self.all_references += [
+            '184/032094'
+        ]
+        self.extract_initiatives()
 
     def extract_initiatives(self):
         session = FuturesSession()
