@@ -33,8 +33,7 @@ class QuestionExtractor(InitiativeExtractor):
         return self.retrieve_content(self.QUESTION, True)
 
     def retrieve_answer(self):
-        return []
-        # return self.retrieve_content(self.ANSWER)
+        return self.retrieve_content(self.ANSWER)
 
     def retrieve_content(self, content, is_img = False):
         try:
