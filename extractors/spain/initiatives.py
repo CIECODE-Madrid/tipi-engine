@@ -57,7 +57,6 @@ class InitiativesExtractor:
             self.totals_by_type[initiative_type] = count
 
     def extract(self):
-        '''
         start_time = time.time()
         self.sync_totals()
         futures_requests = list()
@@ -108,11 +107,6 @@ class InitiativesExtractor:
         start_time = time.time()
         self.extract_initiatives()
         log.debug("--- %s seconds getting initiatives ---" % (time.time() - start_time))
-        '''
-        self.all_references += [
-            '184/032094'
-        ]
-        self.extract_initiatives()
 
     def extract_initiatives(self):
         session = FuturesSession()

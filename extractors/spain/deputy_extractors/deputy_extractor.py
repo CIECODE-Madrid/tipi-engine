@@ -4,6 +4,8 @@ from tipi_data.models.deputy import Deputy
 from urllib.parse import urlparse, parse_qs
 
 class DeputyExtractor():
+    BASE_URL = 'https://www.congreso.es'
+
     def __init__(self, response):
         self.response = response
         self.node_tree = document_fromstring(response.text)
@@ -12,8 +14,7 @@ class DeputyExtractor():
     def extract(self):
         self.deputy['name'] = self.get_text_by_css('.nombre-dip')
         self.deputy['parliamentarygroup'] = self.get_text_by_css('.grupo-dip a')
-        self.deputy['image'] = self.get_src_by_css('.img-dip img')
-        self.deputy['email'] = self.get_text_by_css('.email-dip a')
+        self.deputy['image'] = self.BASE_URL + self.get_src_by_css('.img-dip img')
         self.deputy['public_position'] = self.get_public_positions()
         self.deputy['party_logo'] = self.get_src_by_css('.logo-partido img')
         self.deputy['url'] = self.response.url
@@ -24,6 +25,7 @@ class DeputyExtractor():
         self.extract_extras()
         self.extract_dates()
         self.extract_from_text()
+        self.extract_mail()
         self.deputy.save()
 
     def get_src_by_css(self, selector):
@@ -47,6 +49,11 @@ class DeputyExtractor():
     def get_by_xpath(self, xpath):
         return self.node_tree.xpath(xpath)
 
+    def extract_mail(self):
+        mail = self.get_text_by_css('.email-dip a')
+        if mail != '':
+            self.deputy['email'] = mail
+
     def extract_id(self):
         url = urlparse(self.response.url)
         query = parse_qs(url[4])
@@ -63,33 +70,41 @@ class DeputyExtractor():
 
     def extract_dates(self):
         date_elements = self.get_by_css('.f-alta')
-        end_date = self.clean_str(date_elements[1].text_content()).replace("Causó baja el ", "")
-        pos = end_date.find(' Sustituido')
+        end_date = self.clean_str(date_elements[1].text_content()).replace("Causó baja el ", "")[:28]
 
-        self.deputy['start_date'] = self.clean_str(date_elements[0].text_content()).replace("Condición plena: ", "")
-        self.deputy['end_date'] = end_date[:pos]
-        self.deputy['active'] = end_date[:pos] == ''
+        self.deputy['start_date'] = self.clean_str(date_elements[0].text_content()).replace("Condición plena: ", "")[:28]
+        if end_date != '':
+            self.deputy['end_date'] = end_date
+        self.deputy['active'] = end_date == ''
 
     def extract_social_media(self):
         social_links = self.get_by_css('.rrss-dip a')
         for link in social_links:
             img_src = link.getchildren()[0].get('src')
             if 'twitter' in img_src:
-                self.deputy['twitter'] = link.get('href')
+                self.deputy['twitter'] = self.get_link_url(link)
             if 'facebook' in img_src:
-                self.deputy['facebook'] = link.get('href')
+                self.deputy['facebook'] = self.get_link_url(link)
             if 'web' in img_src:
-                self.deputy['web'] = link.get('href')
+                self.deputy['web'] = self.get_link_url(link)
+
+    def get_link_url(self, link):
+        url = link.get('href')
+        if url.find('http') != 0:
+            url = 'http://' + url
+        return url
 
     def extract_extras(self):
-        self.deputy['extra'] = []
+        self.deputy['extra'] = {}
         links = self.get_by_css('.declaraciones-dip a')
         for link in links:
-            self.deputy['extra'].append(('https://www.congreso.es' + link.get('href'), self.clean_str(link.text)))
+            self.deputy['extra'][self.clean_str(link.text)] = self.BASE_URL + link.get('href')
 
     def extract_from_text(self):
         birthday_paragraph = self.clean_str(self.get_by_xpath("//h3[normalize-space(text()) = 'Ficha personal']/following-sibling::p[1]")[0].text)
-        self.deputy['birthdate'] = birthday_paragraph.replace("Nacido el ", "")
+        birthday = birthday_paragraph.replace("Nacido el ", "").replace("Nacida el ", "")[:28]
+        if birthday != '':
+            self.deputy['birthdate'] = birthday
 
         legislatures_paragraph = self.clean_str(self.get_by_xpath("//h3[normalize-space(text()) = 'Ficha personal']/following-sibling::p[2]")[0].text)
         self.deputy['legislatures'] = legislatures_paragraph.replace("Diputado de la ", "").replace(" Legislaturas", "").replace("y ", "").split(", ")
