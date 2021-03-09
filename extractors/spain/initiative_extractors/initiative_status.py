@@ -6,8 +6,9 @@ from .status_map import STATUS_MAP
 
 
 UNKNOWN = 'Desconocida'
+ON_PROCESS = 'En tramitación'
 NOT_FINAL_STATUS = [
-        'En tramitación',
+        ON_PROCESS,
         UNKNOWN
         ]
 
