@@ -61,6 +61,7 @@ class InitiativesExtractor:
         self.sync_totals()
         futures_requests = list()
         session = FuturesSession()
+        # initiative_type = {"type": "", "code": ""}
         for initiative_type in self.INITIATIVE_TYPES:
             try:
                 END = ceil(self.totals_by_type[initiative_type['type']]/self.INITIATIVES_PER_PAGE)
