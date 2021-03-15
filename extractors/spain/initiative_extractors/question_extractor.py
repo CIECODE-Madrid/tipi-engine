@@ -2,6 +2,7 @@ from .initiative_extractor import InitiativeExtractor
 from .utils.pdf_parsers import PDFExtractor
 from copy import deepcopy
 from .initiative_status import NOT_FINAL_STATUS, ON_PROCESS
+from tipi_data.utils import generate_id
 
 class QuestionExtractor(InitiativeExtractor):
     QUESTION = 'Pregunta'
@@ -27,6 +28,7 @@ class QuestionExtractor(InitiativeExtractor):
         answer_initiative['author_deputies'] = []
         answer_initiative['author_parliamentarygroups'] = []
         answer_initiative['id'] = self.generate_id(answer_initiative)
+        answer_initiative['extra']['old_id'] = self.generate_old_id(answer_initiative)
         answer_initiative.save()
 
     def retrieve_question(self):
@@ -34,6 +36,12 @@ class QuestionExtractor(InitiativeExtractor):
 
     def retrieve_answer(self):
         return self.retrieve_content(self.ANSWER)
+
+    def generate_id(self, initiative):
+        return generate_id(
+            initiative['reference'],
+            initiative['initiative_type_alt']
+        )
 
     def retrieve_content(self, content, is_img = False):
         try:
