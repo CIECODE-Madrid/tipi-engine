@@ -43,6 +43,7 @@ class InitiativeExtractor:
         try:
             self.extract_commons()
             self.extract_content()
+            self.initiative['id'] = self.generate_id(self.initiative)
             if not self.has_same_content():
                 self.untag()
             else:
@@ -88,7 +89,6 @@ class InitiativeExtractor:
             self.initiative['history'] = self.get_history()
             self.initiative['status'] = self.get_status()
             self.initiative['url'] = self.url
-            self.initiative['id'] = self.generate_id(self.initiative)
             self.copy_tags_from_db()
         except AttributeError as e:
             log.error(f"Error processing some attributes for initiative {self.url}")
@@ -97,11 +97,7 @@ class InitiativeExtractor:
             log.error(str(e))
 
     def generate_id(self, initiative):
-        return generate_id(
-                    initiative['reference'],
-                    u''.join(initiative['author_deputies']),
-                    u''.join(initiative['author_parliamentarygroups']),
-                    u''.join(initiative['author_others']))
+        return generate_id(initiative['reference'])
 
     def get_reference(self):
         url = urlparse(self.url)
