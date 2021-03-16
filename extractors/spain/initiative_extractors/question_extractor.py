@@ -28,7 +28,6 @@ class QuestionExtractor(InitiativeExtractor):
         answer_initiative['author_deputies'] = []
         answer_initiative['author_parliamentarygroups'] = []
         answer_initiative['id'] = self.generate_id(answer_initiative)
-        answer_initiative['extra']['old_id'] = self.generate_old_id(answer_initiative)
         answer_initiative.save()
 
     def retrieve_question(self):

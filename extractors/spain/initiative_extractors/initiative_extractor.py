@@ -89,7 +89,6 @@ class InitiativeExtractor:
             self.initiative['history'] = self.get_history()
             self.initiative['status'] = self.get_status()
             self.initiative['url'] = self.url
-            self.initiative['extra']['old_id'] = self.generate_old_id(self.initiative)
             self.copy_tags_from_db()
         except AttributeError as e:
             log.error(f"Error processing some attributes for initiative {self.url}")
@@ -99,13 +98,6 @@ class InitiativeExtractor:
 
     def generate_id(self, initiative):
         return generate_id(initiative['reference'])
-
-    def generate_old_id(self, initiative):
-        return generate_id(
-                    initiative['reference'],
-                    u''.join(initiative['author_deputies']),
-                    u''.join(initiative['author_parliamentarygroups']),
-                    u''.join(initiative['author_others']))
 
     def get_reference(self):
         url = urlparse(self.url)
