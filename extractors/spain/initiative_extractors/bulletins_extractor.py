@@ -90,3 +90,51 @@ class FirstDBulletinExtractor(FirstBulletinExtractor):
 
 class FirstEBulletinExtractor(FirstBulletinExtractor):
     LETTER = 'E'
+
+
+class NonExclusiveBulletinExtractor(InitiativeExtractor):
+    BASE_URL = 'https://www.congreso.es'
+    PAGE_FIND_REGEX = 'Pág.:\s([0-9]+)'
+
+    def extract_content(self):
+        self.initiative['content'] = self.extract_boe_content()
+
+    def extract_boe_metadata(self):
+        text = self.node_tree.xpath("//ul[@class='boletines']/li[1]/div[1]")[0].text_content()
+        link = self.node_tree.xpath("//ul[@class='boletines']/li[1]/div[2]/a[1]/@href")[0]
+
+        self.page = re.search(self.PAGE_FIND_REGEX, text).group(1)
+        self.link = self.BASE_URL + link
+
+    def extract_boe_content(self):
+        try:
+            self.extract_boe_metadata()
+        except Exception:
+            # No BOE yet
+            self.initiative['status'] = 'En tramitación'
+            return []
+
+        tree = document_fromstring(requests.get(self.link).text)
+
+        try:
+            full_content = tree.xpath("//div[contains(@class, 'textoIntegro')]")[0].text_content()
+        except Exception:
+            # BOE not properly formatted
+            self.initiative['status'] = 'En tramitación'
+            return []
+
+        clean_content = self.clean_str_to_substr(full_content, 'Página ' + self.page)
+        clean_content = self.clean_str_to_substr(clean_content, self.initiative['reference'])
+
+        try:
+            end_pos = re.search('[0-9]{3}/[0-9]{6}', clean_content).start()
+        except Exception:
+            # Last initiative in the BOE.
+            return [clean_content]
+
+        content = clean_content[:end_pos]
+        return [content]
+
+    def clean_str_to_substr(self, haystack, needle):
+        pos = haystack.find(needle) + len(needle)
+        return haystack[pos:]

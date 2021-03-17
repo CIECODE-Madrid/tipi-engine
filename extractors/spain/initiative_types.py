@@ -8,7 +8,8 @@ from .initiative_extractors.bulletins_extractor import \
         FirstBBulletinExtractor, \
         FirstCBulletinExtractor, \
         FirstDBulletinExtractor, \
-        FirstEBulletinExtractor
+        FirstEBulletinExtractor, \
+        NonExclusiveBulletinExtractor
 
 from .initiative_extractors.question_extractor import QuestionExtractor
 from .initiative_extractors.boe_extractor import BoeExtractor, FirstBoeExtractor
@@ -285,12 +286,14 @@ INITIATIVE_TYPES = [
         {
                 "type": "Proposición no de Ley ante el Pleno",
                 "code": "162",
-                "group": "Función de orientación política"
+                "group": "Función de orientación política",
+                "class": NonExclusiveBoeExtractor
                 },
         {
                 "type": "Proposición no de Ley en Comisión",
                 "code": "161",
-                "group": "Función de orientación política"
+                "group": "Función de orientación política",
+                "class": NonExclusiveBoeExtractor
                 },
         {
                 "type": "Moción consecuencia de interpelación ordinaria",
