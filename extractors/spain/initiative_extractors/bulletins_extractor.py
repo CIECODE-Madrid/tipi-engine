@@ -1,10 +1,12 @@
 import re
-from lxml.html import document_fromstring
-
+import html
 import requests
 
-from logger import get_logger
+from lxml.html import document_fromstring, tostring
+
 from .initiative_extractor import InitiativeExtractor
+
+from logger import get_logger
 
 
 log = get_logger(__name__)
@@ -95,33 +97,39 @@ class FirstEBulletinExtractor(FirstBulletinExtractor):
 class NonExclusiveBulletinExtractor(InitiativeExtractor):
     BASE_URL = 'https://www.congreso.es'
     PAGE_FIND_REGEX = 'Pág.:\s([0-9]+)'
+    HTML_STRIP_REGEX = '<[^>]+>'
 
     def extract_content(self):
-        self.initiative['content'] = self.extract_boe_content()
+        self.initiative['content'] = self.extract_bulletin_content()
 
-    def extract_boe_metadata(self):
+    def extract_bulletin_metadata(self):
         text = self.node_tree.xpath("//ul[@class='boletines']/li[1]/div[1]")[0].text_content()
         link = self.node_tree.xpath("//ul[@class='boletines']/li[1]/div[2]/a[1]/@href")[0]
 
         self.page = re.search(self.PAGE_FIND_REGEX, text).group(1)
         self.link = self.BASE_URL + link
 
-    def extract_boe_content(self):
+    def extract_bulletin_content(self):
         try:
-            self.extract_boe_metadata()
+            self.extract_bulletin_metadata()
         except Exception:
-            # No BOE yet
+            # No Bulletin yet
             self.initiative['status'] = 'En tramitación'
             return []
 
         tree = document_fromstring(requests.get(self.link).text)
 
         try:
-            full_content = tree.xpath("//div[contains(@class, 'textoIntegro')]")[0].text_content()
+            element = tree.xpath("//div[contains(@class, 'textoIntegro')]")[0]
         except Exception:
-            # BOE not properly formatted
+            # Bulletin not properly formatted
             self.initiative['status'] = 'En tramitación'
             return []
+
+        full_content = str(tostring(element))
+        full_content = full_content.replace('<br><br><br><br>', "\n").replace('<br><br><br>', "\n").replace('<br>', " ")
+        full_content = re.sub(self.HTML_STRIP_REGEX, '', full_content)
+        full_content = html.unescape(full_content)
 
         clean_content = self.clean_str_to_substr(full_content, 'Página ' + self.page)
         clean_content = self.clean_str_to_substr(clean_content, self.initiative['reference'])
@@ -129,11 +137,11 @@ class NonExclusiveBulletinExtractor(InitiativeExtractor):
         try:
             end_pos = re.search('[0-9]{3}/[0-9]{6}', clean_content).start()
         except Exception:
-            # Last initiative in the BOE.
-            return [clean_content]
+            # Last initiative in the Bulletin.
+            return clean_content.split("\n")
 
         content = clean_content[:end_pos]
-        return [content]
+        return content.split("\n")
 
     def clean_str_to_substr(self, haystack, needle):
         pos = haystack.find(needle) + len(needle)

@@ -30,7 +30,8 @@ INITIATIVE_TYPES = [
         {
             "type": "Moción de censura",
             "code": "082",
-            "group": "Confianza parlamentaria"
+            "group": "Confianza parlamentaria",
+            "class": NonExclusiveBulletinExtractor
             },
         {
             "type": "Moción de reprobación a miembros del Gobierno",
@@ -140,12 +141,14 @@ INITIATIVE_TYPES = [
         {
                 "type": "Interpelación urgente",
                 "code": "172",
-                "group": "Función de control"
+                "group": "Función de control",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Interpelación ordinaria",
                 "code": "170",
-                "group": "Función de control"
+                "group": "Función de control",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Pregunta oral en Pleno",
@@ -155,7 +158,8 @@ INITIATIVE_TYPES = [
         {
                 "type": "Pregunta oral al Gobierno en Comisión",
                 "code": "181",
-                "group": "Función de control"
+                "group": "Función de control",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Pregunta al Gobierno con respuesta escrita",
@@ -216,7 +220,8 @@ INITIATIVE_TYPES = [
         {
                 "type": "Funciones de la Diputación Permanente",
                 "code": "062",
-                "group": "Función de control"
+                "group": "Función de control",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Solicitud de informe a la Administración del Estado (art. 7)",
@@ -281,19 +286,20 @@ INITIATIVE_TYPES = [
         {
                 "type": "Operaciones de las Fuerzas Armadas en el exterior",
                 "code": "095",
-                "group": "Función de control"
+                "group": "Función de control",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Proposición no de Ley ante el Pleno",
                 "code": "162",
                 "group": "Función de orientación política",
-                "class": NonExclusiveBoeExtractor
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Proposición no de Ley en Comisión",
                 "code": "161",
                 "group": "Función de orientación política",
-                "class": NonExclusiveBoeExtractor
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Moción consecuencia de interpelación ordinaria",
@@ -303,17 +309,20 @@ INITIATIVE_TYPES = [
         {
                 "type": "Moción consecuencia de interpelación urgente",
                 "code": "173",
-                "group": "Función de orientación política"
+                "group": "Función de orientación política",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Planes y programas",
                 "code": "201",
-                "group": "Función de orientación política"
+                "group": "Función de orientación política",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Comunicación del Gobierno",
                 "code": "200",
-                "group": "Función de orientación política"
+                "group": "Función de orientación política",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Propuesta de resolución relativa al art 11 de la Ley Orgánica 6/2002 de Partidos Políticos",
@@ -323,17 +332,20 @@ INITIATIVE_TYPES = [
         {
                 "type": "Objetivo de estabilidad presupuestaria",
                 "code": "430",
-                "group": "Función de orientación política"
+                "group": "Función de orientación política",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Funciones de las Comisiones",
                 "code": "042",
-                "group": "Comisiones, subcomisiones y ponencias"
+                "group": "Comisiones, subcomisiones y ponencias",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Comisión permanente (art. 50)",
                 "code": "151",
-                "group": "Comisiones, subcomisiones y ponencias"
+                "group": "Comisiones, subcomisiones y ponencias",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Solicitud de creación de Comisión permanente (art. 50)",
@@ -343,47 +355,56 @@ INITIATIVE_TYPES = [
         {
                 "type": "Comisión de Investigación (art. 52)",
                 "code": "152",
-                "group": "Comisiones, subcomisiones y ponencias"
+                "group": "Comisiones, subcomisiones y ponencias",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Solicitud de creación de Comisión de Investigación (art. 52)",
                 "code": "156",
-                "group": "Comisiones, subcomisiones y ponencias"
+                "group": "Comisiones, subcomisiones y ponencias",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Grupo de trabajo",
                 "code": "159",
-                "group": "Comisiones, subcomisiones y ponencias"
+                "group": "Comisiones, subcomisiones y ponencias",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Subcomisiones y Ponencias",
                 "code": "154",
-                "group": "Comisiones, subcomisiones y ponencias"
+                "group": "Comisiones, subcomisiones y ponencias",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Solicitud de creación de Subcomisiones y Ponencias",
                 "code": "158",
-                "group": "Comisiones, subcomisiones y ponencias"
+                "group": "Comisiones, subcomisiones y ponencias",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Otras Comisiones no permanentes (art. 53)",
                 "code": "153",
-                "group": "Comisiones, subcomisiones y ponencias"
+                "group": "Comisiones, subcomisiones y ponencias",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Solicitud de creación de otras Comisiones no permanentes (art. 53)",
                 "code": "157",
-                "group": "Comisiones, subcomisiones y ponencias"
+                "group": "Comisiones, subcomisiones y ponencias",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Actos en relación con los estados de alarma, excepción y sitio",
                 "code": "091",
-                "group": "Actos en relación con los estados de alarma, excepción y sitio"
+                "group": "Actos en relación con los estados de alarma, excepción y sitio",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Convenios entre Comunidades Autónomas",
                 "code": "093",
-                "group": "Actos en relación con las Comunidades Autónomas"
+                "group": "Actos en relación con las Comunidades Autónomas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Otros actos en relación con las Comunidades Autónomas",
@@ -399,12 +420,14 @@ INITIATIVE_TYPES = [
         {
                 "type": "Resolución de la Presidencia del Congreso",
                 "code": "411",
-                "group": "Reglamento del Congreso"
+                "group": "Reglamento del Congreso",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Otros asuntos relativos al Reglamento del Congreso",
                 "code": "412",
-                "group": "Reglamento del Congreso"
+                "group": "Reglamento del Congreso",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Resoluciones normativas de las Cortes Generales",
@@ -425,8 +448,9 @@ INITIATIVE_TYPES = [
                 },
         {
                 "type": "Conflicto de competencia ante el Tribunal Constitucional",
-                "code": "",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "code": "230",
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Recurso previo contra Convenios Internacionales",
@@ -436,42 +460,50 @@ INITIATIVE_TYPES = [
         {
                 "type": "Recurso de inconstitucionalidad",
                 "code": "232",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Cuestión de inconstitucionalidad",
                 "code": "233",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Recurso de amparo",
                 "code": "234",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Nombramientos para el Tribunal Constitucional",
                 "code": "235",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Suplicatorio",
                 "code": "240",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Nombramientos de miembros del Consejo General del Poder Judicial",
                 "code": "244",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Memoria del Consejo General del Poder Judicial",
                 "code": "245",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Memoria de la Fiscalía General del Estado",
                 "code": "285",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Cuenta General del Estado",
@@ -482,7 +514,8 @@ INITIATIVE_TYPES = [
         {
                 "type": "Informe del Tribunal de Cuentas",
                 "code": "251",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Solicitud de fiscalización del Tribunal de Cuentas",
@@ -502,7 +535,8 @@ INITIATIVE_TYPES = [
         {
                 "type": "Otros informes del Defensor del Pueblo",
                 "code": "261",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Nombramientos del Defensor del Pueblo y Adjuntos",
@@ -513,17 +547,20 @@ INITIATIVE_TYPES = [
         {
                 "type": "Informe anual del Consejo de Seguridad Nuclear",
                 "code": "401",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Memoria anual de la Corporación RTVE",
                 "code": "440",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Informe anual de la Corporación RTVE",
                 "code": "442",
-                "group": "Relaciones con órganos e instituciones públicas"
+                "group": "Relaciones con órganos e instituciones públicas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Elección de miembros de otros órganos",
@@ -538,36 +575,43 @@ INITIATIVE_TYPES = [
         {
                 "type": "Declaración Institucional",
                 "code": "140",
-                "group": "Declaración Institucional"
+                "group": "Declaración Institucional",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Declaración de actividades",
                 "code": "004",
-                "group": "Declaración de actividades"
+                "group": "Declaración de actividades",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Declaración de bienes y rentas",
                 "code": "005",
-                "group": "Declaración de bienes y rentas"
+                "group": "Declaración de bienes y rentas",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Normas relativas a la org. y func. de la Secretaría General",
                 "code": "291",
-                "group": "Secretaría general"
+                "group": "Secretaría general",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Normas sobre personal y org. administrativa de las Cortes Generales",
                 "code": "294",
-                "group": "Secretaría general"
+                "group": "Secretaría general",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Actos sobre personal y org. administrativa de las Cortes Generales",
                 "code": "295",
-                "group": "Secretaría general"
+                "group": "Secretaría general",
+                "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Personal eventual del Congreso de los Diputados",
                 "code": "299",
-                "group": "Secretaría general"
+                "group": "Secretaría general",
+                "class": NonExclusiveBulletinExtractor
                 }
 ]
