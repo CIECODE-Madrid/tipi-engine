@@ -4,6 +4,7 @@ from copy import deepcopy
 from .initiative_status import NOT_FINAL_STATUS, ON_PROCESS
 from tipi_data.utils import generate_id
 
+
 class QuestionExtractor(InitiativeExtractor):
     QUESTION = 'Pregunta'
     ANSWER = 'Contestación'
@@ -11,7 +12,9 @@ class QuestionExtractor(InitiativeExtractor):
     A = 'a'
 
     def extract_content(self):
-        self.initiative['content'] = self.retrieve_question()
+        if not self.has('content'):
+            self.initiative['content'] = self.retrieve_question()
+        # TODO Controls if we already have an answer content
         answer = self.retrieve_answer()
         if answer == [] and self.initiative['status'] not in NOT_FINAL_STATUS:
             self.initiative['status'] = ON_PROCESS
@@ -27,7 +30,7 @@ class QuestionExtractor(InitiativeExtractor):
         answer_initiative['author_others'] = ['Gobierno']
         answer_initiative['author_deputies'] = []
         answer_initiative['author_parliamentarygroups'] = []
-        answer_initiative['id'] = self.generate_id(answer_initiative)
+        answer_initiative['id'] = self.generate_answer_id(answer_initiative)
         answer_initiative.save()
 
     def retrieve_question(self):
@@ -36,7 +39,7 @@ class QuestionExtractor(InitiativeExtractor):
     def retrieve_answer(self):
         return self.retrieve_content(self.ANSWER)
 
-    def generate_id(self, initiative):
+    def generate_answer_id(self, initiative):
         return generate_id(
             initiative['reference'],
             initiative['initiative_type_alt']

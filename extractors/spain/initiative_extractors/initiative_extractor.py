@@ -1,6 +1,5 @@
 import re
 import time
-from copy import deepcopy
 from datetime import datetime
 from lxml.html import document_fromstring
 from urllib.parse import urlparse, parse_qs
@@ -26,14 +25,13 @@ class InitiativeExtractor:
         self.node_tree = document_fromstring(response.text)
         self.soup = BeautifulSoup(response.text, 'lxml')
         self.date_regex = r'[0-9]{2}/[0-9]{2}/[0-9]{4}'
-        self.initiative = Initiative()
         try:
-            self.db_initiative = Initiative.all.get(
+            self.initiative = Initiative.all.get(
                     reference=self.get_reference(),
                     initiative_type_alt__ne='Respuesta'
                     )
         except Exception:
-            self.db_initiative = None
+            self.initiative = Initiative()
         self.deputies = deputies
         self.parliamentarygroups = parliamentarygroups
         self.places = places
@@ -42,31 +40,22 @@ class InitiativeExtractor:
     def extract(self):
         try:
             self.extract_commons()
+            previous_content = self.initiative['content'] if 'content' in self.initiative else list()
             self.extract_content()
             self.initiative['id'] = self.generate_id(self.initiative)
-            if not self.has_same_content():
+            if previous_content != self.initiative['content']:
                 self.untag()
             else:
-                if is_final_status(self.initiative['status']) and self.has_topics():
+                if is_final_status(self.initiative['status']) and self.has('topics'):
                     create_alert(self.initiative)
             self.initiative.save()
             log.info(f"Iniciativa {self.initiative['reference']} procesada")
         except Exception as e:
-            log.error(f"Error processing initiative {self.url}")
             log.error(str(e))
+            log.error(f"Error processing initiative {self.url}")
 
     def extract_content(self):
         self.initiative['content'] = []
-
-    def has_same_content(self):
-        if not self.db_initiative:
-            return False
-        return self.initiative['content'] == self.db_initiative['content']
-
-    def has_topics(self):
-        if not self.db_initiative:
-            return False
-        return len(self.db_initiative['topics']) > 0
 
     def extract_commons(self):
         try:
@@ -89,7 +78,6 @@ class InitiativeExtractor:
             self.initiative['history'] = self.get_history()
             self.initiative['status'] = self.get_status()
             self.initiative['url'] = self.url
-            self.copy_tags_from_db()
         except AttributeError as e:
             log.error(f"Error processing some attributes for initiative {self.url}")
             log.error(str(e))
@@ -160,7 +148,7 @@ class InitiativeExtractor:
                     for history_item in history:
                         if place['name'] in history_item:
                             return place['name']
-        except Exception as e:
+        except Exception:
             return ''
 
     def get_history(self):
@@ -207,18 +195,13 @@ class InitiativeExtractor:
             return None
         return datetime(int(split_date[2]), int(split_date[1]), int(split_date[0]))
 
-    def copy_tags_from_db(self):
-        if self.db_initiative:
-            self.initiative['topics'] = self.db_initiative['topics']
-            self.initiative['tags'] = self.db_initiative['tags']
-            self.initiative['tagged'] = self.db_initiative['tagged']
-        else:
-            self.initiatize_tags()
-
-    def initiatize_tags(self):
-        self.untag()
+    def has(self, field):
+        try:
+            if field not in self.initiative:
+                return False
+            return len(self.initiative[field]) > 0
+        except TypeError:
+            return False
 
     def untag(self):
-        self.initiative['topics'] = list()
-        self.initiative['tags'] = list()
         self.initiative['tagged'] = False

@@ -7,14 +7,14 @@ from logger import get_logger
 from .initiative_extractor import InitiativeExtractor
 
 
-log = get_logger(__name__)
 
 class BulletinsExtractor(InitiativeExtractor):
     LETTER = 'Z'
-    TAG_RE = re.compile(r'<[^>]+>') # TODO Move to utils
+    TAG_RE = re.compile(r'<[^>]+>')  # TODO Move to utils
 
     def extract_content(self):
-        self.initiative['content'] = self.retrieve_bulletin()
+        if not self.has('content'):
+            self.initiative['content'] = self.retrieve_bulletin()
 
     def retrieve_bulletin(self):
         content = list()
@@ -31,11 +31,8 @@ class BulletinsExtractor(InitiativeExtractor):
                         )) if line != '']
             return content
         except IndexError:
-            # log.error(f"Index error on getting bulletin on initiative {self.url}")
             return list()
         except Exception as e:
-            # log.error(f"Error getting content bulletin on initiative {self.url}")
-            log.error(e)
             return list()
 
     def find_urls(self):
