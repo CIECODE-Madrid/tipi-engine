@@ -1,6 +1,7 @@
 import re
 from lxml.html import document_fromstring
 from tipi_data.models.deputy import Deputy
+from tipi_data.utils import generate_id
 from urllib.parse import urlparse, parse_qs
 
 class DeputyExtractor():
@@ -19,8 +20,8 @@ class DeputyExtractor():
         self.deputy['party_logo'] = self.get_src_by_css('.logo-partido img')
         self.deputy['url'] = self.response.url
         self.deputy['constituency'] = self.get_text_by_css('.cargo-dip').replace("Diputado por", "")
+        self.deputy['id'] = self.generate_id()
 
-        self.extract_id()
         self.extract_social_media()
         self.extract_extras()
         self.extract_dates()
@@ -53,11 +54,6 @@ class DeputyExtractor():
         mail = self.get_text_by_css('.email-dip a')
         if mail != '':
             self.deputy['email'] = mail
-
-    def extract_id(self):
-        url = urlparse(self.response.url)
-        query = parse_qs(url[4])
-        self.deputy['id'] = query['codParlamentario'][0]
 
     def clean_str(self, string):
         return re.sub('\s+', ' ', string).strip()
@@ -113,3 +109,6 @@ class DeputyExtractor():
         bio = bio.replace("Ficha personal", "").replace(birthday_paragraph, "").replace(legislatures_paragraph, "")
         pos = bio.find(' Condición plena')
         self.deputy['bio'] = self.clean_str(bio[:pos]).split('. ')
+
+    def generate_id(self):
+        return generate_id(self.deputy['name'])
