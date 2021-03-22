@@ -554,7 +554,8 @@ INITIATIVE_TYPES = [
                 "type": "Memoria anual de la Corporación RTVE",
                 "code": "440",
                 "group": "Relaciones con órganos e instituciones públicas",
-                "class": NonExclusiveBulletinExtractor
+                # The format of the bulletin differs from the other using this extractor.
+                # "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Informe anual de la Corporación RTVE",
@@ -600,13 +601,15 @@ INITIATIVE_TYPES = [
                 "type": "Normas sobre personal y org. administrativa de las Cortes Generales",
                 "code": "294",
                 "group": "Secretaría general",
-                "class": NonExclusiveBulletinExtractor
+                # The format of the bulletin differs from the other using this extractor.
+                # "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Actos sobre personal y org. administrativa de las Cortes Generales",
                 "code": "295",
                 "group": "Secretaría general",
-                "class": NonExclusiveBulletinExtractor
+                # The format of the bulletin differs from the other using this extractor.
+                # "class": NonExclusiveBulletinExtractor
                 },
         {
                 "type": "Personal eventual del Congreso de los Diputados",
