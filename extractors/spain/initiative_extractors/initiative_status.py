@@ -29,7 +29,9 @@ def get_status(history=list(), initiative_type=''):
             excludes = status_map_item['initiative_type']['excludes']
             if not includes and not excludes:
                 return status_map_item['status']
-            if initiative_type in includes or initiative_type not in excludes:
+            if includes and initiative_type in includes:
+                return status_map_item['status']
+            if excludes and initiative_type not in excludes:
                 return status_map_item['status']
     return UNKNOWN
 
