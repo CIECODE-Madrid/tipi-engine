@@ -1,7 +1,6 @@
 import sys
 
 from extractors.extractor import ExtractorTask
-from data_cleaners.transformations import run_cleaner
 from tagger.tag_initiatives import TagInitiatives
 from alerts.send_alerts import SendAlerts
 from stats.process_stats import GenerateStats
@@ -9,7 +8,7 @@ from stats.process_stats import GenerateStats
 
 def print_help():
     print('Usage: quickex.py TASK')
-    print('Apply task: alerts, tagger, stats, cleaner or extractor')
+    print('Apply task: alerts, tagger, stats or extractor')
     print('Example: python quickex.py stats')
 
 
@@ -21,8 +20,6 @@ if len(args) == 2:
         TagInitiatives().run()
     elif args[1] == 'stats':
         GenerateStats()
-    elif args[1] == 'cleaner':
-        run_cleaner()
     elif args[1] == 'extractor':
         ExtractorTask().run()
     else:

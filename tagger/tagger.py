@@ -2,7 +2,7 @@ import luigi
 
 from targets import *
 from utils import FILES
-from data_cleaners.transformations import TransformationsTask
+from extractors.extractor import ExtractorTask
 from .tag_initiatives import TagInitiatives
 
 
@@ -10,10 +10,10 @@ class TaggerTask(luigi.Task):
     task_namespace = 'tagger'
 
     def requires(self):
-        return TransformationsTask()
+        return ExtractorTask()
 
     def output(self):
-        return luigi.LocalTarget(FILES[2])
+        return luigi.LocalTarget(FILES[1])
 
     def run(self):
         print("{task} says: ready to tag initiatives!".format(task=self.__class__.__name__))

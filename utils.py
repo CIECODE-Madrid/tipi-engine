@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
 import os
 import hashlib
 
 FILES = [
     'extractor.tmp',
-    'data_cleaner.tmp',
     'tagger.tmp',
     'alerts.tmp',
     ]
