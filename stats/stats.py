@@ -14,5 +14,5 @@ class GenerateStatsTask(luigi.Task):
 
     def run(self):
         print("{task} says: ready to generate stats!".format(task=self.__class__.__name__))
-        GenerateStats()
+        GenerateStats().generate()
         clean_files()

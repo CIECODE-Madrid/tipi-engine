@@ -19,7 +19,7 @@ if len(args) == 2:
     elif args[1] == 'tagger':
         TagInitiatives().run()
     elif args[1] == 'stats':
-        GenerateStats()
+        GenerateStats().generate()
     elif args[1] == 'extractor':
         ExtractorTask().run()
     else:

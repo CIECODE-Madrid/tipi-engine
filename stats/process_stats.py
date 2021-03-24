@@ -1,142 +1,140 @@
-from database.congreso import Congress
-from operator import itemgetter
+from tipi_data.models.stats import Stats
+from tipi_data.models.topic import Topic
+from tipi_data.models.initiative import Initiative
 
 
 class GenerateStats(object):
 
-    topics = None
-    dbmanager = None
-    document = None
-
     def __init__(self):
-        self.dbmanager = Congress()
-        self.topics = self.dbmanager.searchAll('topics')
-        self.subtopics = self.dbmanager.getSubtopics()
-        self.document = dict()
-        self.stats()
+        self.topics = Topic.objects()
+        self.subtopics = self.topics.distinct('tags.subtopic')
+        self.stats = Stats()
 
-    def stats(self):
-        self.dbmanager.deleteAllStats()
+    def generate(self):
+        Stats.objects().delete()
         self.overall()
-        self.deputiesByTopics()
-        self.deputiesBySubtopics()
-        self.parliamentarygroupsByTopics()
-        self.parliamentarygroupsBySubtopics()
-        self.placesByTopics()
-        self.placesBySubtopics()
-        self.insertStats()
+        self.deputies_by_topics()
+        self.deputies_by_subtopics()
+        self.parliamentarygroups_by_topics()
+        self.parliamentarygroups_by_subtopics()
+        self.places_by_topics()
+        self.places_by_subtopics()
+        self.stats.save()
 
     def overall(self):
-        self.document['overall'] = {
-                'initiatives': self.dbmanager.countTaggedInitiatives(),
-                'allinitiatives': self.dbmanager.countAllInitiatives(),
-                'topics': [],
-                'subtopics': []
+        self.stats['overall'] = {
+                'initiatives': Initiative.objects.count(),
+                'allinitiatives': Initiative.all.count(),
+                'topics': list(),
+                'subtopics': list()
                 }
-        pipeline = [{ '$match': {'topics': {'$exists': True, '$not': {'$size': 0}}} }, { '$unwind': '$topics' }, { '$group': { '_id': '$topics', 'initiatives': { '$sum': 1 } } }, {'$sort': {'initiatives': -1}} ]
-        result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
-        for element in result:
-            self.document['overall']['topics'].append(element)
+        pipeline = [
+            {'$match': {'topics': {'$exists': True, '$not': {'$size': 0}}}},
+            {'$unwind': '$topics'},
+            {'$group': {'_id': '$topics', 'initiatives': {'$sum': 1}}},
+            {'$sort': {'initiatives': -1}}
+            ]
+        result = Initiative.objects().aggregate(*pipeline)
+        for item in result:
+            self.stats['overall']['topics'].append(item)
         for subtopic in self.subtopics:
-            pipeline = [{'$match': { 'tags.subtopic': subtopic } }, { '$group': { '_id': subtopic, 'initiatives': { '$sum': 1 } } } ]
-            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
-            if len(result) > 0:
-                self.document['overall']['subtopics'].append(result[0])
-        self.document['overall']['subtopics'].sort(key=lambda x: x['initiatives'], reverse=True)
+            pipeline = [
+                {'$match': {'tags.subtopic': subtopic}},
+                {'$group': {'_id': subtopic, 'initiatives': {'$sum': 1}}}
+                ]
+            result = Initiative.objects().aggregate(*pipeline)
+            if result._has_next():
+                self.stats['overall']['subtopics'].append(result.next())
+        self.stats['overall']['subtopics'].sort(key=lambda x: x['initiatives'], reverse=True)
 
-    def deputiesByTopics(self):
-        self.document['deputiesByTopics'] = []
-        for element in self.topics:
-            pipeline = [{'$match': { 'topics': element['name'] } }, {'$unwind': '$author_deputies'},
+    def deputies_by_topics(self):
+        self.stats['deputiesByTopics'] = list()
+        for topic in self.topics:
+            pipeline = [
+                    {'$match': {'topics': topic['name']}}, {'$unwind': '$author_deputies'},
                     {'$group': {'_id': '$author_deputies', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
-                    {'$limit': 10}]
-            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+                    {'$limit': 10}
+                    ]
+            result = list(Initiative.objects().aggregate(*pipeline))
             if len(result) > 0:
-                subdoc = dict()
-                subdoc['_id'] = element['name']
-                subdoc['deputies'] = result
-                self.document['deputiesByTopics'].append(subdoc)
+                self.stats['deputiesByTopics'].append({
+                    '_id': topic['name'],
+                    'deputies': result
+                    })
 
-    def parliamentarygroupsByTopics(self):
-        self.document['parliamentarygroupsByTopics'] = []
-        for element in self.topics:
-            pipeline = [{'$match': {'topics':element['name']}}, {'$unwind': '$author_parliamentarygroups'},
-                    {'$group': {'_id': '$author_parliamentarygroups', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}}]
-            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+    def parliamentarygroups_by_topics(self):
+        self.stats['parliamentarygroupsByTopics'] = list()
+        for topic in self.topics:
+            pipeline = [
+                    {'$match': {'topics': topic['name']}}, {'$unwind': '$author_parliamentarygroups'},
+                    {'$group': {'_id': '$author_parliamentarygroups', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}}
+                    ]
+            result = list(Initiative.objects().aggregate(*pipeline))
             if len(result) > 0:
-                subdoc = dict()
-                subdoc['_id']= element['name']
-                subdoc['parliamentarygroups'] = result
-                self.document['parliamentarygroupsByTopics'].append(subdoc)
+                self.stats['parliamentarygroupsByTopics'].append({
+                    '_id': topic['name'],
+                    'parliamentarygroups': result
+                    })
 
-    def deputiesBySubtopics(self):
-        self.document['deputiesBySubtopics'] = []
-        for element in self.subtopics:
-            pipeline = [{'$match': { 'tags.subtopic': element } }, {'$unwind': '$author_deputies'},
+    def places_by_topics(self):
+        self.stats['placesByTopics'] = list()
+        for topic in self.topics:
+            pipeline = [
+                    {'$match': {'topics': topic['name'], 'place': {'$not': {'$eq': ""}, '$exists': True}}},
+                    {'$group': {'_id': '$place', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
+                    {'$limit': 5}
+                    ]
+            result = list(Initiative.objects().aggregate(*pipeline))
+            if len(result) > 0:
+                self.stats['placesByTopics'].append({
+                    '_id': topic['name'],
+                    'places': result
+                    })
+
+    def deputies_by_subtopics(self):
+        self.stats['deputiesBySubtopics'] = list()
+        for subtopic in self.subtopics:
+            pipeline = [
+                    {'$match': { 'tags.subtopic': subtopic } }, {'$unwind': '$author_deputies'},
                     {'$group': {'_id': '$author_deputies', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
-                    {'$limit': 10}]
-            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+                    {'$limit': 10}
+                    ]
+            result = list(Initiative.objects().aggregate(*pipeline))
             if len(result) > 0:
-                subdoc = dict()
-                subdoc['_id'] = element
-                subdoc['deputies'] = result
-                self.document['deputiesBySubtopics'].append(subdoc)
+                self.stats['deputiesBySubtopics'].append({
+                    '_id': subtopic,
+                    'deputies': result
+                    })
 
-    def parliamentarygroupsBySubtopics(self):
-        self.document['parliamentarygroupsBySubtopics'] = []
-        for element in self.subtopics:
-            pipeline = [{'$match': { 'tags.subtopic': element } }, {'$unwind': '$author_parliamentarygroups'},
-                    {'$group': {'_id': '$author_parliamentarygroups', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}}]
-            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+    def parliamentarygroups_by_subtopics(self):
+        self.stats['parliamentarygroupsBySubtopics'] = list()
+        for subtopic in self.subtopics:
+            pipeline = [
+                    {'$match': { 'tags.subtopic': subtopic } }, {'$unwind': '$author_parliamentarygroups'},
+                    {'$group': {'_id': '$author_parliamentarygroups', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}}
+                    ]
+            result = list(Initiative.objects().aggregate(*pipeline))
             if len(result) > 0:
-                subdoc = dict()
-                subdoc['_id']= element
-                subdoc['parliamentarygroups'] = result
-                self.document['parliamentarygroupsBySubtopics'].append(subdoc)
+                self.stats['parliamentarygroupsBySubtopics'].append({
+                    '_id': subtopic,
+                    'parliamentarygroups': result
+                    })
 
-
-
-
-
-
-
-
-    def placesByTopics(self):
-        self.document['placesByTopics'] = []
-        for element in self.topics:
-            pipeline = [{'$match': {'topics': element['name'], 'place': {'$not': {'$eq': ""}, '$exists': True}}},
+    def places_by_subtopics(self):
+        self.stats['placesBySubtopics'] = list()
+        for subtopic in self.subtopics:
+            pipeline = [
+                    {'$match': { 'tags.subtopic': subtopic, 'place': {'$not': {'$eq': ""}, '$exists': True}}},
                     {'$group': {'_id': '$place', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
-                    {'$limit': 5}]
-            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
+                    {'$limit': 5}
+                    ]
+            result = list(Initiative.objects().aggregate(*pipeline))
             if len(result) > 0:
-                subdoc = dict()
-                subdoc['_id'] = element['name']
-                subdoc['places'] = result
-                self.document['placesByTopics'].append(subdoc)
-
-    def placesBySubtopics(self):
-        self.document['placesBySubtopics'] = []
-        for element in self.subtopics:
-            pipeline = [{'$match': { 'tags.subtopic': element, 'place': {'$not': {'$eq': ""}, '$exists': True}}},
-                    {'$group': {'_id': '$place', 'initiatives': {'$sum': 1}}}, {'$sort': {'initiatives': -1}},
-                    {'$limit': 5}]
-            result = self.dbmanager.getAggregatedInitiativesByPipeline(pipeline=pipeline)
-            if len(result) > 0:
-                subdoc = dict()
-                subdoc['_id'] = element
-                subdoc['places'] = result
-                self.document['placesBySubtopics'].append(subdoc)
-
-
-
-
-
-
-
-
-    def insertStats(self):
-        self.dbmanager.insertStats(self.document)
+                self.stats['placesBySubtopics'].append({
+                    '_id': subtopic,
+                    'places': result
+                    })
 
 
 if __name__ == "__main__":
-    GenerateStats()
+    GenerateStats().generate()
