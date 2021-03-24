@@ -127,12 +127,6 @@ INITIATIVE_TYPES = [
                 "class": FirstBoeExtractor
                 },
         {
-                "type": "Real Decreto legislativo que aprueba texto refundido",
-                "code": 132,
-                "group": "Función legislativa",
-                "class": FirstBoeExtractor
-                },
-        {
                 "type": "Real Decreto legislativo en desarrollo de Ley de Bases",
                 "code": "131",
                 "group": "Función legislativa",
