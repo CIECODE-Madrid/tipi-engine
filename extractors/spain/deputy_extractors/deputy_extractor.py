@@ -14,7 +14,7 @@ class DeputyExtractor():
 
     def extract(self):
         self.deputy['name'] = self.get_text_by_css('.nombre-dip')
-        self.deputy['parliamentarygroup'] = self.get_text_by_css('.grupo-dip a')
+        self.deputy['parliamentarygroup'] = self.get_abbr_group()
         self.deputy['image'] = self.BASE_URL + self.get_src_by_css('.img-dip img')
         self.deputy['public_position'] = self.get_public_positions()
         self.deputy['party_logo'] = self.get_src_by_css('.logo-partido img')
@@ -40,7 +40,6 @@ class DeputyExtractor():
         item = self.get_by_css(selector)
         if len(item) == 0:
             return ''
-
         return self.clean_str(item[0].text)
 
 
@@ -49,6 +48,13 @@ class DeputyExtractor():
 
     def get_by_xpath(self, xpath):
         return self.node_tree.xpath(xpath)
+
+    def get_abbr_group(self):
+        abbr_group_regex = '\(([^)]+)'
+        group = self.get_text_by_css('.grupo-dip a')
+        if not group:
+            return ''
+        return re.search(abbr_group_regex, group).group(1).strip()
 
     def extract_mail(self):
         mail = self.get_text_by_css('.email-dip a')
