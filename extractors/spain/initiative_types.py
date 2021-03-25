@@ -611,5 +611,11 @@ INITIATIVE_TYPES = [
                 "code": "299",
                 "group": "Secretaría general",
                 "class": NonExclusiveBulletinExtractor
+                },
+        {
+                "type": "Declaración de intereses económicos",
+                "code": "007",
+                "group": "Declaración de intereses económicos",
+                "class": NonExclusiveBulletinExtractor
                 }
 ]
