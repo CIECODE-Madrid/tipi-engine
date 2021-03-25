@@ -9,6 +9,8 @@ from .initiative_extractor import InitiativeExtractor
 from logger import get_logger
 
 
+log = get_logger(__name__)
+
 
 class BulletinsExtractor(InitiativeExtractor):
     LETTER = 'Z'
@@ -95,6 +97,7 @@ class NonExclusiveBulletinExtractor(InitiativeExtractor):
     BASE_URL = 'https://www.congreso.es'
     PAGE_FIND_REGEX = 'Pág.:\s([0-9]+)'
     HTML_STRIP_REGEX = '<[^>]+>'
+    INITIATIVE_REFERENCE_REGEX = '[0-9]{3}\/[0-9]{6}'
 
     def extract_content(self):
         self.initiative['content'] = self.extract_bulletin_content()
@@ -123,16 +126,15 @@ class NonExclusiveBulletinExtractor(InitiativeExtractor):
             self.initiative['status'] = 'En tramitación'
             return []
 
-        full_content = str(tostring(element))
-        full_content = full_content.replace('<br><br><br><br>', "\n").replace('<br><br><br>', "\n").replace('<br>', " ")
-        full_content = re.sub(self.HTML_STRIP_REGEX, '', full_content)
-        full_content = html.unescape(full_content)
+        cleanup_content = self.cleanup_content(element)
+        return self.extract_initiative_from_bulletin(cleanup_content)
 
+    def extract_initiative_from_bulletin(self, full_content):
         clean_content = self.clean_str_to_substr(full_content, 'Página ' + self.page)
         clean_content = self.clean_str_to_substr(clean_content, self.initiative['reference'])
 
         try:
-            end_pos = re.search('[0-9]{3}/[0-9]{6}', clean_content).start()
+            end_pos = re.search(self.INITIATIVE_REFERENCE_REGEX, clean_content).start()
         except Exception:
             # Last initiative in the Bulletin.
             return clean_content.split("\n")
@@ -140,6 +142,33 @@ class NonExclusiveBulletinExtractor(InitiativeExtractor):
         content = clean_content[:end_pos]
         return content.split("\n")
 
+    def cleanup_content(self, element):
+        full_content = str(tostring(element))
+        full_content = full_content.replace('<br><br><br><br>', "\n").replace('<br><br><br>', "\n").replace('<br>', " ")
+        full_content = re.sub(self.HTML_STRIP_REGEX, '', full_content)
+        full_content = html.unescape(full_content)
+
+        return full_content
+
     def clean_str_to_substr(self, haystack, needle):
         pos = haystack.find(needle) + len(needle)
         return haystack[pos:]
+
+class BulletinAndSenateExtractor(NonExclusiveBulletinExtractor):
+    SENATE_INITIATIVE_RE = '[0-9]{3}\/[0-9]{6} \(S\)'
+
+    def extract_initiative_from_bulletin(self, full_content):
+        clean_content = self.clean_str_to_substr(full_content, 'Página ' + self.page)
+        clean_content = self.clean_str_to_substr(clean_content, self.initiative['reference'])
+
+        pos = re.search(self.SENATE_INITIATIVE_RE, clean_content).end()
+        clean_content = clean_content[pos:]
+
+        try:
+            end_pos = re.search(self.INITIATIVE_REFERENCE_REGEX, clean_content).start()
+        except Exception:
+            # Last initiative in the Bulletin.
+            return clean_content.split("\n")
+
+        content = clean_content[:end_pos]
+        return content.split("\n")

@@ -9,7 +9,8 @@ from .initiative_extractors.bulletins_extractor import \
         FirstCBulletinExtractor, \
         FirstDBulletinExtractor, \
         FirstEBulletinExtractor, \
-        NonExclusiveBulletinExtractor
+        NonExclusiveBulletinExtractor, \
+        BulletinAndSenateExtractor
 
 from .initiative_extractors.question_extractor import QuestionExtractor
 from .initiative_extractors.boe_extractor import BoeExtractor, FirstBoeExtractor
@@ -549,8 +550,7 @@ INITIATIVE_TYPES = [
                 "type": "Memoria anual de la Corporación RTVE",
                 "code": "440",
                 "group": "Relaciones con órganos e instituciones públicas",
-                # The format of the bulletin differs from the other using this extractor.
-                # "class": NonExclusiveBulletinExtractor
+                "class": BulletinAndSenateExtractor
                 },
         {
                 "type": "Informe anual de la Corporación RTVE",
@@ -596,15 +596,13 @@ INITIATIVE_TYPES = [
                 "type": "Normas sobre personal y org. administrativa de las Cortes Generales",
                 "code": "294",
                 "group": "Secretaría general",
-                # The format of the bulletin differs from the other using this extractor.
-                # "class": NonExclusiveBulletinExtractor
+                "class": BulletinAndSenateExtractor
                 },
         {
                 "type": "Actos sobre personal y org. administrativa de las Cortes Generales",
                 "code": "295",
                 "group": "Secretaría general",
-                # The format of the bulletin differs from the other using this extractor.
-                # "class": NonExclusiveBulletinExtractor
+                "class": BulletinAndSenateExtractor
                 },
         {
                 "type": "Personal eventual del Congreso de los Diputados",
