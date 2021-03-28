@@ -63,7 +63,7 @@ class TagInitiatives:
     def run(self):
         InitiativeAlert.objects().delete()
         tags = codecs.encode(pickle.dumps(Topic.get_tags()), "base64").decode()
-        initiatives = Initiative.all.filter(tagged=False)
+        initiatives = Initiative.all.filter(tagged=False).timeout(False)
         total = initiatives.count()
         for index, initiative in enumerate(initiatives):
             try:
