@@ -120,7 +120,8 @@ INITIATIVE_TYPES = [
                 "type": "Real Decreto-Ley",
                 "code": "130",
                 "group": "Función legislativa",
-                "class": FirstBoeExtractor
+                "class": FirstBoeExtractor,
+                "votes": True
                 },
         {
                 "type": "Real Decreto legislativo que aprueba texto refundido",
