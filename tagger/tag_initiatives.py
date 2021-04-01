@@ -64,7 +64,7 @@ class TagInitiatives:
         InitiativeAlert.objects().delete()
         tags = codecs.encode(pickle.dumps(Topic.get_tags()), "base64").decode()
         initiatives = list(Initiative.all.filter(tagged=False))
-        total = initiatives.count()
+        total = len(initiatives)
         for index, initiative in enumerate(initiatives):
             try:
                 log.info(f"Tagging initiative {index+1} of {total}")
