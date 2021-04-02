@@ -78,6 +78,8 @@ class InitiativeExtractor:
             self.initiative['history'] = self.get_history()
             self.initiative['status'] = self.get_status()
             self.initiative['url'] = self.url
+            if 'tagged' not in self.initiative:
+                self.untag()
         except AttributeError as e:
             log.error(f"Error processing some attributes for initiative {self.url}")
             log.error(str(e))
