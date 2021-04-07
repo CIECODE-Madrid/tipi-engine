@@ -12,6 +12,7 @@ from tipi_data.utils import generate_id
 
 from logger import get_logger
 from .initiative_status import get_status, is_final_status
+from .video_extractor import VideoExtractor
 
 
 log = get_logger(__name__)
@@ -49,6 +50,7 @@ class InitiativeExtractor:
                 if is_final_status(self.initiative['status']) and self.has('topics'):
                     create_alert(self.initiative)
             self.initiative.save()
+            self.extract_videos()
             log.info(f"Iniciativa {self.initiative['reference']} procesada")
         except Exception as e:
             log.error(str(e))
@@ -56,6 +58,10 @@ class InitiativeExtractor:
 
     def extract_content(self):
         self.initiative['content'] = []
+
+    def extract_videos(self):
+        extractor = VideoExtractor(self.initiative['reference'])
+        extractor.extract()
 
     def extract_commons(self):
         try:
