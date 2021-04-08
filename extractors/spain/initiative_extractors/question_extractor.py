@@ -24,14 +24,23 @@ class QuestionExtractor(InitiativeExtractor):
     def create_answer_initative(self, answer):
         if answer == []:
             return
-        answer_initiative = deepcopy(self.initiative)
+        try:
+            answer_initiative = Initiative.all.get(
+                reference=self.initiative['reference'],
+                initiative_type_alt='Respuesta'
+            )
+            force = False
+        except Exception:
+            answer_initiative = deepcopy(self.initiative)
+            answer_initiative['tagged'] = False
+            force = True
         answer_initiative['content'] = answer
         answer_initiative['initiative_type_alt'] = 'Respuesta'
         answer_initiative['author_others'] = ['Gobierno']
         answer_initiative['author_deputies'] = []
         answer_initiative['author_parliamentarygroups'] = []
         answer_initiative['id'] = self.generate_answer_id(answer_initiative)
-        answer_initiative.save()
+        answer_initiative.save(force_insert=force)
 
     def retrieve_question(self):
         return self.retrieve_content(self.QUESTION, True)
