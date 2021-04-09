@@ -64,7 +64,7 @@ class QuestionExtractor(InitiativeExtractor):
         return extractor.retrieve()
 
     def find_url(self, content):
-        items = self.node_tree.xpath(f"//a[normalize-space(text()) = '{content}']")
+        items = self.node_tree.xpath(f"//a[contains(normalize-space(text()), '{content}')]")
         if len(items) < 0:
             raise Exception('Link not found')
         return items[0].get(self.HREF)
