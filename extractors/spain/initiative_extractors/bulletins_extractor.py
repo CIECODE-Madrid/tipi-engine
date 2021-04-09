@@ -133,15 +133,25 @@ class NonExclusiveBulletinExtractor(InitiativeExtractor):
             return []
 
         tree = document_fromstring(requests.get(self.link).text)
+        cleanup_content = ''
 
         try:
             element = tree.xpath("//div[contains(@class, 'textoIntegro')]")[0]
+            cleanup_content += self.cleanup_content(element)
+
+            more_links = tree.xpath("//a[contains(text(), 'parte ')]")
+            for link in more_links:
+                page_url = link.get('href')
+                page_bulletin_tree = document_fromstring(requests.get(
+                    f"{page_url}"
+                    ).text)
+                element = page_bulletin_tree.xpath("//div[contains(@class, 'textoIntegro')]")[0]
+                cleanup_content += self.cleanup_content(element)
         except Exception:
             # Bulletin not properly formatted
             self.initiative['status'] = 'En tramitación'
             return []
 
-        cleanup_content = self.cleanup_content(element)
         return self.extract_initiative_from_bulletin(cleanup_content)
 
     def extract_initiative_from_bulletin(self, full_content):
@@ -160,6 +170,7 @@ class NonExclusiveBulletinExtractor(InitiativeExtractor):
     def cleanup_content(self, element):
         full_content = str(tostring(element))
         full_content = full_content.replace('<br><br><br><br>', "\n").replace('<br><br><br>', "\n").replace('<br>', " ")
+        full_content = full_content.replace('    ', " ").replace('   ', " ").replace('  ', " ")
         full_content = re.sub(self.HTML_STRIP_REGEX, '', full_content)
         full_content = html.unescape(full_content)
 
