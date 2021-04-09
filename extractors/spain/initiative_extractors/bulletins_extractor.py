@@ -27,17 +27,32 @@ class BulletinsExtractor(InitiativeExtractor):
                 bulletin_tree = document_fromstring(requests.get(
                     f"{self.BASE_URL}{url}"
                     ).text)
-                bulletin_content = bulletin_tree.cssselect('.textoIntegro')
-                if bulletin_content:
-                    content += [line for line in list(map(
-                        lambda x: self.TAG_RE.sub('', x).strip(),
-                        bulletin_content[0].itertext()
-                        )) if line != '']
+                content += self.retrieve_bulletin_content(bulletin_tree)
+
+                more_links = bulletin_tree.xpath("//a[contains(text(), 'parte ')]")
+                for link in more_links:
+                    page_url = link.get('href')
+                    page_bulletin_tree = document_fromstring(requests.get(
+                        f"{page_url}"
+                        ).text)
+                    new_content = self.retrieve_bulletin_content(page_bulletin_tree)
+                    content += new_content
+
             return content
         except IndexError:
             return list()
         except Exception as e:
             return list()
+
+    def retrieve_bulletin_content(self, tree):
+        content = []
+        bulletin_content = tree.cssselect('.textoIntegro')
+        if bulletin_content:
+            content += [line for line in list(map(
+                lambda x: self.TAG_RE.sub('', x).strip(),
+                bulletin_content[0].itertext()
+                )) if line != '']
+        return content
 
     def find_urls(self):
         return self.node_tree.xpath(self.get_xpath())
