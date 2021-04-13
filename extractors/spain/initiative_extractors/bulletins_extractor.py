@@ -17,8 +17,7 @@ class BulletinsExtractor(InitiativeExtractor):
     TAG_RE = re.compile(r'<[^>]+>')  # TODO Move to utils
 
     def extract_content(self):
-        if not self.has('content'):
-            self.initiative['content'] = self.retrieve_bulletin()
+        self.initiative['content'] = self.retrieve_bulletin()
 
     def retrieve_bulletin(self):
         content = list()

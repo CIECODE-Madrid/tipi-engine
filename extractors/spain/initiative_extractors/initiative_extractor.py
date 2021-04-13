@@ -41,13 +41,13 @@ class InitiativeExtractor:
     def extract(self):
         try:
             self.extract_commons()
-            previous_content = self.initiative['content'] if 'content' in self.initiative else list()
+            previous_content = self.initiative['content'] if self.has('content') else list()
             self.extract_content()
             self.initiative['id'] = self.generate_id(self.initiative)
             if previous_content != self.initiative['content']:
                 self.untag()
             else:
-                if is_final_status(self.initiative['status']) and self.has('topics'):
+                if is_final_status(self.initiative['status']) and self.has_topics():
                     create_alert(self.initiative)
             self.initiative.save()
             self.extract_videos()
@@ -84,7 +84,7 @@ class InitiativeExtractor:
             self.initiative['history'] = self.get_history()
             self.initiative['status'] = self.get_status()
             self.initiative['url'] = self.url
-            if 'tagged' not in self.initiative:
+            if not self.has('tagged'):
                 self.untag()
         except AttributeError as e:
             log.error(f"Error processing some attributes for initiative {self.url}")
@@ -207,9 +207,15 @@ class InitiativeExtractor:
         try:
             if field not in self.initiative:
                 return False
-            return len(self.initiative[field]) > 0
+            return True
         except TypeError:
             return False
+
+    def has_content(self):
+        return self.has('content') and len(self.initiative['content']) > 0
+
+    def has_topics(self):
+        return self.has('topics') and len(self.initiative['topics']) > 0
 
     def untag(self):
         self.initiative['tagged'] = False
