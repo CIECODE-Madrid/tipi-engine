@@ -42,7 +42,8 @@ class InitiativeExtractor:
         try:
             self.extract_commons()
             previous_content = self.initiative['content'] if self.has('content') else list()
-            self.extract_content()
+            if self.should_extract_content():
+                self.extract_content()
             self.initiative['id'] = self.generate_id(self.initiative)
             if previous_content != self.initiative['content']:
                 self.untag()
@@ -58,6 +59,9 @@ class InitiativeExtractor:
 
     def extract_content(self):
         self.initiative['content'] = []
+
+    def should_extract_content(self):
+        return not self.has('content')
 
     def extract_videos(self):
         extractor = VideoExtractor(self.initiative['reference'])

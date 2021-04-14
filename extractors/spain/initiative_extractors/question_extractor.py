@@ -2,6 +2,7 @@ from .initiative_extractor import InitiativeExtractor
 from .utils.pdf_parsers import PDFExtractor
 from copy import deepcopy
 from .initiative_status import NOT_FINAL_STATUS, ON_PROCESS
+from tipi_data.models.initiative import Initiative
 from tipi_data.utils import generate_id
 
 
@@ -14,12 +15,27 @@ class QuestionExtractor(InitiativeExtractor):
     def extract_content(self):
         if not self.has('content'):
             self.initiative['content'] = self.retrieve_question()
-        # TODO Controls if we already have an answer content
-        answer = self.retrieve_answer()
-        if answer == [] and self.initiative['status'] not in NOT_FINAL_STATUS:
-            self.initiative['status'] = ON_PROCESS
-        else:
-            self.create_answer_initative(answer)
+
+        try:
+            answer = Initiative.all.get(
+                reference=self.get_reference(),
+                initiative_type_alt='Respuesta'
+            )
+
+            has_content = 'content' in answer
+            extract_answer = (not has_content) or (has_content and len(answer['content']) == 0)
+        except Exception as e:
+            extract_answer = True
+
+        if extract_answer == True:
+            answer_content = self.retrieve_answer()
+            if answer_content == [] and self.initiative['status'] not in NOT_FINAL_STATUS:
+                self.initiative['status'] = ON_PROCESS
+            else:
+                self.create_answer_initative(answer_content)
+
+    def should_extract_content(self):
+        return True
 
     def create_answer_initative(self, answer):
         if answer == []:

@@ -19,10 +19,21 @@ class BulletinsExtractor(InitiativeExtractor):
     def extract_content(self):
         self.initiative['content'] = self.retrieve_bulletin()
 
+    def should_extract_content(self):
+        urls = self.find_urls()
+        has_content = self.has('content')
+        has_extra = self.has('extra')
+        has_imported_bulletins = has_extra and 'imported_bulletins' in self.initiative['extra']
+        has_different_bulletins = has_imported_bulletins and self.initiative['extra']['imported_bulletins'] != len(urls)
+
+        return not has_content or has_different_bulletins
+
     def retrieve_bulletin(self):
         content = list()
+        urls = self.find_urls()
+        self.initiative['extra']['imported_bulletins'] = len(urls)
         try:
-            for url in self.find_urls():
+            for url in urls:
                 bulletin_tree = document_fromstring(requests.get(
                     f"{self.BASE_URL}{url}"
                     ).text)
@@ -85,6 +96,9 @@ class FirstBulletinExtractor(BulletinsExtractor):
 
     def get_xpath(self):
         return f"//ul[@class='boletines']/li/div[contains(text(),'{self.LETTER}-')]/following-sibling::div[1]/a[1]/@href"
+
+    def should_extract_content(self):
+        return not self.has('content')
 
 
 class FirstABulletinExtractor(FirstBulletinExtractor):
