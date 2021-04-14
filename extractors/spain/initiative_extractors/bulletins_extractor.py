@@ -17,27 +17,52 @@ class BulletinsExtractor(InitiativeExtractor):
     TAG_RE = re.compile(r'<[^>]+>')  # TODO Move to utils
 
     def extract_content(self):
-        if not self.has('content'):
-            self.initiative['content'] = self.retrieve_bulletin()
+        self.initiative['content'] = self.retrieve_bulletin()
+
+    def should_extract_content(self):
+        urls = self.find_urls()
+        has_content = self.has('content')
+        has_extra = self.has('extra')
+        has_imported_bulletins = has_extra and 'imported_bulletins' in self.initiative['extra']
+        has_different_bulletins = has_imported_bulletins and self.initiative['extra']['imported_bulletins'] != len(urls)
+
+        return not has_content or has_different_bulletins
 
     def retrieve_bulletin(self):
         content = list()
+        urls = self.find_urls()
+        self.initiative['extra']['imported_bulletins'] = len(urls)
         try:
-            for url in self.find_urls():
+            for url in urls:
                 bulletin_tree = document_fromstring(requests.get(
                     f"{self.BASE_URL}{url}"
                     ).text)
-                bulletin_content = bulletin_tree.cssselect('.textoIntegro')
-                if bulletin_content:
-                    content += [line for line in list(map(
-                        lambda x: self.TAG_RE.sub('', x).strip(),
-                        bulletin_content[0].itertext()
-                        )) if line != '']
+                content += self.retrieve_bulletin_content(bulletin_tree)
+
+                more_links = bulletin_tree.xpath("//a[contains(text(), 'parte ')]")
+                for link in more_links:
+                    page_url = link.get('href')
+                    page_bulletin_tree = document_fromstring(requests.get(
+                        f"{page_url}"
+                        ).text)
+                    new_content = self.retrieve_bulletin_content(page_bulletin_tree)
+                    content += new_content
+
             return content
         except IndexError:
             return list()
         except Exception as e:
             return list()
+
+    def retrieve_bulletin_content(self, tree):
+        content = []
+        bulletin_content = tree.cssselect('.textoIntegro')
+        if bulletin_content:
+            content += [line for line in list(map(
+                lambda x: self.TAG_RE.sub('', x).strip(),
+                bulletin_content[0].itertext()
+                )) if line != '']
+        return content
 
     def find_urls(self):
         return self.node_tree.xpath(self.get_xpath())
@@ -71,6 +96,9 @@ class FirstBulletinExtractor(BulletinsExtractor):
 
     def get_xpath(self):
         return f"//ul[@class='boletines']/li/div[contains(text(),'{self.LETTER}-')]/following-sibling::div[1]/a[1]/@href"
+
+    def should_extract_content(self):
+        return not self.has('content')
 
 
 class FirstABulletinExtractor(FirstBulletinExtractor):
@@ -118,15 +146,25 @@ class NonExclusiveBulletinExtractor(InitiativeExtractor):
             return []
 
         tree = document_fromstring(requests.get(self.link).text)
+        cleanup_content = ''
 
         try:
             element = tree.xpath("//div[contains(@class, 'textoIntegro')]")[0]
+            cleanup_content += self.cleanup_content(element)
+
+            more_links = tree.xpath("//a[contains(text(), 'parte ')]")
+            for link in more_links:
+                page_url = link.get('href')
+                page_bulletin_tree = document_fromstring(requests.get(
+                    f"{page_url}"
+                    ).text)
+                element = page_bulletin_tree.xpath("//div[contains(@class, 'textoIntegro')]")[0]
+                cleanup_content += self.cleanup_content(element)
         except Exception:
             # Bulletin not properly formatted
             self.initiative['status'] = 'En tramitación'
             return []
 
-        cleanup_content = self.cleanup_content(element)
         return self.extract_initiative_from_bulletin(cleanup_content)
 
     def extract_initiative_from_bulletin(self, full_content):
@@ -145,6 +183,7 @@ class NonExclusiveBulletinExtractor(InitiativeExtractor):
     def cleanup_content(self, element):
         full_content = str(tostring(element))
         full_content = full_content.replace('<br><br><br><br>', "\n").replace('<br><br><br>', "\n").replace('<br>', " ")
+        full_content = full_content.replace('    ', " ").replace('   ', " ").replace('  ', " ")
         full_content = re.sub(self.HTML_STRIP_REGEX, '', full_content)
         full_content = html.unescape(full_content)
 

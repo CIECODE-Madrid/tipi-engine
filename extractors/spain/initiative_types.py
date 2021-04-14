@@ -172,7 +172,8 @@ INITIATIVE_TYPES = [
         {
                 "type": "Pregunta a la Corporación RTVE con respuesta escrita",
                 "code": "179",
-                "group": "Función de control"
+                "group": "Función de control",
+                "class": QuestionExtractor
                 },
         {
                 "type": "Comparecencia del Gobierno ante el Pleno",

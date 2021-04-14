@@ -60,11 +60,19 @@ class TagInitiatives:
                 'tags': merged_tags
                 }
 
+    def __get_untagged_query(self):
+        return {
+                '$or': [
+                    {'tagged': False},
+                    {'tagged': {'$exists': False}},
+                    ]
+                }
+
     def run(self):
         InitiativeAlert.objects().delete()
         tags = codecs.encode(pickle.dumps(Topic.get_tags()), "base64").decode()
-        initiatives = Initiative.all.filter(tagged=False).timeout(False)
-        total = initiatives.count()
+        initiatives = list(Initiative.all(__raw__=self.__get_untagged_query()))
+        total = len(initiatives)
         for index, initiative in enumerate(initiatives):
             try:
                 log.info(f"Tagging initiative {index+1} of {total}")
