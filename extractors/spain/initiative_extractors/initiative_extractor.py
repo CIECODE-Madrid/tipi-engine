@@ -173,9 +173,9 @@ class InitiativeExtractor:
                     lambda x: TAG_RE.sub('', x).strip(),
                     str(history_wrapper).split('<br/>')
                     ))
-                final_status_wrapper = self.soup.select_one('.resultadoTramitacion')
-                if final_status_wrapper:
-                    history.append(final_status_wrapper.text)
+            final_status_wrapper = self.soup.select_one('.resultadoTramitacion')
+            if final_status_wrapper:
+                history.append(final_status_wrapper.text)
         except Exception:
             pass
         return history
