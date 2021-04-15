@@ -61,7 +61,7 @@ class InitiativeExtractor:
         self.initiative['content'] = []
 
     def should_extract_content(self):
-        return not self.has('content')
+        return not self.has_content()
 
     def extract_videos(self):
         extractor = VideoExtractor(self.initiative['reference'])
