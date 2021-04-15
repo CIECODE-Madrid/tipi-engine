@@ -13,7 +13,7 @@ class QuestionExtractor(InitiativeExtractor):
     A = 'a'
 
     def extract_content(self):
-        if not self.has('content'):
+        if not self.has_content():
             self.initiative['content'] = self.retrieve_question()
 
         try:
