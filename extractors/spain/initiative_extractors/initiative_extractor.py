@@ -41,7 +41,7 @@ class InitiativeExtractor:
     def extract(self):
         try:
             self.extract_commons()
-            previous_content = self.initiative['content'] if self.has('content') else list()
+            previous_content = self.initiative['content'] if self.has_content() else list()
             if self.should_extract_content():
                 self.extract_content()
             self.initiative['id'] = self.generate_id(self.initiative)
