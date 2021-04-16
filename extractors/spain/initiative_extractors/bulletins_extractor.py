@@ -21,7 +21,7 @@ class BulletinsExtractor(InitiativeExtractor):
 
     def should_extract_content(self):
         urls = self.find_urls()
-        has_content = self.has('content')
+        has_content = self.has_content()
         has_extra = self.has('extra')
         has_imported_bulletins = has_extra and 'imported_bulletins' in self.initiative['extra']
         has_different_bulletins = has_imported_bulletins and self.initiative['extra']['imported_bulletins'] != len(urls)
@@ -98,7 +98,7 @@ class FirstBulletinExtractor(BulletinsExtractor):
         return f"//ul[@class='boletines']/li/div[contains(text(),'{self.LETTER}-')]/following-sibling::div[1]/a[1]/@href"
 
     def should_extract_content(self):
-        return not self.has('content')
+        return not self.has_content()
 
 
 class FirstABulletinExtractor(FirstBulletinExtractor):
