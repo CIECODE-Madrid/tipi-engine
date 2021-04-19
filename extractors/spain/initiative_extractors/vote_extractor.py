@@ -1,29 +1,64 @@
 from lxml.html import document_fromstring
-import requests
+from lxml.etree import tostring
+from html import unescape
 from tipi_data.models.voting import Voting
 from logger import get_logger
+from tipi_data.utils import generate_id
+import re
+import requests
 
 log = get_logger(__name__)
 
 class VoteExtractor():
     JSON_XPATH = "//div[@class='votaciones']/div[1]/a[contains(text(), 'JSON')]"
+    VOTE_TYPES = [
+        'Toma en consideración',
+        'Debate de totalidad',
+        'Votación de conjunto'
+    ]
 
     def __init__(self, tree, initiative):
         self.tree = tree
         self.initiative = initiative
-        self.json_url = self.get_json_link()
 
     def extract(self):
-        if self.vote_exists():
-            return
-        response = requests.get(self.json_url)
+        votes_html = self.get_votes_html()
+        for item in votes_html:
+            for type in self.VOTE_TYPES:
+                if type in item:
+                    link = self.extract_link(item)
+                    self.extract_votes(link)
+
+    def get_votes_html(self):
+        elements = self.tree.cssselect('.votaciones')
+        if len(elements) == 0:
+            return []
+        element = elements[0]
+        html_string = tostring(element).decode('utf-8').replace('&#13;', '')
+        html = html_string[24:].strip()
+        return self.split_html(html)
+
+    def split_html(self, html):
+        items = html.split('JSON</a>')
+        cleaned = []
+        for item in items:
+            cleaned.append(unescape(item)+ 'JSON</a>')
+
+        return cleaned[:len(cleaned) - 1]
+
+    def extract_link(self, html):
+        regex = re.compile('<a[\sa-zA-Z\"\.=0-9_\/:]+\>JSON\<\/a\>')
+        matches = regex.findall(html)
+        tag = matches[0]
+        start = tag.find('href="') + 6
+        link = tag[start:]
+        end = link.find('"')
+        return link[:end]
+
+    def extract_votes(self, url):
+        response = requests.get(url)
         data = response.json()
         self.save_votes(data)
-
-    def get_json_link(self):
-        elements = self.tree.xpath(self.JSON_XPATH)
-        element = elements[0]
-        return element.get('href')
 
     def get_party_votes(self, data):
         votaciones = data.get('votaciones')
@@ -42,13 +77,17 @@ class VoteExtractor():
         return party_votes
 
     def vote_exists(self):
-        return Voting.objects(id=self.initiative['id'])
+        return False
+        # return Voting.objects(id=self.initiative['id'])
 
     def save_votes(self, data):
         votes = Voting()
-        votes['id'] = self.initiative['id']
+        information = data.get('informacion')
+        votes['id'] = self.generate_id(self.initiative['reference'], information.get('tituloSubGrupo'))
         votes['reference'] = self.initiative['reference']
-        votes['title'] = data.get('informacion').get('textoExpediente')
+        votes['title'] = information.get('textoExpediente')
+        votes['subgroup_text'] = information.get('textoSubGrupo')
+        votes['subgroup_title'] = information.get('tituloSubGrupo')
 
         totals = data.get('totales')
         votes['total_yes'] = totals.get('afavor')
@@ -61,4 +100,11 @@ class VoteExtractor():
         votes['by_deputy'] = data.get('votaciones')
 
         votes.save()
+
+    def generate_id(self, reference, text):
+        return generate_id(
+            reference,
+            text
+        )
+
 

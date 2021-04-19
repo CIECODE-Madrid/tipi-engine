@@ -66,8 +66,6 @@ class InitiativeExtractor:
         self.initiative['content'] = []
 
     def extract_votes(self):
-        if self.has_voting == False:
-            return
         votes_extractor = VoteExtractor(self.node_tree, self.initiative)
         votes_extractor.extract()
 
