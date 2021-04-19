@@ -12,6 +12,7 @@ from tipi_data.utils import generate_id
 
 from logger import get_logger
 from .initiative_status import get_status, is_final_status
+from .vote_extractor import VoteExtractor
 from .video_extractor import VideoExtractor
 
 
@@ -20,9 +21,11 @@ log = get_logger(__name__)
 
 class InitiativeExtractor:
 
-    def __init__(self, response, deputies, parliamentarygroups, places):
+    def __init__(self, response, deputies, parliamentarygroups, places, has_voting):
         self.url = response.url
         self.BASE_URL = 'https://www.congreso.es'
+        self.has_voting = has_voting
+
         self.node_tree = document_fromstring(response.text)
         self.soup = BeautifulSoup(response.text, 'lxml')
         self.date_regex = r'[0-9]{2}/[0-9]{2}/[0-9]{4}'
@@ -33,6 +36,7 @@ class InitiativeExtractor:
                     )
         except Exception:
             self.initiative = Initiative()
+
         self.deputies = deputies
         self.parliamentarygroups = parliamentarygroups
         self.places = places
@@ -56,9 +60,14 @@ class InitiativeExtractor:
         except Exception as e:
             log.error(str(e))
             log.error(f"Error processing initiative {self.url}")
+        self.extract_votes()
 
     def extract_content(self):
         self.initiative['content'] = []
+
+    def extract_votes(self):
+        votes_extractor = VoteExtractor(self.node_tree, self.initiative)
+        votes_extractor.extract()
 
     def should_extract_content(self):
         return not self.has_content()
