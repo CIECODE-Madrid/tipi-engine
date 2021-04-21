@@ -16,6 +16,7 @@ from extractors.config import ID_LEGISLATURA
 from .initiative_types import INITIATIVE_TYPES
 from .initiative_extractor_factory import InitiativeExtractorFactory
 from .initiative_extractors.initiative_status import has_finished
+from .initiative_extractors.bulletins_extractor import FirstABulletinExtractor
 from .utils import int_to_roman
 
 
@@ -58,10 +59,20 @@ class InitiativesExtractor:
 
     def extract(self):
         start_time = time.time()
+        self.extract_references()
+
+        log.info(f"Getting {len(self.all_references)} initiatives references")
+        log.debug("--- %s seconds getting references---" % (time.time() - start_time))
+        log.info("Processing initiatives...")
+
+        start_time = time.time()
+        self.extract_initiatives()
+        log.debug("--- %s seconds getting initiatives ---" % (time.time() - start_time))
+
+    def extract_references(self):
         self.sync_totals()
         futures_requests = list()
         session = FuturesSession()
-        # initiative_type = {"type": "", "code": ""}
         for initiative_type in self.INITIATIVE_TYPES:
             try:
                 END = ceil(self.totals_by_type[initiative_type['type']]/self.INITIATIVES_PER_PAGE)
@@ -101,13 +112,6 @@ class InitiativesExtractor:
             except KeyError:
                 log.error(f"Error getting 'lista_iniciativas' on {response.url}")
                 continue
-
-        log.info(f"Getting {len(self.all_references)} initiatives references")
-        log.debug("--- %s seconds getting references---" % (time.time() - start_time))
-        log.info("Processing initiatives...")
-        start_time = time.time()
-        self.extract_initiatives()
-        log.debug("--- %s seconds getting initiatives ---" % (time.time() - start_time))
 
     def extract_initiatives(self):
         session = FuturesSession()
