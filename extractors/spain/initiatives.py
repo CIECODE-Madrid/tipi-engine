@@ -11,6 +11,7 @@ from concurrent.futures import as_completed
 from tipi_data.models.deputy import Deputy
 from tipi_data.models.parliamentarygroup import ParliamentaryGroup
 from tipi_data.models.place import Place
+from tipi_data.models.initiative import Initiative
 
 from extractors.config import ID_LEGISLATURA
 from .initiative_types import INITIATIVE_TYPES
@@ -71,47 +72,50 @@ class InitiativesExtractor:
 
     def extract_references(self):
         self.sync_totals()
-        futures_requests = list()
-        session = FuturesSession()
+        initiatives = Initiative.all.order_by('reference').only('reference')
+
+        last_references = {}
+        totals = {}
+        previous_ref = 1
+
+        for initiative in initiatives:
+            items = initiative['reference'].split('/')
+            initiative_type = items[0]
+            reference = items[1]
+
+            if initiative_type not in totals:
+                totals[initiative_type] = 0
+
+            last_references[initiative_type] = reference
+            int_reference = int(reference)
+            self.all_references += self.calculate_references_between(previous_ref, int_reference, initiative_type)
+
+            totals[initiative_type] += 1
+            previous_ref = int_reference + 1
+
         for initiative_type in self.INITIATIVE_TYPES:
-            try:
-                END = ceil(self.totals_by_type[initiative_type['type']]/self.INITIATIVES_PER_PAGE)
-            except Exception:
-                log.warning(f"Unrecognized initiative type: {initiative_type['type']}")
-                END = 0
+            code = initiative_type['code']
+            title = initiative_type['type']
+
+            db_last_reference = int(last_references[code]) if code in last_references else 0
+            origin_total = self.totals_by_type[title] if title in self.totals_by_type else 0
+            db_total = totals[code] if code in totals else 0
+
+            new_items = origin_total - db_total
+            if not new_items:
                 continue
-            query_params = {
-                    'p_p_id': 'iniciativas',
-                    'p_p_lifecycle': 2,
-                    'p_p_state': 'normal',
-                    'p_p_mode': 'view',
-                    'p_p_resource_id': 'filtrarListado',
-                    '_iniciativas_mode': 'verListadoIndice'
-                    }
-            for page in range(1, END+1):
-                form_data = {
-                        '_iniciativas_legislatura': self.LEGISLATURE,
-                        '_iniciativas_tipo': initiative_type['code'],
-                        '_iniciativas_paginaActual': page
-                        }
-                futures_requests.append(session.post(
-                        self.BASE_URL,
-                        params=query_params,
-                        data=form_data))
-        for future in as_completed(futures_requests):
-            response = future.result()
-            try:
-                initiatives = response.json()['lista_iniciativas']
-                self.all_references += [
-                        initiatives[key]['id_iniciativa']
-                        for key in initiatives.keys()
-                        if not has_finished(initiatives[key]['id_iniciativa'])]
-            except json.decoder.JSONDecodeError:
-                log.error(f"Error decoding JSON response on {response.url}")
-                continue
-            except KeyError:
-                log.error(f"Error getting 'lista_iniciativas' on {response.url}")
-                continue
+
+            for extra in range(1, new_items + 3):
+                self.all_references.append(self.format_reference(db_last_reference + extra, code))
+
+    def calculate_references_between(self, previous_ref, new_ref, initiative_type):
+        missing_references = []
+        while previous_ref < new_ref:
+            missing_reference = self.format_reference(previous_ref, initiative_type)
+            previous_ref += 1
+            missing_references.append(missing_reference)
+
+        return missing_references
 
     def extract_initiatives(self):
         session = FuturesSession()
@@ -138,3 +142,8 @@ class InitiativesExtractor:
                         self.parliamentarygroups,
                         self.places
                         ).extract()
+
+    def format_reference(self, ref, initiative_type):
+        reference = str(ref)
+        missing_zeros = 6 - len(reference)
+        return initiative_type + '/' + ('0' * missing_zeros) + reference
