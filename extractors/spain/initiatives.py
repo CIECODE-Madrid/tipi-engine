@@ -31,6 +31,7 @@ class InitiativesExtractor:
         self.INITIATIVES_PER_PAGE = 25
         self.BASE_URL = 'https://www.congreso.es/web/guest/indice-de-iniciativas'
         self.INITIATIVE_TYPES = INITIATIVE_TYPES
+        self.SAFETY_EXTRACTION_GAP = 3
         self.totals_by_type = dict()
         self.all_references = list()
         self.deputies = Deputy.objects()
@@ -88,9 +89,10 @@ class InitiativesExtractor:
 
             last_references[initiative_type] = reference
             int_reference = int(reference)
-            self.all_references += self.calculate_references_between(previous_ref, int_reference, initiative_type)
+            missing_references = self.calculate_references_between(previous_ref, int_reference, initiative_type)
+            self.all_references += missing_references
 
-            totals[initiative_type] += 1
+            totals[initiative_type] += 1 + len(missing_references)
             previous_ref = int_reference + 1
 
         for initiative_type in self.INITIATIVE_TYPES:
@@ -105,7 +107,7 @@ class InitiativesExtractor:
             if not new_items:
                 continue
 
-            for extra in range(1, new_items + 3):
+            for extra in range(1, new_items + self.SAFETY_EXTRACTION_GAP + 1):
                 self.all_references.append(self.format_reference(db_last_reference + extra, code))
 
     def calculate_references_between(self, previous_ref, new_ref, initiative_type):
