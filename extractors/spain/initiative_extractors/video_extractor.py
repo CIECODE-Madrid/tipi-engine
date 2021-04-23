@@ -10,8 +10,9 @@ class VideoExtractor():
 
     def extract(self):
         json = self.retrieve_json(1)
-        if 'error' in json:
+        if 'error' in json or 'intervenciones_encontradas' not in json:
             return
+
         total = int(json['intervenciones_encontradas'])
         pages = math.ceil(total / 25)
 

@@ -44,6 +44,10 @@ class InitiativeExtractor:
 
     def extract(self):
         try:
+            check = self.soup.select_one('.entradilla-iniciativa')
+            if check is None:
+                # This is a 404 error, the initiative does not exist.
+                return
             self.extract_commons()
             previous_content = self.initiative['content'] if self.has_content() else list()
             if self.should_extract_content():
