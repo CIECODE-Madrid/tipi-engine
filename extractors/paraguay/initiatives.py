@@ -62,10 +62,10 @@ class InitiativesExtractor:
         initiative['reference'] = str(remote_initiative['expedienteCamara'])
         initiative['title'] = remote_initiative['acapite']
         initiative['initiative_type'] = remote_initiative['tipoProyecto']
-        initiative['processing'] = "{} ({})".format(
+        initiative['history'] = ["{} ({})".format(
             remote_initiative['descripcionEtapa'],
             remote_initiative['descripcionSubEtapa']
-            )
+            )]
         initiative['status'] = remote_initiative['estadoProyecto']
         initiative['place'] = remote_initiative['origenProyecto']
         initiative['url'] = remote_initiative['appURL']
