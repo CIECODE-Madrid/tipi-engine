@@ -100,7 +100,7 @@ class DeputyExtractor():
         self.deputy['extra'] = {}
         links = self.get_by_css('.declaraciones-dip a')
         for link in links:
-            self.deputy['extra'][self.clean_str(link.text)] = self.BASE_URL + link.get('href')
+            self.deputy['extra']['declarations'][self.clean_str(link.text)] = self.BASE_URL + link.get('href')
 
     def extract_from_text(self):
         birthday_paragraph = self.clean_str(self.get_by_xpath("//h3[normalize-space(text()) = 'Ficha personal']/following-sibling::p[1]")[0].text)
