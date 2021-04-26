@@ -16,7 +16,7 @@ from tipi_data.models.initiative import Initiative
 from extractors.config import ID_LEGISLATURA
 from .initiative_types import INITIATIVE_TYPES
 from .initiative_extractor_factory import InitiativeExtractorFactory
-from .initiative_extractors.initiative_status import has_finished
+from .initiative_extractors.initiative_status import has_finished, NOT_FINAL_STATUS
 from .initiative_extractors.bulletins_extractor import FirstABulletinExtractor
 from .utils import int_to_roman
 
@@ -73,7 +73,7 @@ class InitiativesExtractor:
 
     def extract_references(self):
         self.sync_totals()
-        initiatives = Initiative.all.order_by('reference').only('reference')
+        initiatives = Initiative.all.order_by('reference').only('reference', 'status')
 
         last_references = {}
         totals = {}
@@ -91,6 +91,9 @@ class InitiativesExtractor:
             int_reference = int(reference)
             missing_references = self.calculate_references_between(previous_ref, int_reference, initiative_type)
             self.all_references += missing_references
+
+            if initiative['status'] in NOT_FINAL_STATUS:
+                self.all_references.append(initiative['reference'])
 
             totals[initiative_type] += 1 + len(missing_references)
             previous_ref = int_reference + 1
