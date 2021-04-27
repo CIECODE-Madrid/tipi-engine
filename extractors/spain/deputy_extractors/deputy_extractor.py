@@ -99,6 +99,8 @@ class DeputyExtractor():
     def extract_extras(self):
         self.deputy['extra'] = {}
         links = self.get_by_css('.declaraciones-dip a')
+        if links:
+            self.deputy['extra']['declarations'] = {}
         for link in links:
             self.deputy['extra']['declarations'][self.clean_str(link.text)] = self.BASE_URL + link.get('href')
 
