@@ -11,6 +11,7 @@ class ExtractorTask(luigi.Task):
     def __init__(self):
         self.members_extractor = im('extractors.{}.members'.format(MODULE_EXTRACTOR)).MembersExtractor()
         self.initiatives_extractor = im('extractors.{}.initiatives'.format(MODULE_EXTRACTOR)).InitiativesExtractor()
+        super().__init__()
 
     def output(self):
         return luigi.LocalTarget(FILES[0])
