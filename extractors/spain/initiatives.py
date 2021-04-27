@@ -18,6 +18,7 @@ from .initiative_types import INITIATIVE_TYPES
 from .initiative_extractor_factory import InitiativeExtractorFactory
 from .initiative_extractors.initiative_status import has_finished, NOT_FINAL_STATUS
 from .initiative_extractors.video_extractor import VideoExtractor
+from .initiative_extractors.vote_extractor import VoteExtractor
 from .utils import int_to_roman
 
 
@@ -142,6 +143,17 @@ class InitiativesExtractor:
         return missing_references
 
     def extract_initiatives(self):
+        def callback(response):
+            InitiativeExtractorFactory.create(
+                response,
+                self.deputies,
+                self.parliamentarygroups,
+                self.places
+            ).extract()
+
+        self.process_initiatives(callback)
+
+    def process_initiatives(self, callback):
         session = FuturesSession()
         futures_requests = list()
         for reference in self.all_references:
@@ -160,17 +172,20 @@ class InitiativesExtractor:
         for future in as_completed(futures_requests):
             response = future.result()
             if response.ok:
-                InitiativeExtractorFactory.create(
-                        response,
-                        self.deputies,
-                        self.parliamentarygroups,
-                        self.places
-                        ).extract()
+                callback(response)
 
     def extract_videos(self):
         for reference in self.all_references:
             extractor = VideoExtractor(reference)
             extractor.extract()
+
+    def extract_votes(self):
+        def callback(response):
+            extractor = InitiativeExtractorFactory.create(response, [], [], [])
+            votes_extractor = VoteExtractor(extractor.node_tree, extractor.get_reference())
+            votes_extractor.extract()
+
+        self.process_initiatives(callback)
 
     def format_reference(self, ref, initiative_type):
         reference = str(ref)

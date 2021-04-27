@@ -17,9 +17,9 @@ class VoteExtractor():
         'Votación de conjunto'
     ]
 
-    def __init__(self, tree, initiative):
+    def __init__(self, tree, reference):
         self.tree = tree
-        self.initiative = initiative
+        self.reference = reference
 
     def extract(self):
         votes_html = self.get_votes_html()
@@ -83,8 +83,8 @@ class VoteExtractor():
     def save_votes(self, data):
         votes = Voting()
         information = data.get('informacion')
-        votes['id'] = self.generate_id(self.initiative['reference'], information.get('tituloSubGrupo'))
-        votes['reference'] = self.initiative['reference']
+        votes['id'] = self.generate_id(self.reference, information.get('tituloSubGrupo'))
+        votes['reference'] = self.reference
         votes['title'] = information.get('textoExpediente')
         votes['subgroup_text'] = information.get('textoSubGrupo')
         votes['subgroup_title'] = information.get('tituloSubGrupo')

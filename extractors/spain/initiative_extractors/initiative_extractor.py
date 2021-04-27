@@ -70,7 +70,7 @@ class InitiativeExtractor:
         self.initiative['content'] = []
 
     def extract_votes(self):
-        votes_extractor = VoteExtractor(self.node_tree, self.initiative)
+        votes_extractor = VoteExtractor(self.node_tree, self.initiative['reference'])
         votes_extractor.extract()
 
     def should_extract_content(self):
