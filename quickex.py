@@ -23,8 +23,13 @@ def stats(args):
 def extract(args):
     task = ExtractorTask()
     subcommands = {
-        'references': task.references,
         'initiatives': task.initiatives,
+        'references': task.references,
+        'votes': task.votes,
+        'interventions': task.interventions,
+        'all-references': task.all_references,
+        'all-votes': task.all_votes,
+        'all-interventions': task.all_interventions,
         'members': task.members
     }
 

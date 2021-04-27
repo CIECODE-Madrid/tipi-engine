@@ -28,8 +28,28 @@ class ExtractorTask(luigi.Task):
     def initiatives(self):
         self.initiatives_extractor.extract()
 
+    def votes(self):
+        self.initiatives_extractor.extract_references()
+        self.initiatives_extractor.extract_votes()
+
+    def interventions(self):
+        self.initiatives_extractor.extract_references()
+        self.initiatives_extractor.extract_videos()
+
     def references(self):
         self.initiatives_extractor.extract_references()
+        print(self.initiatives_extractor.all_references)
+
+    def all_votes(self):
+        self.initiatives_extractor.extract_all_references()
+        self.initiatives_extractor.extract_votes()
+
+    def all_interventions(self):
+        self.initiatives_extractor.extract_all_references()
+        self.initiatives_extractor.extract_videos()
+
+    def all_references(self):
+        self.initiatives_extractor.extract_all_references()
         print(self.initiatives_extractor.all_references)
 
     def end(self):

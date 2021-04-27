@@ -17,7 +17,7 @@ from extractors.config import ID_LEGISLATURA
 from .initiative_types import INITIATIVE_TYPES
 from .initiative_extractor_factory import InitiativeExtractorFactory
 from .initiative_extractors.initiative_status import has_finished, NOT_FINAL_STATUS
-from .initiative_extractors.bulletins_extractor import FirstABulletinExtractor
+from .initiative_extractors.video_extractor import VideoExtractor
 from .utils import int_to_roman
 
 
@@ -71,6 +71,23 @@ class InitiativesExtractor:
         self.extract_initiatives()
         log.debug("--- %s seconds getting initiatives ---" % (time.time() - start_time))
 
+    def extract_all_references(self):
+        self.sync_totals()
+        for initiative_type in self.INITIATIVE_TYPES:
+            code = initiative_type['code']
+            title = initiative_type['type']
+
+            db_last_reference = 0
+            db_total = 0
+            origin_total = self.totals_by_type[title] if title in self.totals_by_type else 0
+
+            new_items = origin_total - db_total
+            if not new_items:
+                continue
+
+            for extra in range(1, new_items + self.SAFETY_EXTRACTION_GAP + 1):
+                self.all_references.append(self.format_reference(db_last_reference + extra, code))
+
     def extract_references(self):
         self.sync_totals()
         initiatives = Initiative.all.order_by('reference').only('reference', 'status')
@@ -80,6 +97,8 @@ class InitiativesExtractor:
         previous_ref = 1
 
         for initiative in initiatives:
+            if 'reference' not in initiative:
+                continue
             items = initiative['reference'].split('/')
             initiative_type = items[0]
             reference = items[1]
@@ -147,6 +166,11 @@ class InitiativesExtractor:
                         self.parliamentarygroups,
                         self.places
                         ).extract()
+
+    def extract_videos(self):
+        for reference in self.all_references:
+            extractor = VideoExtractor(reference)
+            extractor.extract()
 
     def format_reference(self, ref, initiative_type):
         reference = str(ref)
