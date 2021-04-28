@@ -19,7 +19,9 @@ class DeputyExtractor():
         self.deputy['public_position'] = self.get_public_positions()
         self.deputy['party_logo'] = self.get_src_by_css('.logo-partido img')
         self.deputy['url'] = self.response.url
-        self.deputy['constituency'] = self.get_text_by_css('.cargo-dip').replace("Diputado por", "")
+        self.deputy['gender'], self.deputy['constituency'] = self.get_gender_and_constituency_from(
+                self.get_text_by_css('.cargo-dip')
+                )
         self.deputy['id'] = self.generate_id()
 
         self.extract_social_media()
@@ -95,6 +97,14 @@ class DeputyExtractor():
         if url.find('http') != 0:
             url = 'http://' + url
         return url
+
+    def get_gender_and_constituency_from(self, string):
+        array_string = string.split()
+        gender = 'Mujer' if array_string[0] == 'Diputada' else 'Hombre'
+        for _ in range(2):
+            array_string.pop(0)
+        constituency = " ".join(array_string)
+        return gender, constituency
 
     def extract_extras(self):
         self.deputy['extra'] = {}
