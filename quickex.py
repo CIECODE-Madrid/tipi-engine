@@ -27,11 +27,17 @@ def extract(args):
         'references': task.references,
         'votes': task.votes,
         'interventions': task.interventions,
+        'all-references': task.all_initiatives,
         'all-references': task.all_references,
         'all-votes': task.all_votes,
         'all-interventions': task.all_interventions,
         'single-initiative': task.single_initiatives,
+        'single-interventions': task.single_interventions,
+        'single-votes': task.single_votes,
         'type-initiative': task.type_initiatives,
+        'type-references': task.type_references,
+        'type-interventions': task.type_interventions,
+        'type-votes': task.type_votes,
         'members': task.members
     }
 

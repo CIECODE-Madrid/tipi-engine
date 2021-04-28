@@ -40,6 +40,10 @@ class ExtractorTask(luigi.Task):
         self.initiatives_extractor.extract_references()
         print(self.initiatives_extractor.all_references)
 
+    def all_initiatives(self):
+        self.initiatives_extractor.extract_all_references()
+        self.initiatives_extractor.extract_initiatives()
+
     def all_votes(self):
         self.initiatives_extractor.extract_all_references()
         self.initiatives_extractor.extract_votes()
@@ -56,9 +60,29 @@ class ExtractorTask(luigi.Task):
         self.initiatives_extractor.all_references = [reference]
         self.initiatives_extractor.extract_initiatives()
 
+    def single_interventions(self, reference):
+        self.initiatives_extractor.all_references = [reference]
+        self.initiatives_extractor.extract_videos()
+
+    def single_votes(self, reference):
+        self.initiatives_extractor.all_references = [reference]
+        self.initiatives_extractor.extract_votes()
+
     def type_initiatives(self, type_code):
         self.initiatives_extractor.extract_references_from_type(type_code)
         self.initiatives_extractor.extract_initiatives()
+
+    def type_references(self, type_code):
+        self.initiatives_extractor.extract_references_from_type(type_code)
+        print(self.initiatives_extractor.all_references)
+
+    def type_interventions(self, type_code):
+        self.initiatives_extractor.extract_references_from_type(type_code)
+        self.initiatives_extractor.extract_videos()
+
+    def type_votes(self, type_code):
+        self.initiatives_extractor.extract_references_from_type(type_code)
+        self.initiatives_extractor.extract_votes()
 
     def end(self):
         self.output().open('w').close()
