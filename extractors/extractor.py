@@ -56,5 +56,9 @@ class ExtractorTask(luigi.Task):
         self.initiatives_extractor.all_references = [reference]
         self.initiatives_extractor.extract_initiatives()
 
+    def type_initiatives(self, type_code):
+        self.initiatives_extractor.extract_references_from_type(type_code)
+        self.initiatives_extractor.extract_initiatives()
+
     def end(self):
         self.output().open('w').close()

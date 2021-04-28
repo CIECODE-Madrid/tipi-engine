@@ -31,6 +31,7 @@ def extract(args):
         'all-votes': task.all_votes,
         'all-interventions': task.all_interventions,
         'single-initiative': task.single_initiatives,
+        'type-initiative': task.type_initiatives,
         'members': task.members
     }
 
