@@ -30,10 +30,14 @@ def extract(args):
         'all-references': task.all_references,
         'all-votes': task.all_votes,
         'all-interventions': task.all_interventions,
+        'single-initiative': task.single_initiatives,
         'members': task.members
     }
 
     if len(args) > 2 and args[2] in subcommands:
+        if len(args) > 3:
+            return subcommands[args[2]](args[3])
+
         return subcommands[args[2]]()
     task.run()
 

@@ -52,5 +52,9 @@ class ExtractorTask(luigi.Task):
         self.initiatives_extractor.extract_all_references()
         print(self.initiatives_extractor.all_references)
 
+    def single_initiatives(self, reference):
+        self.initiatives_extractor.all_references = [reference]
+        self.initiatives_extractor.extract_initiatives()
+
     def end(self):
         self.output().open('w').close()
