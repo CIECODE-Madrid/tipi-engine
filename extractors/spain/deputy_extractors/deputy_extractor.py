@@ -121,7 +121,7 @@ class DeputyExtractor():
             self.deputy['birthdate'] = birthday
 
         legislatures_paragraph = self.clean_str(self.get_by_xpath("//h3[normalize-space(text()) = 'Ficha personal']/following-sibling::p[2]")[0].text)
-        self.deputy['legislatures'] = legislatures_paragraph.replace("Diputado de la ", "").replace(" Legislaturas", "").replace("y ", "").split(", ")
+        self.deputy['legislatures'] = legislatures_paragraph.replace("Diputada", "").replace("Diputado", "").replace(" de la ", "").replace(" Legislaturas", "").replace("y ", "").split(", ")
 
         bio = self.clean_str(self.get_by_xpath("//h3[normalize-space(text()) = 'Ficha personal']/parent::div")[0].text_content())
         bio = bio.replace("Ficha personal", "").replace(birthday_paragraph, "").replace(legislatures_paragraph, "")
