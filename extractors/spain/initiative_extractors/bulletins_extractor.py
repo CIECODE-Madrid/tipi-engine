@@ -165,7 +165,8 @@ class NonExclusiveBulletinExtractor(InitiativeExtractor):
             self.initiative['status'] = 'En tramitación'
             return []
 
-        return self.extract_initiative_from_bulletin(cleanup_content)
+        output = self.extract_initiative_from_bulletin(cleanup_content)
+        return output
 
     def extract_initiative_from_bulletin(self, full_content):
         clean_content = self.clean_str_to_substr(full_content, 'Página ' + self.page)

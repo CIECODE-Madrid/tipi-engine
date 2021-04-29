@@ -1,9 +1,14 @@
 from .initiative_extractor import InitiativeExtractor
+from .bulletins_extractor import NonExclusiveBulletinExtractor
 from .utils.pdf_parsers import PDFExtractor
 from copy import deepcopy
 from .initiative_status import NOT_FINAL_STATUS, ON_PROCESS
 from tipi_data.models.initiative import Initiative
 from tipi_data.utils import generate_id
+from logger import get_logger
+
+
+log = get_logger(__name__)
 
 
 class QuestionExtractor(InitiativeExtractor):
@@ -59,10 +64,26 @@ class QuestionExtractor(InitiativeExtractor):
         answer_initiative.save(force_insert=force)
 
     def retrieve_question(self):
-        return self.retrieve_content(self.QUESTION, True)
+        link = self.find_link(self.QUESTION)
+        if link == []:
+            return []
+        link_text = link.text_content()
+        if link_text == 'Pregunta':
+            return self.retrieve_content(link, True)
+        if link_text == 'Pregunta (ver boletín de la iniciativa, según acuerdo de mesa)':
+            bulletin_extractor = NonExclusiveBulletinExtractor(self.response, [], [], [])
+            bulletin_extractor.initiative['reference'] = self.get_reference()
+            bulletin_extractor.extract_content()
+            return bulletin_extractor.initiative['content']
+
+        log.error(f"Error, unkown question type found {link_text}")
+        return []
 
     def retrieve_answer(self):
-        return self.retrieve_content(self.ANSWER)
+        link = self.find_link(self.ANSWER)
+        if link == []:
+            return []
+        return self.retrieve_content(link)
 
     def generate_answer_id(self, initiative):
         return generate_id(
@@ -70,17 +91,13 @@ class QuestionExtractor(InitiativeExtractor):
             initiative['initiative_type_alt']
         )
 
-    def retrieve_content(self, content, is_img = False):
-        try:
-            url = self.find_url(content)
-        except Exception:
-            # URL not found, do not download the PDF.
-            return []
+    def retrieve_content(self, link_tag, is_img = False):
+        url = link_tag.get(self.HREF)
         extractor = PDFExtractor(url, is_img)
         return extractor.retrieve()
 
-    def find_url(self, content):
+    def find_link(self, content):
         items = self.node_tree.xpath(f"//section[@id='portlet_iniciativas']//a[contains(normalize-space(text()), '{content}')]")
-        if len(items) < 0:
-            raise Exception('Link not found')
-        return items[0].get(self.HREF)
+        if len(items) == 0:
+            return []
+        return items[0]

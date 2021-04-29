@@ -13,14 +13,12 @@ class InitiativeExtractorFactory:
     @staticmethod
     def create(response, deputies, parliamentarygroups, places):
         extractor = InitiativeExtractor
-        voting = False
 
         initiative_code = InitiativeExtractorFactory.get_type(response)
 
         for initiative_type in INITIATIVE_TYPES:
             if initiative_code == initiative_type.get('code') and "class" in initiative_type:
                 extractor = initiative_type.get("class")
-                voting = "votes" in initiative_type
 
-        return extractor(response, deputies, parliamentarygroups, places, voting)
+        return extractor(response, deputies, parliamentarygroups, places)
 

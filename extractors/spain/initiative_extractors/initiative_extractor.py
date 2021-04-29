@@ -21,10 +21,10 @@ log = get_logger(__name__)
 
 class InitiativeExtractor:
 
-    def __init__(self, response, deputies, parliamentarygroups, places, has_voting):
+    def __init__(self, response, deputies, parliamentarygroups, places):
+        self.response = response
         self.url = response.url
         self.BASE_URL = 'https://www.congreso.es'
-        self.has_voting = has_voting
 
         self.node_tree = document_fromstring(response.text)
         self.soup = BeautifulSoup(response.text, 'lxml')
@@ -62,7 +62,7 @@ class InitiativeExtractor:
             self.extract_videos()
             log.info(f"Iniciativa {self.initiative['reference']} procesada")
         except Exception as e:
-            log.error(str(e))
+            log.error(e)
             log.error(f"Error processing initiative {self.url}")
         self.extract_votes()
 
