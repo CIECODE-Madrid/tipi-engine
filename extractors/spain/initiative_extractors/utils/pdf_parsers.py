@@ -10,10 +10,13 @@ class PDFParser():
         self.file = file
 
     def extract(self):
-        content = process(self.file.name)
-        content = content.decode('utf-8').strip()
-        content = content.replace('\f', ' ').replace('\t', '').split('\n')
-        return content
+        try:
+            content = process(self.file.name)
+            content = content.decode('utf-8').strip()
+            content = content.replace('\f', ' ').replace('\t', '').split('\n')
+            return content
+        except Exception:
+            return []
 
 class PDFImageParser():
     def __init__(self, file):
@@ -38,7 +41,7 @@ class PDFExtractor():
 
     def retrieve(self):
         response = requests.get(self.url)
-        content = ''
+        content = []
         if not response.ok:
             return content
         try:
@@ -51,8 +54,8 @@ class PDFExtractor():
             pass
         return content
 
-    def extract(self, pdf, is_img = False):
-        content = ''
+    def extract(self, pdf, is_img=False):
+        content = []
         if is_img:
             parser = PDFImageParser(pdf)
         else:
@@ -60,6 +63,9 @@ class PDFExtractor():
 
         try:
             content = parser.extract()
+            if content == [] and not is_img:
+                parser = PDFImageParser(pdf)
+                content = parser.extract()
 
         except Exception as e:
             print(e)
