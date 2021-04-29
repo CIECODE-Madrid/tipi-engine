@@ -59,12 +59,10 @@ class InitiativeExtractor:
                 if is_final_status(self.initiative['status']) and self.has_topics():
                     create_alert(self.initiative)
             self.initiative.save()
-            self.extract_videos()
             log.info(f"Iniciativa {self.initiative['reference']} procesada")
         except Exception as e:
             log.error(e)
             log.error(f"Error processing initiative {self.url}")
-        self.extract_votes()
 
     def extract_content(self):
         self.initiative['content'] = []
