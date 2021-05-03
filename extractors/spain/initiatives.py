@@ -91,7 +91,7 @@ class InitiativesExtractor:
             for extra in range(1, new_items + self.SAFETY_EXTRACTION_GAP + 1):
                 self.all_references.append(self.format_reference(db_last_reference + extra, code))
 
-    def extract_references_from_type(self, type_code):
+    def extract_all_references_from_type(self, type_code):
         self.sync_totals()
         for initiative_type in self.get_types():
             code = initiative_type['code']
@@ -102,6 +102,52 @@ class InitiativesExtractor:
             db_last_reference = 0
             db_total = 0
             origin_total = self.totals_by_type[title] if title in self.totals_by_type else 0
+
+            new_items = origin_total - db_total
+            if not new_items:
+                continue
+
+            for extra in range(1, new_items + self.SAFETY_EXTRACTION_GAP + 1):
+                self.all_references.append(self.format_reference(db_last_reference + extra, code))
+
+    def extract_references_from_type(self, type_code):
+        self.sync_totals()
+        initiatives = Initiative.all.filter(initiative_type=type_code).order_by('reference').only('reference', 'status')
+
+        last_references = {}
+        totals = {}
+        previous_ref = 1
+
+        for initiative in initiatives:
+            if 'reference' not in initiative:
+                continue
+            items = initiative['reference'].split('/')
+            initiative_type = items[0]
+            reference = items[1]
+
+            if initiative_type not in totals:
+                totals[initiative_type] = 0
+
+            last_references[initiative_type] = reference
+            int_reference = int(reference)
+            missing_references = self.calculate_references_between(previous_ref, int_reference, initiative_type)
+            self.all_references += missing_references
+
+            if initiative['status'] in NOT_FINAL_STATUS:
+                self.all_references.append(initiative['reference'])
+
+            totals[initiative_type] += 1 + len(missing_references)
+            previous_ref = int_reference + 1
+
+        for initiative_type in self.get_types():
+            code = initiative_type['code']
+            if type_code != code:
+                continue
+            title = initiative_type['type']
+
+            db_last_reference = int(last_references[code]) if code in last_references else 0
+            origin_total = self.totals_by_type[title] if title in self.totals_by_type else 0
+            db_total = totals[code] if code in totals else 0
 
             new_items = origin_total - db_total
             if not new_items:
