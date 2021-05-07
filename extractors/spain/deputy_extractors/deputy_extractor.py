@@ -116,7 +116,7 @@ class DeputyExtractor():
 
     def extract_from_text(self):
         birthday_paragraph = self.clean_str(self.get_by_xpath("//h3[normalize-space(text()) = 'Ficha personal']/following-sibling::p[1]")[0].text)
-        birthday = birthday_paragraph.replace("Nacido el ", "").replace("Nacida el ", "")[:28]
+        birthday = birthday_paragraph.replace("Nacido el ", "").replace("Nacida el ", "")[:29]
         if birthday != '':
             self.deputy['birthdate'] = birthday
 
