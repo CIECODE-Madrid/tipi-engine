@@ -18,7 +18,7 @@ class DeputyExtractor():
         self.deputy['image'] = self.BASE_URL + self.get_src_by_css('.img-dip img')
         self.deputy['public_position'] = self.get_public_positions()
         self.deputy['party_logo'] = self.get_src_by_css('.logo-partido img')
-        self.deputy['party_name'] = self.get_src_by_css('.siglas-partido')
+        self.deputy['party_name'] = self.get_text_by_css('.siglas-partido')
         self.deputy['url'] = self.response.url
         self.deputy['gender'], self.deputy['constituency'] = self.get_gender_and_constituency_from(
                 self.get_text_by_css('.cargo-dip')
