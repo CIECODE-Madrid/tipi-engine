@@ -2,13 +2,14 @@ import sys
 
 from extractors.extractor import ExtractorTask
 from tagger.tag_initiatives import TagInitiatives
+from untagger.untag_initiatives import UntagInitiatives
 from alerts.send_alerts import SendAlerts
 from stats.process_stats import GenerateStats
 
 
 def print_help():
     print('Usage: quickex.py TASK')
-    print('Apply task: alerts, tagger, stats or extractor')
+    print('Apply task: alerts, tagger, untagger, stats or extractor')
     print('Example: python quickex.py stats')
 
 def send_alerts(args):
@@ -19,6 +20,27 @@ def tag(args):
 
 def stats(args):
     GenerateStats().generate()
+
+def untag(args):
+    command = UntagInitiatives()
+    subcommands = {
+        'all': command.untag_all,
+        'undo': command.undo,
+        'topic': command.by_topic,
+        'tag': command.by_tag,
+        'remove-topic': command.remove_topic,
+        'remove-tag': command.remove_tag,
+    }
+    if len(args) > 2:
+        if args[2] in subcommands:
+            if len(args) > 3:
+                return subcommands[args[2]](args[3])
+            else:
+                return subcommands[args[2]]()
+        else:
+            print('quickex: invalid TASK')
+
+    command.untag_all()
 
 def extract(args):
     task = ExtractorTask()
@@ -55,6 +77,7 @@ def extract(args):
 commands = {
     'alerts': send_alerts,
     'tagger': tag,
+    'untagger': untag,
     'stats': stats,
     'extractor': extract
 }
