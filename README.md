@@ -64,3 +64,9 @@ Available Commands
 - `python quickex.py extractor type-all-interventions`: Extracts all the video interventions of the initiatives of the specified initiative type.
 - `python quickex.py extractor type-all-votes`: Extracts all the votes of the initiatives of the specified initiative type.
 - `python quickex.py extractor members`: Extracts all the members and updates the existing ones in the DB.
+- `python quickex.py untagger all`: Marks all initiatives as not tagged.
+- `python quickex.py untagger undo`: Marks all initiatives as tagged.
+- `python quickex.py untagger topic`: Marks all initiatives with the given topic as untagged.
+- `python quickex.py untagger tag`: Marks all initiatives with the given tag as untagged.
+- `python quickex.py untagger remove-topic`: Removes the given topic from all initiatives.
+- `python quickex.py untagger remove-tag`: Removes the given tag from all the initiatives.

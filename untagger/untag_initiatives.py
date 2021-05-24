@@ -33,8 +33,8 @@ class UntagInitiatives:
 
     def remove_topic(self, topic):
         print('Removing topic "' + topic + '"')
-        pass
+        Initiative.all().update(pull__topics=topic)
 
     def remove_tag(self, tag):
         print('Removing tag "' + tag + '"')
-        pass
+        Initiative.all().update(pull__tags__tag=tag)
