@@ -68,10 +68,7 @@ class TagInitiatives:
                     ]
                 }
 
-    def run(self):
-        InitiativeAlert.objects().delete()
-        tags = codecs.encode(pickle.dumps(Topic.get_tags()), "base64").decode()
-        initiatives = list(Initiative.all(__raw__=self.__get_untagged_query()))
+    def tag_initiatives(self, initiatives, tags, merge=False, send_alerts=True):
         total = len(initiatives)
         for index, initiative in enumerate(initiatives):
             try:
@@ -91,18 +88,54 @@ class TagInitiatives:
                     body_result = body_result['result']
                     result = self.__merge_results(title_result, body_result)
                     self.__delete_topics_with_one_tag_ocurrence(result)
-
-                initiative['topics'] = result['topics']
-                initiative['tags'] = list(map(
+                tags = list(map(
                     lambda x: Tag(
                         topic=x['topic'],
                         subtopic=x['subtopic'],
-                        tag=x['tag'],
+                            tag=x['tag'],
                         times=x['times']
                         ), result['tags']))
+
+                if merge:
+                    initiative['topics'] = list(set(initiative['topics'] + result['topics']))
+                    initiative['tags'] = self.merge_tags(initiative['tags'], tags)
+                else:
+                    initiative['topics'] = result['topics']
+                    initiative['tags'] = tags
                 initiative['tagged'] = True
                 initiative.save()
-                if len(result['topics']) > 0 and USE_ALERTS:
+                if len(result['topics']) > 0 and USE_ALERTS and send_alerts:
                     create_alert(initiative)
             except Exception as e:
                 log.error(f"Error tagging {initiative['id']}: {e}")
+
+    def run(self):
+        InitiativeAlert.objects().delete()
+        tags = codecs.encode(pickle.dumps(Topic.get_tags()), "base64").decode()
+        initiatives = list(Initiative.all(__raw__=self.__get_untagged_query()))
+        self.tag_initiatives(initiatives, tags)
+
+    def new_tag(self, tag):
+        tags = codecs.encode(pickle.dumps(Topic.get_filtered_tags('tag', tag)), "base64").decode()
+        initiatives = list(Initiative.all())
+        self.tag_initiatives(initiatives, tags, True, False)
+
+    def new_topic(self, topic):
+        tags = codecs.encode(pickle.dumps(Topic.get_filtered_tags('topic', topic)), "base64").decode()
+        initiatives = list(Initiative.all())
+        self.tag_initiatives(initiatives, tags, True, False)
+
+    def rename(self, old_tag, new_tag):
+        initiatives = Initiative.all(tags__tag=old_tag)
+        for initiative in initiatives:
+            for tag in initiative['tags']:
+                if tag.tag == old_tag:
+                    tag.tag = new_tag
+            initiative.save()
+
+    def merge_tags(self, old_tags, new_tags):
+        for new_tag in new_tags:
+            if any(old_tag.tag == new_tag.tag for old_tag in old_tags):
+                continue
+            old_tags.append(new_tag)
+        return old_tags

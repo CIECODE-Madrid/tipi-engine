@@ -33,8 +33,14 @@ class UntagInitiatives:
 
     def remove_topic(self, topic):
         print('Removing topic "' + topic + '"')
-        Initiative.all().update(pull__topics=topic)
+        Initiative.all().update(pull__topics=topic, pull__tags__topic=topic)
 
     def remove_tag(self, tag):
         print('Removing tag "' + tag + '"')
-        Initiative.all().update(pull__tags__tag=tag)
+        initiatives = Initiative.all(tags__tag=tag)
+        for initiative in initiatives:
+            tags = list(filter(lambda initiative_tag: initiative_tag.tag != tag, initiative['tags']))
+            topics = sorted(list(set(tag['topic'] for tag in tags)))
+            initiative['tags'] = tags
+            initiative['topics'] = topics
+            initiative.save()
