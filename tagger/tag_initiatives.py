@@ -87,7 +87,6 @@ class TagInitiatives:
                         continue
                     body_result = body_result['result']
                     result = self.__merge_results(title_result, body_result)
-                    self.__delete_topics_with_one_tag_ocurrence(result)
                 tags = list(map(
                     lambda x: Tag(
                         topic=x['topic'],
@@ -97,11 +96,14 @@ class TagInitiatives:
                         ), result['tags']))
 
                 if merge:
-                    initiative['topics'] = list(set(initiative['topics'] + result['topics']))
-                    initiative['tags'] = self.merge_tags(initiative['tags'], tags)
+                    topics = list(set(initiative['topics'] + result['topics']))
+                    tags = self.merge_tags(initiative['tags'], tags)
                 else:
-                    initiative['topics'] = result['topics']
-                    initiative['tags'] = tags
+                    topics = result['topics']
+
+                initiative['tags'] = tags
+                initiative['topics'] = topics
+                self.__delete_topics_with_one_tag_ocurrence(initiative)
                 initiative['tagged'] = True
                 initiative.save()
                 if len(result['topics']) > 0 and USE_ALERTS and send_alerts:
@@ -116,12 +118,13 @@ class TagInitiatives:
         self.tag_initiatives(initiatives, tags)
 
     def new_tag(self, tag):
-        tags = codecs.encode(pickle.dumps(Topic.get_filtered_tags('tag', tag)), "base64").decode()
+        tag = Topic.get_filtered_tags('tag', tag)
+        tags = codecs.encode(pickle.dumps(tag), "base64").decode()
         initiatives = list(Initiative.all())
         self.tag_initiatives(initiatives, tags, True, False)
 
     def new_topic(self, topic):
-        tags = codecs.encode(pickle.dumps(Topic.get_filtered_tags('topic', topic)), "base64").decode()
+        tags = codecs.encode(pickle.dumps(Topic.get_filtered_tags_by_topic(topic)), "base64").decode()
         initiatives = list(Initiative.all())
         self.tag_initiatives(initiatives, tags, True, False)
 
