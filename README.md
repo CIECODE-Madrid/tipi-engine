@@ -44,6 +44,7 @@ flushdb
 Available Commands
 =======
 
+## Extractor
 - `python quickex.py extractor initiatives`: Extracts new initiatives.
 - `python quickex.py extractor references`: Calculates references that are not present in the database and prints them.
 - `python quickex.py extractor votes`: Extracts new votes.
@@ -64,3 +65,18 @@ Available Commands
 - `python quickex.py extractor type-all-interventions`: Extracts all the video interventions of the initiatives of the specified initiative type.
 - `python quickex.py extractor type-all-votes`: Extracts all the votes of the initiatives of the specified initiative type.
 - `python quickex.py extractor members`: Extracts all the members and updates the existing ones in the DB.
+
+## Tagger
+- `python quickex.py tagger all` (default): Tags all the initiatives with all the tags and topics.
+- `python quickex.py tagger new-tag [TAG]`: Tags all the initiatives with the tag specified. Must be already present in the topics dictionary.
+- `python quickex.py tagger new-topic [TOPIC]`: Tags all the initiatives with the all tags of the specified topic. Must be already present in the topic dictionary.
+- `python quickex.py tagger modify-regex [TAG]`: Finds the tag and removes it from all initiatives and tags all the initiatives using the updated regex. The regex must be updated in the topic dictionary.
+- `python quickex.py tagger rename-tag [TAG]`: Finds all the occurrences of the specified tag in all the initiatives and replace it with the new name.
+
+# Untagger
+- `python quickex.py untagger all` (default): Marks all initiatives as not tagged.
+- `python quickex.py untagger undo`: Marks all initiatives as tagged.
+- `python quickex.py untagger topic "[TOPIC]"`: Marks all initiatives with the given topic as untagged.
+- `python quickex.py untagger tag "[TAG]"`: Marks all initiatives with the given tag as untagged.
+- `python quickex.py untagger remove-topic [TOPIC]`: Removes the given topic from all initiatives.
+- `python quickex.py untagger remove-tag [TAG]`: Removes the given tag from all the initiatives.
