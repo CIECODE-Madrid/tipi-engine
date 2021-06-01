@@ -87,7 +87,7 @@ class TagInitiatives:
                         continue
                     body_result = body_result['result']
                     result = self.__merge_results(title_result, body_result)
-                tags = list(map(
+                new_tags = list(map(
                     lambda x: Tag(
                         topic=x['topic'],
                         subtopic=x['subtopic'],
@@ -97,11 +97,11 @@ class TagInitiatives:
 
                 if merge:
                     topics = list(set(initiative['topics'] + result['topics']))
-                    tags = self.merge_tags(initiative['tags'], tags)
+                    new_tags = self.merge_tags(initiative['tags'], new_tags)
                 else:
                     topics = result['topics']
 
-                initiative['tags'] = tags
+                initiative['tags'] = new_tags
                 initiative['topics'] = topics
                 self.__delete_topics_with_one_tag_ocurrence(initiative)
                 initiative['tagged'] = True
@@ -118,8 +118,8 @@ class TagInitiatives:
         self.tag_initiatives(initiatives, tags)
 
     def new_tag(self, tag):
-        tag = Topic.get_filtered_tags('tag', tag)
-        tags = codecs.encode(pickle.dumps(tag), "base64").decode()
+        tags = Topic.get_filtered_tags('tag', tag)
+        tags = codecs.encode(pickle.dumps(tags), "base64").decode()
         initiatives = list(Initiative.all())
         self.tag_initiatives(initiatives, tags, True, False)
 
