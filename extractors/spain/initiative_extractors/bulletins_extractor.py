@@ -65,7 +65,8 @@ class BulletinsExtractor(InitiativeExtractor):
         return content
 
     def find_urls(self):
-        return self.node_tree.xpath(self.get_xpath())
+        xpath = self.get_xpath()
+        return self.node_tree.xpath(xpath)
 
     def get_xpath(self):
         return f"//ul[@class='boletines']/li/div[contains(text(),'{self.LETTER}-')]/following-sibling::div/a[1]/@href"
@@ -95,7 +96,7 @@ class FirstBulletinExtractor(BulletinsExtractor):
     LETTER = 'Z'
 
     def get_xpath(self):
-        return f"//ul[@class='boletines']/li/div[contains(text(),'{self.LETTER}-')]/following-sibling::div[1]/a[1]/@href"
+        return f"(//ul[@class='boletines']/li/div[contains(text(),'{self.LETTER}-')])[1]/following-sibling::div/a[1]/@href"
 
     def should_extract_content(self):
         return not self.has_content()
