@@ -12,17 +12,6 @@ Install setup and it will install all dependencies and libraries
 All variables are in .env file
 
 
-Init Luigi
-=======
-Inside Virtualenv:
-```
-./base.py
-```
-or exec cron.sh
-```
-./cron.sh
-```
-
 Add to Crontab /etc/crontab
 =======
 ```
