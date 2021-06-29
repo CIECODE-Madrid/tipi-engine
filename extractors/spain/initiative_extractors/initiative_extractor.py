@@ -154,10 +154,16 @@ class InitiativeExtractor:
                         if parliamentarygroup_name:
                             self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
                 else:
-                    parliamentarygroup_name = item.text_content() \
-                        if self.parliamentarygroup_sufix not in item.text_content() \
-                        else re.sub(self.parliamentarygroup_sufix, '', item.text_content())
-                    self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
+                    if re.search(regex_more_deputies, item.text_content()):
+                        deputy_name = re.sub(regex_more_deputies, '', item.text_content())
+                        self.initiative['author_others'].append(item.text_content())
+                        if self.__is_deputy(deputy_name):
+                            self.initiative['author_deputies'].append(deputy_name)
+                    else:
+                        parliamentarygroup_name = item.text_content() \
+                            if self.parliamentarygroup_sufix not in item.text_content() \
+                            else re.sub(self.parliamentarygroup_sufix, '', item.text_content())
+                        self.initiative['author_parliamentarygroups'].append(parliamentarygroup_name)
         self.initiative['author_parliamentarygroups'] = list(set(self.initiative['author_parliamentarygroups']))
 
     def get_place(self):
