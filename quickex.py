@@ -42,6 +42,7 @@ def tag(args):
     command = TagInitiatives()
     subcommands = {
         'all': command.run,
+        'kb': command.tag_kb,
         'new-tag': command.new_tag,
         'new-topic': command.new_topic,
         'modify-regex': modify_regex,
@@ -57,11 +58,9 @@ def untag(args):
     command = UntagInitiatives()
     subcommands = {
         'all': command.untag_all,
-        'undo': command.undo,
+        'kb': command.by_kb,
         'topic': command.by_topic,
         'tag': command.by_tag,
-        'remove-topic': command.remove_topic,
-        'remove-tag': command.remove_tag,
         'default': command.untag_all
     }
     run_command(subcommands, args)

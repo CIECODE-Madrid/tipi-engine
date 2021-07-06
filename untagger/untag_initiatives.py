@@ -19,28 +19,14 @@ class UntagInitiatives:
         print('Untagging all initiatives')
         Initiative.all().update(tagged=False)
 
-    def undo(self):
-        print('Marking all initiatives as tagged')
-        Initiative.all().update(tagged=True)
+    def by_kb(self, kb):
+        print('Untagging knowledge base "' + kb + '"')
+        Initiative.all().update(pull_tagged__knowledgebase=kb)
 
     def by_topic(self, topic):
         print('Untagging topic "' + topic + '"')
-        Initiative.all(topics=topic).update(tagged=False)
+        Initiative.all().update(pull_tagged__topics=topic)
 
     def by_tag(self, tag):
         print('Untagging tag "' + tag + '"')
-        Initiative.all(tags__tag=tag).update(tagged=False)
-
-    def remove_topic(self, topic):
-        print('Removing topic "' + topic + '"')
-        Initiative.all().update(pull__topics=topic, pull__tags__topic=topic)
-
-    def remove_tag(self, tag):
-        print('Removing tag "' + tag + '"')
-        initiatives = Initiative.all(tags__tag=tag)
-        for initiative in initiatives:
-            tags = list(filter(lambda initiative_tag: initiative_tag.tag != tag, initiative['tags']))
-            topics = sorted(list(set(tag['topic'] for tag in tags)))
-            initiative['tags'] = tags
-            initiative['topics'] = topics
-            initiative.save()
+        Initiative.all().update(pull_tagged__tags__tag=tag)
