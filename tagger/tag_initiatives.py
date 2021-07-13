@@ -117,6 +117,12 @@ class TagInitiatives:
         initiatives = list(Initiative.all(__raw__=self.__get_untagged_query()))
         self.tag_initiatives(initiatives, tags)
 
+    def tag_kb(self, kb):
+        tags = Topic.get_tags_by_kb(kb)
+        tags = codecs.encode(pickle.dumps(tags), "base64").decode()
+        initiatives = list(Initiative.all())
+        self.tag_initiatives(initiatives, tags, True, True)
+
     def new_tag(self, tag):
         tags = Topic.get_filtered_tags('tag', tag)
         tags = codecs.encode(pickle.dumps(tags), "base64").decode()

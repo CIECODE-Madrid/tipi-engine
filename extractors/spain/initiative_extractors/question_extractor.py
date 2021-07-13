@@ -53,7 +53,7 @@ class QuestionExtractor(InitiativeExtractor):
             force = False
         except Exception:
             answer_initiative = deepcopy(self.initiative)
-            answer_initiative['tagged'] = False
+            answer_initiative['tagged'] = []
             force = True
         answer_initiative['content'] = answer
         answer_initiative['initiative_type_alt'] = 'Respuesta'
