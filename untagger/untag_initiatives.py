@@ -17,7 +17,7 @@ class UntagInitiatives:
 
     def untag_all(self):
         print('Untagging all initiatives')
-        Initiative.all().update(tagged=False)
+        Initiative.all().update(unset__tagged=1)
 
     def by_kb(self, kb):
         print('Untagging knowledge base "' + kb + '"')

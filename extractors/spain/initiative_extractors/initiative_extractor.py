@@ -56,7 +56,7 @@ class InitiativeExtractor:
             if previous_content != self.initiative['content']:
                 self.untag()
             else:
-                if is_final_status(self.initiative['status']) and self.has_topics():
+                if is_final_status(self.initiative['status']) and self.has_knowledge_bases():
                     create_alert(self.initiative)
             self.initiative.save()
             log.info(f"Iniciativa {self.initiative['reference']} procesada")
@@ -235,8 +235,8 @@ class InitiativeExtractor:
     def has_content(self):
         return self.has('content') and len(self.initiative['content']) > 0
 
-    def has_topics(self):
-        return self.has('topics') and len(self.initiative['topics']) > 0
+    def has_knowledge_bases(self):
+        return self.has('tagged') and len(self.initiative['tagged']) > 0
 
     def untag(self):
-        self.initiative['tagged'] = False
+        self.initiative['tagged'] = None
